@@ -1,38 +1,33 @@
-import { useEffect, useState } from "react";
-
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
+    MapContainer,
+    TileLayer,
+    Marker,
+    Popup,
+    Circle
 } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
 
-import { api } from "../../services/api";
 
 
+// Fix leaflet marker icon issue
 
-
-// ===============================
-// Fix Leaflet Icon
-// ===============================
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
 
 L.Icon.Default.mergeOptions({
 
-  iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+    iconRetinaUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
 
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    iconUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
 
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 
 });
 
@@ -40,35 +35,70 @@ L.Icon.Default.mergeOptions({
 
 
 
-// ===============================
-// Interface
-// ===============================
-
 interface Vehicle {
 
 
-  _id:string;
+    _id?:string;
+
+    id?:number;
+
+    vehicleNumber:string;
+
+    driver:string;
+
+    speed:number;
+
+    fuel:number;
+
+    status:
+    | "Active"
+    | "Idle"
+    | "Offline";
 
 
-  vehicleNumber:string;
+    latitude:number;
+
+    longitude:number;
 
 
-  driver?:string;
+}
 
 
-  latitude:number;
 
 
-  longitude:number;
+
+interface Geofence {
 
 
-  speed:number;
+    _id:string;
+
+    name:string;
 
 
-  fuel:number;
+    center:{
+
+        latitude:number;
+
+        longitude:number;
+
+    };
 
 
-  status:string;
+    radius:number;
+
+
+}
+
+
+
+
+
+interface Props {
+
+
+    vehicles:Vehicle[];
+
+    geofences?:Geofence[];
 
 
 }
@@ -78,218 +108,42 @@ interface Vehicle {
 
 
 
-const LiveMap = () => {
 
+const LiveMap =({
 
+    vehicles,
 
-const [vehicles,setVehicles] =
-useState<Vehicle[]>([]);
+    geofences=[]
 
+}:Props)=>{
 
 
-const [loading,setLoading] =
-useState(false);
 
 
 
-
-
-// ===============================
-// Fetch Live Tracking
-// ===============================
-
-
-const fetchTracking = async()=>{
-
-
-try{
-
-
-setLoading(true);
-
-
-
-const response =
-await api.get("/tracking");
-
-
-
-console.log(
-"Tracking API Response:",
-response.data
-);
-
-
-
-
-let vehicleData:Vehicle[]=[];
-
-
-
-if(
-Array.isArray(response.data)
-){
-
-vehicleData=response.data;
-
-}
-
-
-
-else if(
-Array.isArray(response.data.vehicles)
-){
-
-vehicleData=response.data.vehicles;
-
-}
-
-
-
-else if(
-Array.isArray(response.data.tracking)
-){
-
-vehicleData=response.data.tracking;
-
-}
-
-
-
-
-
-setVehicles(vehicleData);
-
-
-
-}
-
-
-catch(error){
-
-
-console.error(
-"Tracking Error:",
-error
-);
-
-
-setVehicles([]);
-
-
-}
-
-
-finally{
-
-
-setLoading(false);
-
-
-}
-
-
-};
-
-
-
-
-
-
-
-
-useEffect(()=>{
-
-
-fetchTracking();
-
-
-
-const interval =
-setInterval(
-fetchTracking,
-10000
-);
-
-
-
-return ()=>clearInterval(interval);
-
-
-
-},[]);
-
-
-
-
-
-
-
-
-
-return (
-
-
-<div className="w-full">
-
-
-
-{
-loading &&
-
-<p className="text-sm text-gray-500 mb-2">
-
-Updating vehicle location...
-
-</p>
-
-}
-
-
-
-
-
-
-
-{
-vehicles.length===0 && !loading &&
-
-<div className="bg-gray-100 p-4 rounded-lg text-center text-gray-500 mb-3">
-
-No live vehicles available
-
-</div>
-
-}
-
-
-
-
-
+return(
 
 
 <MapContainer
 
 
 center={[
+
 28.6139,
+
 77.2090
+
 ]}
 
 
-zoom={11}
-
-
-scrollWheelZoom={true}
+zoom={12}
 
 
 style={{
 
-height:"450px",
+height:"500px",
 
-width:"100%",
-
-borderRadius:"12px"
+width:"100%"
 
 }}
 
@@ -298,10 +152,13 @@ borderRadius:"12px"
 >
 
 
-
 <TileLayer
 
-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+url="
+https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+"
+
 
 />
 
@@ -310,116 +167,84 @@ url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 
 
+
+{/* ================= VEHICLES ================= */}
+
+
+
 {
 
-vehicles.map((vehicle)=>(
-
+vehicles.map(
+(vehicle)=>(
 
 
 <Marker
 
 
-key={vehicle._id}
+key={
+vehicle._id ||
+vehicle.id
+}
 
 
 position={[
 
-vehicle.latitude || 28.6139,
+vehicle.latitude,
 
-vehicle.longitude || 77.2090
+vehicle.longitude
 
 ]}
 
 
-
 >
-
-
 
 
 
 <Popup>
 
 
+<div>
 
-<div className="space-y-2">
 
+<h3 className="font-bold">
 
-<h3 className="font-bold text-lg">
-
-🚚 {vehicle.vehicleNumber}
+{vehicle.vehicleNumber}
 
 </h3>
-
-
 
 
 <p>
 
 Driver:
-{" "}
-{vehicle.driver || "N/A"}
+{vehicle.driver}
 
 </p>
-
-
-
 
 
 <p>
 
 Speed:
-{" "}
-{vehicle.speed || 0} km/h
+{vehicle.speed} km/h
 
 </p>
-
-
 
 
 
 <p>
 
 Fuel:
-{" "}
-{vehicle.fuel || 0} %
+{vehicle.fuel}%
 
 </p>
-
-
 
 
 
 <p>
 
 Status:
-
-{" "}
-
-<span
-
-className={
-
-vehicle.status==="Active"
-
-?
-"text-green-600 font-semibold"
-
-:
-"text-red-600 font-semibold"
-
-}
-
->
-
 {vehicle.status}
 
-</span>
-
-
 </p>
-
-
 
 
 
@@ -431,14 +256,12 @@ vehicle.status==="Active"
 
 
 
-
-
 </Marker>
 
 
+)
 
-))
-
+)
 
 }
 
@@ -447,22 +270,108 @@ vehicle.status==="Active"
 
 
 
-</MapContainer>
+
+
+
+{/* ================= GEOFENCE ================= */}
 
 
 
 
+{
+
+geofences.map(
+(zone)=>(
+
+
+<Circle
+
+
+key={
+zone._id
+}
+
+
+center={[
+
+zone.center.latitude,
+
+zone.center.longitude
+
+]}
+
+
+
+radius={
+zone.radius
+}
+
+
+pathOptions={{
+
+color:"blue",
+
+fillOpacity:0.15
+
+}}
+
+
+
+>
+
+
+<Popup>
+
+
+<div>
+
+
+<h3 className="font-bold">
+
+{zone.name}
+
+</h3>
+
+
+
+<p>
+
+Radius:
+{zone.radius} meters
+
+</p>
 
 
 
 </div>
 
 
+</Popup>
+
+
+
+</Circle>
+
+
+
+)
+
+)
+
+}
+
+
+
+
+
+</MapContainer>
+
+
 );
 
 
-
 };
+
 
 
 export default LiveMap;

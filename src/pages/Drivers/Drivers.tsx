@@ -386,7 +386,7 @@ const Drivers = () => {
 
               {!loading &&
                 filteredDrivers.map(
-                  (driver: any, index: number) => (
+                  (driver: any) => (
 
                     <tr
                       key={driver._id}
@@ -425,7 +425,7 @@ const Drivers = () => {
 
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-medium
-                          ${driver.status === "Available"
+            ${driver.status === "Available"
                               ? "bg-green-100 text-green-700"
                               : driver.status === "On Trip"
                                 ? "bg-yellow-100 text-yellow-700"
@@ -442,27 +442,21 @@ const Drivers = () => {
                         <div className="flex justify-center gap-3">
 
                           <button
-                            onClick={() =>
-                              handleViewDriver(driver)
-                            }
+                            onClick={() => handleViewDriver(driver)}
                             className="text-blue-600 hover:text-blue-800"
                           >
                             <FaEye />
                           </button>
 
                           <button
-                            onClick={() =>
-                              handleEditDriver(driver)
-                            }
+                            onClick={() => handleEditDriver(driver)}
                             className="text-green-600 hover:text-green-800"
                           >
                             <FaEdit />
                           </button>
 
                           <button
-                            onClick={() =>
-                              handleDeleteDriver(driver)
-                            }
+                            onClick={() => handleDeleteDriver(driver)}
                             className="text-red-600 hover:text-red-800"
                           >
                             <FaTrash />
@@ -475,7 +469,8 @@ const Drivers = () => {
                     </tr>
 
                   )
-                )}
+                )
+              }
 
             </tbody>
 
