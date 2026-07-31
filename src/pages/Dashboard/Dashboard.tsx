@@ -1,398 +1,3 @@
-// import { useEffect, useState } from "react";
-
-// import StatCard from "../../components/Cards/StatCard";
-// import FleetSummary from "../../components/Cards/FleetSummary";
-
-// import DashboardHeader from "../../components/Common/DashboardHeader";
-
-// import LineChart from "../../components/Charts/LineChart";
-// import BarChart from "../../components/Charts/BarChart";
-// import DoughnutChart from "../../components/Charts/DoughnutChart";
-
-// import VehicleTable from "../../components/Tables/VehicleTable";
-
-// import LiveMap from "../../components/Map/LiveMap";
-// import RecentAlerts from "../../components/Alerts/RecentAlerts";
-// import DriverStatus from "../../components/Drivers/DriverStatus";
-// import RecentTrips from "../../components/Trips/RecentTrips";
-
-// import {
-//   FaTruck,
-//   FaPlayCircle,
-//   FaStopCircle,
-//   FaGasPump,
-// } from "react-icons/fa";
-
-// import { api } from "../../services/api";
-
-
-
-// interface DashboardData {
-
-//   totalVehicles:number;
-
-//   activeVehicles:number;
-
-//   totalDrivers:number;
-
-//   totalAlerts:number;
-
-//   totalReports:number;
-
-// }
-
-
-// const Dashboard = () => {
-
-
-// const [dashboard,setDashboard] =
-// useState<DashboardData | null>(null);
-
-
-// const [loading,setLoading] =
-// useState(false);
-
-
-
-// const fetchDashboard = async()=>{
-
-
-// try{
-
-
-// setLoading(true);
-
-
-// const response =
-// await api.get("/dashboard");
-
-
-// console.log(
-// "Dashboard API:",
-// response.data
-// );
-
-
-
-// if(response.data.success){
-
-// setDashboard(
-// response.data.dashboard
-// );
-
-// }
-
-
-
-// }
-// catch(error){
-
-// console.log(
-// "Dashboard Error:",
-// error
-// );
-
-
-// }
-// finally{
-
-// setLoading(false);
-
-// }
-
-
-// };
-
-
-
-
-
-// useEffect(()=>{
-
-// fetchDashboard();
-
-// },[]);
-
-
-
-
-
-// if(loading || !dashboard){
-
-// return (
-
-// <div className="p-6 text-xl">
-
-// Loading Dashboard...
-
-// </div>
-
-// );
-
-// }
-
-
-// return (
-
-// <div className="space-y-8">
-
-
-
-// {/* Dashboard Header */}
-
-// <DashboardHeader />
-
-
-
-
-
-// {/* Statistics Cards */}
-
-// <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
-
-
-// <StatCard
-
-// title="Total Vehicles"
-
-// value={dashboard.totalVehicles}
-
-// icon={<FaTruck />}
-
-// color="text-blue-600"
-
-// percentage="+8%"
-
-// />
-
-
-
-
-
-// <StatCard
-
-// title="Running Vehicles"
-
-// value={dashboard.activeVehicles}
-
-// icon={<FaPlayCircle />}
-
-// color="text-green-600"
-
-// percentage="+12%"
-
-// />
-
-
-
-
-
-// <StatCard
-
-// title="Offline Vehicles"
-
-// value={
-// dashboard.totalVehicles -
-// dashboard.activeVehicles
-// }
-
-// icon={<FaStopCircle />}
-
-// color="text-red-600"
-
-// percentage="-4%"
-
-// />
-
-
-
-
-
-// <StatCard
-
-// title="Fuel Level"
-
-// value="82%"
-
-// icon={<FaGasPump />}
-
-// color="text-yellow-500"
-
-// percentage="+2%"
-
-// />
-
-
-
-// </div>
-
-
-
-
-
-
-
-// {/* Fleet Summary */}
-
-// <FleetSummary />
-
-
-
-
-
-
-
-// {/* Charts */}
-
-// <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-
-
-// <div className="bg-white rounded-xl shadow-md p-6">
-
-// <h2 className="text-xl font-semibold mb-4">
-
-// Vehicle Activity
-
-// </h2>
-
-
-// <LineChart />
-
-
-// </div>
-
-
-
-
-
-// <div className="bg-white rounded-xl shadow-md p-6">
-
-// <h2 className="text-xl font-semibold mb-4">
-
-// Monthly Trips
-
-// </h2>
-
-
-// <BarChart />
-
-
-// </div>
-
-
-
-
-// </div>
-
-
-
-
-
-
-
-// {/* Map + Alerts */}
-
-// <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-
-
-// <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
-
-
-// <h2 className="text-xl font-semibold mb-4">
-
-// Live Vehicle Tracking
-
-// </h2>
-
-
-// <LiveMap />
-
-
-// </div>
-
-
-
-
-// <RecentAlerts />
-
-
-
-// </div>
-
-
-
-
-
-
-
-// {/* Vehicle + Driver */}
-
-
-// <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-
-// <div className="bg-white rounded-xl shadow-md p-6">
-
-
-// <h2 className="text-xl font-semibold mb-4">
-
-// Vehicle Status
-
-// </h2>
-
-
-// <DoughnutChart />
-
-
-// </div>
-
-
-
-
-// <DriverStatus />
-
-
-// </div>
-
-
-
-
-
-
-
-// {/* Trips */}
-
-// <RecentTrips />
-
-
-
-
-
-
-// {/* Vehicles */}
-
-// <VehicleTable />
-
-
-
-
-// </div>
-
-
-// );
-
-
-// };
-
-
-
-// export default Dashboard;
-
-
-
 
 import {
   useEffect,
@@ -815,12 +420,12 @@ return (
 <div className="
 min-h-screen
 bg-gray-100
-p-6
-space-y-8
+p-3
+sm:p-4
+md:p-6
+space-y-6
+overflow-x-hidden
 ">
-
-
-
 
 
 <DashboardHeader />
@@ -833,88 +438,55 @@ space-y-8
 {/* STAT CARDS */}
 
 
-<div className="
+<div
+className="
 grid
 grid-cols-1
 sm:grid-cols-2
+lg:grid-cols-3
 xl:grid-cols-4
-gap-6
-">
-
+gap-4
+"
+>
 
 
 <StatCard
-
 title="Total Vehicles"
-
-value={
-dashboard.totalVehicles
-}
-
+value={dashboard.totalVehicles}
 icon={<FaTruck />}
-
 color="text-blue-600"
-
 percentage="+8%"
-
 />
 
 
-
-
 <StatCard
-
 title="Running Vehicles"
-
-value={
-dashboard.activeVehicles
-}
-
+value={dashboard.activeVehicles}
 icon={<FaPlayCircle />}
-
 color="text-green-600"
-
 percentage="+12%"
-
 />
 
 
-
-
 <StatCard
-
 title="Offline Vehicles"
-
 value={
 dashboard.totalVehicles -
 dashboard.activeVehicles
 }
-
 icon={<FaStopCircle />}
-
 color="text-red-600"
-
 percentage="-4%"
-
 />
-
-
 
 
 <StatCard
-
 title="Fuel Level"
-
 value="82%"
-
 icon={<FaGasPump />}
-
 color="text-yellow-500"
-
 percentage="+2%"
-
 />
-
 
 
 </div>
@@ -939,8 +511,9 @@ percentage="+2%"
 <div className="
 grid
 grid-cols-1
-lg:grid-cols-2
-gap-6
+md:grid-cols-2
+gap-4
+md:gap-6
 ">
 
 
@@ -948,12 +521,15 @@ gap-6
 bg-white
 rounded-xl
 shadow-md
-p-6
+p-3
+sm:p-4
+md:p-6
 ">
 
 
 <h2 className="
-text-xl
+text-lg
+sm:text-xl
 font-semibold
 mb-4
 ">
@@ -977,7 +553,9 @@ Vehicle Activity
 bg-white
 rounded-xl
 shadow-md
-p-6
+p-3
+sm:p-4
+md:p-6
 ">
 
 
@@ -1025,7 +603,10 @@ lg:col-span-2
 bg-white
 rounded-xl
 shadow-md
-p-6
+p-3
+sm:p-4
+md:p-6
+overflow-hidden
 ">
 
 
@@ -1078,12 +659,13 @@ gap-6
 ">
 
 
-
 <div className="
 bg-white
 rounded-xl
 shadow-md
-p-6
+p-3
+sm:p-4
+md:p-6
 ">
 
 

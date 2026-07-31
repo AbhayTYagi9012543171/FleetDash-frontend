@@ -5,122 +5,49 @@ import Navbar from "../components/Navbar/Navbar";
 
 import { useSidebar } from "../context/SidebarContext";
 
-
-
 const MainLayout = () => {
-
-
-  const {
-    collapsed
-  } = useSidebar();
-
-
-
-
+  const { collapsed } = useSidebar();
 
   return (
+    <div className="min-h-screen bg-gray-100 flex">
+      {/* Sidebar (Desktop Only) */}
+      <Sidebar />
 
-    <div className="
-      min-h-screen
-      bg-gray-100
-    ">
-
-
-      {/* =====================
-          Sidebar
-      ====================== */}
-
-      <div className="
-        fixed
-        left-0
-        top-0
-        h-screen
-        z-40
-      ">
-
-        <Sidebar />
-
-      </div>
-
-
-
-
-
-
-
-
-      {/* =====================
-          Main Content
-      ====================== */}
-
-
+      {/* Main Content */}
       <div
-
         className={`
+          flex-1
           transition-all
           duration-300
-
+          w-full
           ${
             collapsed
-            ? "ml-20"
-            : "ml-64"
+              ? "lg:ml-20"
+              : "lg:ml-64"
           }
-
         `}
-
       >
-
-
-
-
         {/* Navbar */}
-
-        <div className="
-          sticky
-          top-0
-          z-30
-        ">
-
+        <div className="sticky top-0 z-30">
           <Navbar />
-
         </div>
 
-
-
-
-
-
-
         {/* Page Content */}
-
         <main
-
           className="
-            p-6
+            p-3
+            sm:p-4
+            md:p-6
             min-h-[calc(100vh-64px)]
+            overflow-x-hidden
             overflow-y-auto
           "
-
         >
-
           <Outlet />
-
         </main>
-
-
-
-
-
       </div>
-
-
-
     </div>
-
   );
-
-
 };
-
 
 export default MainLayout;

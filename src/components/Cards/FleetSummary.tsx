@@ -42,36 +42,73 @@ const FleetSummary = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div
+      className="
+      grid
+      grid-cols-1
+      sm:grid-cols-2
+      xl:grid-cols-4
+      gap-4
+      sm:gap-6
+      "
+    >
       {summary.map((item) => (
         <div
           key={item.id}
-          className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 hover:shadow-xl transition duration-300"
+          className="
+          bg-white
+          rounded-2xl
+          shadow-md
+          border
+          border-gray-200
+          p-4
+          sm:p-5
+          md:p-6
+          hover:shadow-xl
+          transition
+          duration-300
+          w-full
+          overflow-hidden
+          "
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-gray-500 break-words">
                 {item.title}
               </p>
 
-              <h2 className="text-3xl font-bold mt-2 text-gray-800">
+              <h2 className="text-2xl sm:text-3xl font-bold mt-2 text-gray-800 break-words">
                 {item.value}
               </h2>
             </div>
 
             <div
-              className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${item.bg} ${item.color}`}
+              className={`
+              w-12
+              h-12
+              sm:w-14
+              sm:h-14
+              rounded-full
+              flex
+              items-center
+              justify-center
+              text-xl
+              sm:text-2xl
+              shrink-0
+              ${item.bg}
+              ${item.color}
+              `}
             >
               {item.icon}
             </div>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-4 sm:mt-5">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div className="bg-blue-600 h-2 rounded-full w-3/4"></div>
             </div>
 
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
               Updated just now
             </p>
           </div>

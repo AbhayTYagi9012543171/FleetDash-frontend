@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../services/api";
+import { FaTimes } from "react-icons/fa";
 
 interface Props {
   isOpen: boolean;
@@ -18,7 +19,32 @@ const AddGeofenceModal = ({
   const [radius, setRadius] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
+
+  const resetForm = () => {
+    setName("");
+    setLatitude("");
+    setLongitude("");
+    setRadius("");
+  };
 
   const handleSubmit = async (
     e: React.FormEvent
@@ -37,14 +63,10 @@ const AddGeofenceModal = ({
         radius: Number(radius),
       });
 
-      setName("");
-      setLatitude("");
-      setLongitude("");
-      setRadius("");
-
+      resetForm();
       onSuccess();
     } catch (error) {
-      console.error("Add Geofence Error:", error);
+      console.error(error);
       alert("Failed to add geofence");
     } finally {
       setLoading(false);
@@ -52,71 +74,180 @@ const AddGeofenceModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="
+        fixed
+        inset-0
+        z-50
+        bg-black/50
+        flex
+        items-center
+        justify-center
+        p-4
+        overflow-y-auto
+      "
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="
+          w-full
+          max-w-lg
+          bg-white
+          rounded-2xl
+          shadow-2xl
+          p-5
+          sm:p-6
+          animate-in
+        "
+      >
+        {/* Header */}
 
-      <div className="bg-white rounded-xl w-full max-w-md p-6">
+        <div className="flex items-center justify-between mb-6">
 
-        <h2 className="text-2xl font-bold mb-5">
-          Add Geofence
-        </h2>
+          <div>
+            <h2 className="text-2xl font-bold">
+              Add Geofence
+            </h2>
+
+            <p className="text-gray-500 text-sm mt-1">
+              Create a new geofence area.
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="
+              p-2
+              rounded-lg
+              hover:bg-gray-100
+            "
+          >
+            <FaTimes />
+          </button>
+
+        </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4"
+          className="space-y-5"
         >
 
-          <input
-            type="text"
-            placeholder="Geofence Name"
-            value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-            required
-            className="w-full border rounded-lg p-3"
-          />
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Geofence Name
+            </label>
 
-          <input
-            type="number"
-            step="any"
-            placeholder="Latitude"
-            value={latitude}
-            onChange={(e) =>
-              setLatitude(e.target.value)
-            }
-            required
-            className="w-full border rounded-lg p-3"
-          />
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+              placeholder="Warehouse Zone"
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+                focus:ring-2
+                focus:ring-blue-500
+                outline-none
+              "
+            />
+          </div>
 
-          <input
-            type="number"
-            step="any"
-            placeholder="Longitude"
-            value={longitude}
-            onChange={(e) =>
-              setLongitude(e.target.value)
-            }
-            required
-            className="w-full border rounded-lg p-3"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          <input
-            type="number"
-            placeholder="Radius (meters)"
-            value={radius}
-            onChange={(e) =>
-              setRadius(e.target.value)
-            }
-            required
-            className="w-full border rounded-lg p-3"
-          />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Latitude
+              </label>
 
-          <div className="flex justify-end gap-3">
+              <input
+                type="number"
+                step="any"
+                required
+                value={latitude}
+                onChange={(e) =>
+                  setLatitude(e.target.value)
+                }
+                className="
+                  w-full
+                  border
+                  rounded-lg
+                  p-3
+                  focus:ring-2
+                  focus:ring-blue-500
+                "
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Longitude
+              </label>
+
+              <input
+                type="number"
+                step="any"
+                required
+                value={longitude}
+                onChange={(e) =>
+                  setLongitude(e.target.value)
+                }
+                className="
+                  w-full
+                  border
+                  rounded-lg
+                  p-3
+                  focus:ring-2
+                  focus:ring-blue-500
+                "
+              />
+            </div>
+
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Radius (Meters)
+            </label>
+
+            <input
+              type="number"
+              required
+              value={radius}
+              onChange={(e) =>
+                setRadius(e.target.value)
+              }
+              placeholder="500"
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+                focus:ring-2
+                focus:ring-blue-500
+              "
+            />
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border"
+              className="
+                w-full
+                sm:w-auto
+                px-5
+                py-3
+                rounded-lg
+                border
+                hover:bg-gray-100
+              "
             >
               Cancel
             </button>
@@ -124,17 +255,25 @@ const AddGeofenceModal = ({
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg"
+              className="
+                w-full
+                sm:w-auto
+                px-5
+                py-3
+                rounded-lg
+                bg-blue-600
+                text-white
+                hover:bg-blue-700
+                disabled:opacity-60
+              "
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Save Geofence"}
             </button>
 
           </div>
 
         </form>
-
       </div>
-
     </div>
   );
 };

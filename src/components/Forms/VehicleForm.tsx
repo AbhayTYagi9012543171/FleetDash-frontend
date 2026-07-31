@@ -22,97 +22,171 @@ const VehicleForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Vehicle Data:", formData);
+    console.log(formData);
 
     alert("Vehicle Added Successfully!");
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">
-        Add Vehicle
-      </h2>
+    <div className="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
+
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          Add Vehicle
+        </h2>
+
+        <p className="text-gray-500 mt-2">
+          Enter vehicle details below.
+        </p>
+      </div>
 
       <form
         onSubmit={handleSubmit}
-        className="grid md:grid-cols-2 gap-5"
+        className="grid grid-cols-1 md:grid-cols-2 gap-5"
       >
-        <input
-          type="text"
-          name="vehicleNumber"
-          placeholder="Vehicle Number"
-          className="border p-3 rounded-lg"
-          value={formData.vehicleNumber}
-          onChange={handleChange}
-          required
-        />
 
-        <select
-          name="vehicleType"
-          className="border p-3 rounded-lg"
-          value={formData.vehicleType}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Vehicle Type</option>
-          <option>Truck</option>
-          <option>Bus</option>
-          <option>Car</option>
-          <option>Van</option>
-        </select>
+        {/* Vehicle Number */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Vehicle Number
+          </label>
 
-        <input
-          type="text"
-          name="driverName"
-          placeholder="Driver Name"
-          className="border p-3 rounded-lg"
-          value={formData.driverName}
-          onChange={handleChange}
-          required
-        />
+          <input
+            type="text"
+            name="vehicleNumber"
+            placeholder="UP14 AB 1234"
+            value={formData.vehicleNumber}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
 
-        <select
-          name="fuelType"
-          className="border p-3 rounded-lg"
-          value={formData.fuelType}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Fuel Type</option>
-          <option>Diesel</option>
-          <option>Petrol</option>
-          <option>CNG</option>
-          <option>Electric</option>
-        </select>
+        {/* Vehicle Type */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Vehicle Type
+          </label>
 
-        <input
-          type="text"
-          name="gpsDevice"
-          placeholder="GPS Device ID"
-          className="border p-3 rounded-lg"
-          value={formData.gpsDevice}
-          onChange={handleChange}
-          required
-        />
+          <select
+            name="vehicleType"
+            value={formData.vehicleType}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          >
+            <option value="">Select Type</option>
+            <option>Truck</option>
+            <option>Bus</option>
+            <option>Car</option>
+            <option>Van</option>
+          </select>
+        </div>
 
-        <select
-          name="status"
-          className="border p-3 rounded-lg"
-          value={formData.status}
-          onChange={handleChange}
-        >
-          <option>Running</option>
-          <option>Offline</option>
-          <option>Maintenance</option>
-        </select>
+        {/* Driver */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Driver Name
+          </label>
 
-        <button
-          type="submit"
-          className="md:col-span-2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-        >
-          Save Vehicle
-        </button>
+          <input
+            type="text"
+            name="driverName"
+            placeholder="Enter Driver Name"
+            value={formData.driverName}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Fuel */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Fuel Type
+          </label>
+
+          <select
+            name="fuelType"
+            value={formData.fuelType}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          >
+            <option value="">Select Fuel</option>
+            <option>Diesel</option>
+            <option>Petrol</option>
+            <option>CNG</option>
+            <option>Electric</option>
+          </select>
+        </div>
+
+        {/* GPS */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            GPS Device ID
+          </label>
+
+          <input
+            type="text"
+            name="gpsDevice"
+            placeholder="GPS-123456"
+            value={formData.gpsDevice}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Status
+          </label>
+
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            <option>Running</option>
+            <option>Offline</option>
+            <option>Maintenance</option>
+          </select>
+        </div>
+
+        {/* Buttons */}
+        <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 mt-4">
+
+          <button
+            type="submit"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition"
+          >
+            Save Vehicle
+          </button>
+
+          <button
+            type="reset"
+            className="w-full sm:w-auto border border-gray-300 hover:bg-gray-100 px-8 py-3 rounded-lg transition"
+            onClick={() =>
+              setFormData({
+                vehicleNumber: "",
+                vehicleType: "",
+                driverName: "",
+                fuelType: "",
+                gpsDevice: "",
+                status: "Running",
+              })
+            }
+          >
+            Reset
+          </button>
+
+        </div>
+
       </form>
+
     </div>
   );
 };

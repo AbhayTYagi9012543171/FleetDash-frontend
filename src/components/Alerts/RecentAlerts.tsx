@@ -267,13 +267,32 @@ return driver || "N/A";
 return (
 
 
-<div className="bg-white rounded-xl shadow-md p-6">
+<div
+  className="
+  bg-white
+  rounded-xl
+  shadow-md
+  p-4
+  sm:p-5
+  md:p-6
+  w-full
+  overflow-hidden
+">
 
 
 
 
 
-<div className="flex justify-between items-center mb-5">
+<div className="
+flex
+flex-col
+sm:flex-row
+items-start
+sm:items-center
+justify-between
+gap-3
+mb-5
+">
 
 
 <h2 className="text-xl font-semibold">
@@ -289,12 +308,16 @@ Recent Alerts
 onClick={fetchAlerts}
 
 className="
+w-full
+sm:w-auto
 text-sm
 bg-blue-600
 text-white
-px-3
-py-1
+px-4
+py-2
 rounded-lg
+hover:bg-blue-700
+transition
 "
 
 >
@@ -380,8 +403,11 @@ className="
 border-b
 pb-4
 flex
+flex-col
+sm:flex-row
 justify-between
 items-start
+gap-3
 "
 
 >
@@ -389,10 +415,10 @@ items-start
 
 
 
-<div>
+<div className="flex-1 min-w-0">
 
 
-<h3 className="font-semibold text-gray-800">
+<h3 className="font-semibold text-gray-800 break-words">
 
 {alert.alertType}
 
@@ -401,7 +427,7 @@ items-start
 
 
 
-<p className="text-sm text-gray-500">
+<p className="text-sm text-gray-500 break-words">
 
 Vehicle:
 {" "}
@@ -412,7 +438,7 @@ Vehicle:
 
 
 
-<p className="text-sm text-gray-500">
+<p className="text-sm text-gray-500 break-words">
 
 Driver:
 {" "}
@@ -434,7 +460,7 @@ Driver:
 
 
 
-<p className="text-sm text-gray-400">
+<p className="text-xs sm:text-sm text-gray-400 break-words">
 
 {
 new Date(alert.createdAt)
@@ -458,14 +484,16 @@ new Date(alert.createdAt)
 <span
 
 className={`
+self-start
+sm:self-auto
 px-3
 py-1
 rounded-full
-text-sm
+text-xs
+sm:text-sm
 font-medium
-
+whitespace-nowrap
 ${getSeverityStyle(alert.severity)}
-
 `}
 
 >
