@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiPlus,
   FiSearch,
@@ -10,7 +10,7 @@ import {
 import { vehicleService } from "../../services/vehicleService";
 
 interface Vehicle {
-  _id: string;
+  _id?: string;
   vehicleNumber: string;
   driver?: string;
   speed: number;
@@ -123,7 +123,10 @@ const Vehicles = () => {
   // ==========================
 
   const handleUpdateVehicle = async () => {
-    if (!selectedVehicle) return;
+    if (!selectedVehicle?._id) {
+      console.error("Vehicle ID missing");
+      return;
+    }
 
     try {
       await vehicleService.updateVehicle(
@@ -134,10 +137,13 @@ const Vehicles = () => {
       await loadVehicles();
 
       setShowEdit(false);
-
       setSelectedVehicle(null);
+
     } catch (error) {
-      console.error("Update Vehicle Error:", error);
+      console.error(
+        "Update Vehicle Error:",
+        error
+      );
     }
   };
 
@@ -146,7 +152,10 @@ const Vehicles = () => {
   // ==========================
 
   const handleDeleteVehicle = async () => {
-    if (!selectedVehicle) return;
+    if (!selectedVehicle?._id) {
+      console.error("Vehicle ID missing");
+      return;
+    }
 
     try {
       await vehicleService.deleteVehicle(
@@ -158,11 +167,14 @@ const Vehicles = () => {
       setShowDelete(false);
 
       setSelectedVehicle(null);
+
     } catch (error) {
-      console.error("Delete Vehicle Error:", error);
+      console.error(
+        "Delete Vehicle Error:",
+        error
+      );
     }
   };
-
   // ==========================
   // Search
   // ==========================
