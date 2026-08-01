@@ -4,6 +4,9 @@ import {
   useState
 } from "react";
 
+
+import DriverPerformance 
+from "../../components/dashboard/DriverPerformance";
 import VehicleUtilizationChart 
 from "../../components/dashboard/VehicleUtilizationChart";
 import RecentTrips from "../../components/Trips/RecentTrips";
@@ -298,18 +301,24 @@ overflow-x-hidden
 
 {/* ANALYTICS CHARTS */}
 
-<div className="
+<div
+className="
 grid
 grid-cols-1
-xl:grid-cols-3
+xl:grid-cols-2
 gap-6
-">
+"
+>
 
 <RevenueChart />
 
 <FuelTrendChart />
 
-<VehicleUtilizationChart vehicles={vehicles} />
+<VehicleUtilizationChart 
+  vehicles={vehicles}
+/>
+
+<DriverPerformance />
 
 </div>
 
