@@ -1,127 +1,195 @@
 import React from "react";
 
-import KpiCard from "../dashboard/kpiCard";
-
-import {
-  FaTruck,
-  FaGasPump,
-  FaUserTie,
-  FaWallet,
-  FaTools,
-  FaCheckCircle,
-} from "react-icons/fa";
-
-import type { DashboardData } from "../../hooks/useDashboard";
-
 
 interface Props {
-  dashboard: DashboardData;
+
+  title:string;
+
+  value:string;
+
+  icon:React.ElementType;
+
+  color:string;
+
+  description:string;
+
+  trend?:string;
+
 }
 
 
-const KpiGrid: React.FC<Props> = ({ dashboard }) => {
 
-
-const stats = [
-
-{
- title:"Fleet Health",
- value:"92%",
- icon:FaTruck,
- color:"bg-green-500",
- description:"Healthy Vehicles"
-},
-
-
-{
- title:"Fuel Today",
- value:"640 L",
- icon:FaGasPump,
- color:"bg-yellow-500",
- description:"Fuel Consumed"
-},
-
-
-{
- title:"Active Drivers",
- value:String(dashboard.totalDrivers),
- icon:FaUserTie,
- color:"bg-blue-500",
- description:"Currently Working"
-},
-
-
-{
- title:"Today's Revenue",
- value:"₹1,24,000",
- icon:FaWallet,
- color:"bg-purple-500",
- description:"Total Earnings"
-},
-
-
-{
- title:"Vehicle Availability",
- value:`${dashboard.activeVehicles}/${dashboard.totalVehicles}`,
- icon:FaCheckCircle,
- color:"bg-cyan-500",
- description:"Ready To Use"
-},
-
-
-{
- title:"Maintenance Due",
- value:String(dashboard.totalAlerts),
- icon:FaTools,
- color:"bg-red-500",
- description:"Needs Service"
-}
-
-];
-
+const KpiCard:React.FC<Props> = ({
+  title,
+  value,
+  icon:Icon,
+  color,
+  description,
+  trend
+}) => {
 
 
 return (
 
-<section className="w-full">
+<div
+className="
+bg-white
+rounded-2xl
+shadow-md
+border
+border-gray-100
+p-5
+hover:shadow-xl
+transition
+duration-300
+group
+"
+>
 
-<div className="
-grid
-grid-cols-1
-sm:grid-cols-2
-lg:grid-cols-3
-gap-6
-">
 
-{
-stats.map((item)=>(
+<div
+className="
+flex
+items-center
+justify-between
+"
+>
 
-<KpiCard
 
-key={item.title}
+<div>
 
-title={item.title}
 
-value={item.value}
+<p
+className="
+text-sm
+text-gray-500
+font-medium
+"
+>
 
-icon={item.icon}
+{title}
 
-color={item.color}
+</p>
 
-description={item.description}
 
-/>
 
-))
-}
+<h2
+className="
+text-3xl
+font-bold
+text-slate-800
+mt-2
+"
+>
+
+{value}
+
+</h2>
+
 
 </div>
 
-</section>
+
+
+
+<div
+className={`
+${color}
+w-14
+h-14
+rounded-xl
+flex
+items-center
+justify-center
+text-white
+text-2xl
+shadow-lg
+group-hover:scale-110
+transition
+`}
+>
+
+<Icon />
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<div
+className="
+mt-4
+flex
+items-center
+justify-between
+"
+>
+
+
+<p
+className="
+text-sm
+text-gray-500
+"
+>
+
+{description}
+
+</p>
+
+
+
+{
+trend && (
+
+<span
+className={`
+text-xs
+font-semibold
+px-3
+py-1
+rounded-full
+
+${
+trend.includes("-")
+?
+"bg-red-100 text-red-600"
+:
+trend==="Attention"
+?
+"bg-orange-100 text-orange-600"
+:
+"bg-green-100 text-green-600"
+}
+
+`}
+>
+
+{trend}
+
+</span>
+
+)
+
+}
+
+
+</div>
+
+
+
+</div>
+
 
 );
+
 
 };
 
 
-export default KpiGrid;
+export default KpiCard;
