@@ -13,19 +13,22 @@ import { vehicleUtilizationData } from "../../data/vehicleUtilizationData";
 const VehicleUtilizationChart = () => {
 
   return (
+    <div
+      className="
+        bg-white
+        rounded-xl
+        shadow-md
+        p-6
+      "
+    >
 
-    <div className="
-      bg-white
-      rounded-xl
-      shadow-md
-      p-6
-    ">
-
-      <h2 className="
-        text-xl
-        font-semibold
-        mb-6
-      ">
+      <h2
+        className="
+          text-xl
+          font-semibold
+          mb-6
+        "
+      >
         Vehicle Utilization
       </h2>
 
@@ -49,8 +52,8 @@ const VehicleUtilizationChart = () => {
 
             {
               vehicleUtilizationData.map(
-                (entry,index)=>(
-                  
+                (_, index) => (
+
                   <Cell
                     key={`cell-${index}`}
                   />
@@ -74,7 +77,6 @@ const VehicleUtilizationChart = () => {
 
 
     </div>
-
   );
 };
 
