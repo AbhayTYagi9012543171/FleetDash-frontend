@@ -4,422 +4,523 @@ import {
   FaCheckCircle,
   FaSyncAlt,
   FaUserCircle,
+  FaHeartbeat,
 } from "react-icons/fa";
 
 import { useAppSelector } from "../../redux/hooks";
 
+
 interface DashboardHeaderProps {
+
   lastUpdated?: string;
-  onRefresh?: () => void;
-  refreshing?: boolean;
+
+  onRefresh?:()=>void;
+
+  refreshing?:boolean;
+
 }
 
 
+
 const DashboardHeader = ({
-  lastUpdated,
-  onRefresh,
-  refreshing,
-}: DashboardHeaderProps) => {
+lastUpdated,
+onRefresh,
+refreshing
+}:DashboardHeaderProps)=>{
 
 
-  const user = useAppSelector(
-    (state) => state.auth.user
-  );
+const user =
+useAppSelector(
+(state)=>state.auth.user
+);
 
 
-  return (
 
-    <div className="
-      bg-white
-      rounded-2xl
-      shadow-sm
-      border
-      border-gray-100
-      p-5
-      sm:p-6
-      mb-6
-    ">
+const hour = new Date().getHours();
 
 
-      {/* TOP HEADER */}
+const greeting =
+hour < 12
+?
+"Good Morning"
+:
+hour < 18
+?
+"Good Afternoon"
+:
+"Good Evening";
 
-      <div className="
-        flex
-        flex-col
-        lg:flex-row
-        lg:items-center
-        lg:justify-between
-        gap-5
-      ">
 
 
-        {/* Welcome */}
+return (
 
-        <div>
+<div
+className="
+bg-white
+rounded-2xl
+shadow-sm
+border
+p-6
+mb-6
+"
+>
 
-          <h1 className="
-            text-2xl
-            sm:text-3xl
-            font-bold
-            text-slate-800
-          ">
 
-            Good Morning, {user?.username || "Abhay"} 👋
+{/* TOP SECTION */}
 
-          </h1>
+<div
+className="
+flex
+flex-col
+xl:flex-row
+xl:items-center
+xl:justify-between
+gap-6
+"
+>
 
 
-          <p className="
-            text-gray-500
-            mt-1
-          ">
+<div>
 
-            Welcome back to FleetDash Control Center
 
-          </p>
+<h1
+className="
+text-3xl
+font-bold
+text-slate-800
+"
+>
 
+{greeting}, {user?.username || "Abhay"} 👋
 
-        </div>
+</h1>
 
 
+<p
+className="
+text-gray-500
+mt-2
+"
+>
 
+Fleet Management Control Center
 
+</p>
 
-        {/* RIGHT AREA */}
 
-        <div className="
-          flex
-          items-center
-          gap-4
-          flex-wrap
-        ">
+</div>
 
 
-          {/* Sync */}
 
-          <div className="
-            bg-gray-50
-            rounded-xl
-            px-4
-            py-3
-          ">
 
 
-            <p className="
-              text-xs
-              text-gray-500
-            ">
 
-              Last Sync
+<div
+className="
+flex
+items-center
+gap-4
+flex-wrap
+"
+>
 
-            </p>
 
+{/* HEALTH */}
 
-            <p className="
-              font-semibold
-              text-gray-800
-            ">
+<div
+className="
+bg-green-50
+px-5
+py-3
+rounded-xl
+flex
+items-center
+gap-3
+"
+>
 
-              {lastUpdated || "5:02 PM"}
+<FaHeartbeat
+className="
+text-green-600
+text-2xl
+"
+/>
 
-            </p>
 
+<div>
 
-          </div>
+<p
+className="
+text-xs
+text-gray-500
+"
+>
+Fleet Health
+</p>
 
 
+<p
+className="
+font-bold
+text-green-600
+"
+>
+92% Excellent
+</p>
 
 
+</div>
 
-          {/* Refresh */}
 
-          <button
+</div>
 
-            onClick={onRefresh}
 
-            disabled={refreshing}
 
-            className="
-              flex
-              items-center
-              gap-2
-              bg-blue-600
-              hover:bg-blue-700
-              disabled:bg-blue-300
-              text-white
-              px-5
-              py-3
-              rounded-xl
-              font-semibold
-              transition
-            "
 
-          >
 
-            <FaSyncAlt
-              className={
-                refreshing
-                ?
-                "animate-spin"
-                :
-                ""
-              }
-            />
+{/* SYNC */}
 
-            {
-              refreshing
-              ?
-              "Refreshing"
-              :
-              "Refresh"
-            }
+<div
+className="
+bg-gray-50
+px-5
+py-3
+rounded-xl
+"
+>
 
 
-          </button>
+<p
+className="
+text-xs
+text-gray-500
+"
+>
 
+Last Sync
 
+</p>
 
 
+<p
+className="
+font-bold
+"
+>
 
-          {/* User */}
+{lastUpdated || "--"}
 
-          <div className="
-            flex
-            items-center
-            gap-3
-            bg-gray-50
-            rounded-xl
-            px-4
-            py-3
-          ">
+</p>
 
 
-            <FaUserCircle
-              className="
-                text-3xl
-                text-gray-500
-              "
-            />
+</div>
 
 
-            <div>
 
 
-              <p className="
-                font-bold
-                text-gray-800
-              ">
 
-                {user?.username || "Abhay"}
+<button
 
-              </p>
+onClick={onRefresh}
 
+disabled={refreshing}
 
-              <p className="
-                text-sm
-                text-gray-500
-              ">
+className="
+bg-blue-600
+text-white
+px-5
+py-3
+rounded-xl
+flex
+items-center
+gap-2
+font-semibold
+hover:bg-blue-700
+transition
+"
 
-                {user?.role || "Administrator"}
+>
 
-              </p>
 
+<FaSyncAlt
 
-            </div>
+className={
+refreshing
+?
+"animate-spin"
+:
+""
+}
 
+/>
 
-          </div>
 
+{
+refreshing
+?
+"Refreshing"
+:
+"Refresh"
+}
 
-        </div>
 
+</button>
 
-      </div>
 
 
 
 
 
-      {/* FLEET OVERVIEW */}
+{/* USER */}
 
+<div
+className="
+flex
+items-center
+gap-3
+bg-gray-50
+px-4
+py-3
+rounded-xl
+"
+>
 
-      <div className="
-        mt-6
-        grid
-        grid-cols-1
-        sm:grid-cols-3
-        gap-4
-      ">
 
+<FaUserCircle
+className="
+text-3xl
+text-gray-500
+"
+/>
 
-        {/* Total Vehicles */}
 
-        <div className="
-          bg-blue-50
-          rounded-xl
-          p-4
-          flex
-          items-center
-          gap-4
-        ">
+<div>
 
+<p
+className="
+font-bold
+"
+>
 
-          <div className="
-            bg-blue-600
-            text-white
-            p-3
-            rounded-full
-          ">
+{user?.username || "Abhay"}
 
-            <FaTruck />
+</p>
 
-          </div>
 
+<p
+className="
+text-sm
+text-gray-500
+"
+>
 
-          <div>
+{user?.role || "Administrator"}
 
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
+</p>
 
-              124
 
-            </h3>
+</div>
 
 
-            <p className="
-              text-gray-600
-            ">
+</div>
 
-              Vehicles
 
-            </p>
 
+</div>
 
-          </div>
 
+</div>
 
-        </div>
 
 
 
 
 
 
-        {/* Active Vehicles */}
+{/* FLEET OVERVIEW */}
 
-        <div className="
-          bg-green-50
-          rounded-xl
-          p-4
-          flex
-          items-center
-          gap-4
-        ">
 
+<div
+className="
+grid
+grid-cols-1
+md:grid-cols-3
+gap-5
+mt-8
+"
+>
 
-          <div className="
-            bg-green-600
-            text-white
-            p-3
-            rounded-full
-          ">
 
-            <FaCheckCircle />
+<div
+className="
+bg-blue-50
+rounded-xl
+p-5
+flex
+items-center
+gap-4
+"
+>
 
-          </div>
+<div
+className="
+bg-blue-600
+text-white
+p-4
+rounded-full
+"
+>
 
+<FaTruck/>
 
-          <div>
+</div>
 
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
 
-              98
+<div>
 
-            </h3>
+<h2
+className="
+text-3xl
+font-bold
+"
+>
 
+124
 
-            <p className="
-              text-gray-600
-            ">
+</h2>
 
-              Active
 
-            </p>
+<p>
+Total Vehicles
+</p>
 
+</div>
 
-          </div>
 
+</div>
 
-        </div>
 
 
 
 
 
+<div
+className="
+bg-green-50
+rounded-xl
+p-5
+flex
+items-center
+gap-4
+"
+>
 
-        {/* Maintenance */}
 
-        <div className="
-          bg-orange-50
-          rounded-xl
-          p-4
-          flex
-          items-center
-          gap-4
-        ">
+<div
+className="
+bg-green-600
+text-white
+p-4
+rounded-full
+"
+>
 
+<FaCheckCircle/>
 
-          <div className="
-            bg-orange-500
-            text-white
-            p-3
-            rounded-full
-          ">
+</div>
 
-            <FaTools />
 
-          </div>
+<div>
 
+<h2
+className="
+text-3xl
+font-bold
+"
+>
 
-          <div>
+98
 
-            <h3 className="
-              text-2xl
-              font-bold
-            ">
+</h2>
 
-              12
 
-            </h3>
+<p>
+Active Vehicles
+</p>
 
 
-            <p className="
-              text-gray-600
-            ">
+</div>
 
-              Maintenance
 
-            </p>
+</div>
 
 
-          </div>
 
 
-        </div>
 
 
+<div
+className="
+bg-orange-50
+rounded-xl
+p-5
+flex
+items-center
+gap-4
+"
+>
 
-      </div>
 
+<div
+className="
+bg-orange-500
+text-white
+p-4
+rounded-full
+"
+>
 
-    </div>
+<FaTools/>
 
-  );
+</div>
+
+
+<div>
+
+<h2
+className="
+text-3xl
+font-bold
+"
+>
+
+12
+
+</h2>
+
+
+<p>
+Maintenance Due
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+);
+
 
 };
 
