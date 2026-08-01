@@ -8,8 +8,9 @@ import { store } from "./store/store";
 
 import { SidebarProvider } from "./context/SidebarContext";
 
-import "leaflet/dist/leaflet.css"; // ✅ Add this line
+import { Toaster } from "react-hot-toast";
 
+import "leaflet/dist/leaflet.css";
 import "./index.css";
 
 ReactDOM.createRoot(
@@ -18,7 +19,17 @@ ReactDOM.createRoot(
   <React.StrictMode>
     <Provider store={store}>
       <SidebarProvider>
+
         <App />
+
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          toastOptions={{
+            duration: 3000,
+          }}
+        />
+
       </SidebarProvider>
     </Provider>
   </React.StrictMode>
