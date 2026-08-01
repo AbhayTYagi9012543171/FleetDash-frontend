@@ -5,10 +5,32 @@ import {
   FaClock,
 } from "react-icons/fa";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import { useAppSelector } from "../../redux/hooks";
 
 
-const DashboardHeader = () => {
+interface DashboardHeaderProps {
+
+  lastUpdated:string;
+
+  onRefresh:()=>void;
+
+  refreshing:boolean;
+
+}
+
+
+
+const DashboardHeader = ({
+  lastUpdated,
+  onRefresh,
+  refreshing
+
+}:DashboardHeaderProps)=>{
 
 
 const user =
@@ -18,7 +40,35 @@ useAppSelector(
 
 
 
-const now = new Date();
+const [
+  now,
+  setNow
+]=useState(
+new Date()
+);
+
+
+
+useEffect(()=>{
+
+
+const timer =
+setInterval(()=>{
+
+setNow(
+new Date()
+);
+
+},1000);
+
+
+
+return ()=>clearInterval(timer);
+
+
+},[]);
+
+
 
 
 
@@ -32,19 +82,21 @@ overflow-hidden
 ">
 
 
+
+{/* TOP HEADER */}
+
 <div className="
 flex
 flex-col
-sm:flex-row
-items-start
-sm:items-center
-justify-between
-gap-4
+lg:flex-row
+lg:items-center
+lg:justify-between
+gap-5
 ">
 
 
-<div>
 
+<div>
 
 <h1 className="
 text-2xl
@@ -65,7 +117,6 @@ text-sm
 sm:text-base
 text-gray-500
 mt-1
-break-words
 ">
 
 Welcome back, {user?.username || "User"} 👋
@@ -79,28 +130,129 @@ Welcome back, {user?.username || "User"} 👋
 
 
 
+{/* RIGHT SIDE */}
+
+<div className="
+flex
+items-center
+gap-3
+flex-wrap
+justify-end
+">
+
+
+
+
+
+{/* Last Updated */}
+
+<div className="
+bg-white
+shadow
+rounded-xl
+px-4
+py-3
+">
+
+
+<p className="
+text-xs
+text-gray-500
+">
+
+Last Updated
+
+</p>
+
+
+<p className="
+font-semibold
+text-gray-800
+">
+
+{
+lastUpdated || 
+now.toLocaleTimeString()
+}
+
+</p>
+
+
+</div>
+
+
+
+
+
+{/* Refresh */}
+
+<button
+
+onClick={onRefresh}
+
+disabled={refreshing}
+
+className="
+bg-blue-600
+hover:bg-blue-700
+disabled:bg-blue-300
+text-white
+px-5
+py-3
+rounded-xl
+font-semibold
+transition
+"
+
+>
+
+{
+
+refreshing
+?
+"Refreshing..."
+:
+"Refresh"
+
+}
+
+</button>
+
+
+
+
+
+
+{/* User */}
+
 <div className="
 bg-white
 shadow
 rounded-xl
 px-5
 py-3
-w-full
-sm:w-auto
-max-w-full
 ">
 
 
-<p className="font-bold">
+<p className="
+font-bold
+">
 
-{user?.username || "Guest"}
+{
+user?.username || "Abhay"
+}
 
 </p>
 
 
-<p className="text-sm text-gray-500">
+<p className="
+text-sm
+text-gray-500
+">
 
-{user?.role || "User"}
+{
+user?.role || "Admin"
+}
 
 </p>
 
@@ -109,6 +261,10 @@ max-w-full
 
 
 
+
+</div>
+
+
 </div>
 
 
@@ -116,6 +272,10 @@ max-w-full
 
 
 
+
+
+
+{/* SUMMARY CARDS */}
 
 <div className="
 grid
@@ -125,38 +285,35 @@ xl:grid-cols-4
 gap-4
 sm:gap-6
 mt-6
-sm:mt-8
 ">
 
 
+
+
+
+{/* Vehicles */}
 
 <div className="
 bg-white
 rounded-xl
 shadow
-p-4
-sm:p-5
+p-5
 flex
 items-center
-gap-3
-sm:gap-4
-w-full
+gap-4
 ">
 
 
 <div className="
 bg-green-100
-p-3
-sm:p-4
+p-4
 rounded-full
-shrink-0
 ">
 
 
 <FaTruck className="
 text-green-600
-text-lg
-sm:text-xl
+text-xl
 "/>
 
 
@@ -165,12 +322,9 @@ sm:text-xl
 
 <div>
 
-
 <h3 className="
 font-bold
-text-xl
-sm:text-2xl
-truncate
+text-2xl
 ">
 
 128
@@ -178,7 +332,9 @@ truncate
 </h3>
 
 
-<p className="text-gray-500">
+<p className="
+text-gray-500
+">
 
 Online Vehicles
 
@@ -196,33 +352,29 @@ Online Vehicles
 
 
 
+{/* Location */}
+
 <div className="
 bg-white
 rounded-xl
 shadow
-p-4
-sm:p-5
+p-5
 flex
 items-center
-gap-3
-sm:gap-4
-w-full
+gap-4
 ">
 
 
 <div className="
 bg-blue-100
-p-3
-sm:p-4
+p-4
 rounded-full
-shrink-0
 ">
 
 <FaMapMarkerAlt
 className="
 text-blue-600
-text-lg
-sm:text-xl
+text-xl
 "
 />
 
@@ -232,18 +384,18 @@ sm:text-xl
 
 <div>
 
-
 <h3 className="
 font-bold
-text-sm
-sm:text-base
-truncate
 ">
+
 New Delhi
+
 </h3>
 
 
-<p className="text-gray-500">
+<p className="
+text-gray-500
+">
 
 Current Location
 
@@ -261,33 +413,30 @@ Current Location
 
 
 
+{/* Date */}
+
 <div className="
 bg-white
 rounded-xl
 shadow
-p-4
-sm:p-5
+p-5
 flex
 items-center
-gap-3
-sm:gap-4
-w-full
+gap-4
 ">
 
 
 <div className="
 bg-yellow-100
-p-3
-sm:p-4
+p-4
 rounded-full
-shrink-0
 ">
+
 
 <FaCalendarAlt
 className="
 text-yellow-600
-text-lg
-sm:text-xl
+text-xl
 "
 />
 
@@ -297,15 +446,20 @@ sm:text-xl
 
 <div>
 
+<h3 className="
+font-bold
+">
 
-<h3 className="font-bold">
-
-{now.toLocaleDateString()}
+{
+now.toLocaleDateString()
+}
 
 </h3>
 
 
-<p className="text-gray-500">
+<p className="
+text-gray-500
+">
 
 Today's Date
 
@@ -323,33 +477,30 @@ Today's Date
 
 
 
+{/* Time */}
+
 <div className="
 bg-white
 rounded-xl
 shadow
-p-4
-sm:p-5
+p-5
 flex
 items-center
-gap-3
-sm:gap-4
-w-full
+gap-4
 ">
 
 
 <div className="
 bg-red-100
-p-3
-sm:p-4
+p-4
 rounded-full
-shrink-0
 ">
+
 
 <FaClock
 className="
 text-red-600
-text-lg
-sm:text-xl
+text-xl
 "
 />
 
@@ -359,22 +510,20 @@ sm:text-xl
 
 <div>
 
-
-<h3
-className="
+<h3 className="
 font-bold
-text-sm
-sm:text-base
-truncate
-"
->
+">
 
-{now.toLocaleTimeString()}
+{
+now.toLocaleTimeString()
+}
 
 </h3>
 
 
-<p className="text-gray-500">
+<p className="
+text-gray-500
+">
 
 Current Time
 
@@ -390,6 +539,7 @@ Current Time
 
 
 
+
 </div>
 
 
@@ -398,7 +548,9 @@ Current Time
 
 );
 
+
 };
+
 
 
 export default DashboardHeader;

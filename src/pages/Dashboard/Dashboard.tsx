@@ -9,246 +9,197 @@ import {
 import DashboardSkeleton 
 from "../../components/Common/DashboardSkeleton";
 
-
 import DriverPerformance 
 from "../../components/dashboard/DriverPerformance";
-
 
 import VehicleUtilizationChart 
 from "../../components/dashboard/VehicleUtilizationChart";
 
-
 import RecentTrips 
 from "../../components/Trips/RecentTrips";
-
 
 import RevenueChart 
 from "../../components/dashboard/RevenueChart";
 
-
 import FuelTrendChart 
 from "../../components/dashboard/FuelTrendChart";
-
 
 import useDashboard 
 from "../../hooks/useDashboard";
 
-
 import KpiGrid 
 from "../../components/dashboard/KpiGrid";
-
 
 import FleetSummary 
 from "../../components/Cards/FleetSummary";
 
-
 import DashboardHeader 
 from "../../components/Common/DashboardHeader";
-
 
 import VehicleTable 
 from "../../components/Tables/VehicleTable";
 
-
 import RecentAlerts 
 from "../../components/Alerts/RecentAlerts";
 
-
 import DriverStatus 
 from "../../components/Drivers/DriverStatus";
-
 
 import { api } 
 from "../../services/api";
 
 
-
 const LineChart = lazy(
-  () => import("../../components/Charts/LineChart")
+()=> import("../../components/Charts/LineChart")
 );
 
 
 const BarChart = lazy(
-  () => import("../../components/Charts/BarChart")
+()=> import("../../components/Charts/BarChart")
 );
 
 
 const DoughnutChart = lazy(
-  () => import("../../components/Charts/DoughnutChart")
+()=> import("../../components/Charts/DoughnutChart")
 );
 
 
 const LiveMap = lazy(
-  () => import("../../components/Map/LiveMap")
+()=> import("../../components/Map/LiveMap")
 );
-
-
 
 
 
 interface Vehicle {
 
+_id?:string;
 
-  _id?: string;
+id?:number;
 
+vehicleNumber:string;
 
-  id?: number;
+driver:string;
 
+speed:number;
 
-  vehicleNumber: string;
+fuel:number;
 
+status:
+"Active" |
+"Idle" |
+"Offline";
 
-  driver: string;
+latitude:number;
 
-
-  speed: number;
-
-
-  fuel: number;
-
-
-  status:
-  | "Active"
-  | "Idle"
-  | "Offline";
-
-
-  latitude: number;
-
-
-  longitude: number;
-
+longitude:number;
 
 }
 
 
 
-
-
-const Dashboard = () => {
-
+const Dashboard =()=>{
 
 
 const {
-  dashboard,
-  loading,
-  error,
-} = useDashboard();
-
-
-
-
-
-const [
-  vehicles,
-  setVehicles
-] = useState<Vehicle[]>([]);
-
+dashboard,
+loading,
+error
+}=useDashboard();
 
 
 
 const [
-  refreshing,
-  setRefreshing
-] = useState(false);
-
-
+vehicles,
+setVehicles
+]=useState<Vehicle[]>([]);
 
 
 
 const [
-  lastUpdated,
-  setLastUpdated
-] = useState<string>("");
+refreshing,
+setRefreshing
+]=useState(false);
+
+
+
+const [
+lastUpdated,
+setLastUpdated
+]=useState("");
 
 
 
 
 
-
-const fetchVehicles = async () => {
-
+const fetchVehicles = async()=>{
 
 
-  try {
+try{
 
 
-    setRefreshing(true);
+setRefreshing(true);
 
 
-
-    const response =
-      await api.get("/vehicles");
+const response =
+await api.get("/vehicles");
 
 
 
-    const data =
-      response.data;
+const data=response.data;
 
 
 
-    if(
-      Array.isArray(data.vehicles)
-    ){
-
-      setVehicles(
-        data.vehicles
-      );
-
-    }
+if(Array.isArray(data.vehicles)){
 
 
-    else if(
-      Array.isArray(data)
-    ){
-
-      setVehicles(
-        data
-      );
-
-    }
+setVehicles(data.vehicles);
 
 
-    else {
+}
+else if(Array.isArray(data)){
 
-      setVehicles([]);
 
-    }
+setVehicles(data);
+
+
+}
+else{
+
+
+setVehicles([]);
+
+}
 
 
 
-    setLastUpdated(
-      new Date()
-      .toLocaleTimeString()
-    );
+setLastUpdated(
+new Date()
+.toLocaleTimeString()
+);
 
 
 
-  }
+}
+catch(err){
 
 
-  catch(err){
+console.error(
+"Vehicle Error",
+err
+);
 
 
-    console.error(
-      "Vehicle Fetch Error:",
-      err
-    );
+setVehicles([]);
 
 
-    setVehicles([]);
+}
+finally{
 
 
-  }
+setRefreshing(false);
 
 
-  finally {
-
-
-    setRefreshing(false);
-
-
-  }
+}
 
 
 };
@@ -260,27 +211,16 @@ const fetchVehicles = async () => {
 useEffect(()=>{
 
 
-  fetchVehicles();
+fetchVehicles();
 
 
-
-  const interval =
-    setInterval(
-      fetchVehicles,
-      30000
-    );
+const timer=setInterval(
+fetchVehicles,
+30000
+);
 
 
-
-  return ()=>{
-
-
-    clearInterval(
-      interval
-    );
-
-
-  };
+return ()=>clearInterval(timer);
 
 
 },[]);
@@ -289,13 +229,10 @@ useEffect(()=>{
 
 
 
+
 if(loading){
 
-  return (
-
-    <DashboardSkeleton />
-
-  );
+return <DashboardSkeleton/>;
 
 }
 
@@ -304,101 +241,71 @@ if(loading){
 
 if(error){
 
- return (
+return (
 
-  <div
-  className="
-  min-h-screen
-  flex
-  items-center
-  justify-center
-  bg-gray-100
-  "
-  >
+<div className="
+min-h-screen
+flex
+items-center
+justify-center
+bg-gray-100
+">
 
-    <div
-    className="
-    bg-white
-    p-8
-    rounded-xl
-    shadow
-    text-center
-    "
-    >
+<h2 className="
+text-red-600
+text-xl
+font-bold
+">
 
-      <h2
-      className="
-      text-red-600
-      text-xl
-      font-bold
-      "
-      >
+{error}
 
-        Dashboard Error
-
-      </h2>
+</h2>
 
 
-      <p
-      className="
-      text-gray-600
-      mt-2
-      "
-      >
+</div>
 
-        {error}
-
-      </p>
-
-
-    </div>
-
-
-  </div>
-
- );
-
+);
 
 }
+
 
 
 
 
 if(!dashboard){
 
- return (
-
-  <div
-  className="
-  min-h-screen
-  flex
-  items-center
-  justify-center
-  "
-  >
-
-    <h2
-    className="
-    text-red-500
-    text-xl
-    font-semibold
-    "
-    >
-
-      No Dashboard Data Found
-
-    </h2>
-
-
-  </div>
-
- );
-
-}
 return (
 
-<div
-className="
+<div className="
+min-h-screen
+flex
+items-center
+justify-center
+">
+
+<h2 className="
+text-red-500
+text-xl
+font-bold
+">
+
+No Dashboard Data Found
+
+</h2>
+
+
+</div>
+
+);
+
+}
+
+
+
+
+return (
+
+<div className="
 min-h-screen
 bg-gray-100
 p-3
@@ -406,114 +313,20 @@ sm:p-4
 md:p-6
 space-y-6
 overflow-x-hidden
-"
->
+">
 
 
-{/* Header */}
+{/* HEADER */}
 
-<div
-className="
-flex
-flex-col
-md:flex-row
-md:items-center
-md:justify-between
-gap-4
-"
->
+<DashboardHeader
 
+lastUpdated={lastUpdated}
 
-<DashboardHeader />
+onRefresh={fetchVehicles}
 
+refreshing={refreshing}
 
-
-<div
-className="
-bg-white
-rounded-xl
-shadow
-px-4
-py-3
-flex
-items-center
-gap-4
-"
->
-
-
-<div>
-
-<p
-className="
-text-sm
-text-gray-500
-"
->
-
-Last Updated
-
-</p>
-
-
-<p
-className="
-font-semibold
-text-gray-800
-"
->
-
-{
-lastUpdated || "Loading..."
-}
-
-</p>
-
-
-</div>
-
-
-
-<button
-
-onClick={fetchVehicles}
-
-disabled={refreshing}
-
-className="
-bg-blue-600
-hover:bg-blue-700
-disabled:bg-blue-300
-text-white
-px-4
-py-2
-rounded-lg
-font-medium
-transition
-"
-
->
-
-{
-
-refreshing
-?
-"Refreshing..."
-:
-"Refresh"
-
-}
-
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
+/>
 
 
 
@@ -522,16 +335,18 @@ refreshing
 {/* KPI */}
 
 <KpiGrid
- dashboard={dashboard}
+
+dashboard={dashboard}
+
 />
 
 
 
 
-{/* Fleet Summary */}
 
-<FleetSummary />
+{/* Fleet */}
 
+<FleetSummary/>
 
 
 
@@ -539,20 +354,18 @@ refreshing
 
 {/* Analytics */}
 
-<div
-className="
+<div className="
 grid
 grid-cols-1
 xl:grid-cols-2
 gap-6
-"
->
+">
 
 
-<RevenueChart />
+<RevenueChart/>
 
 
-<FuelTrendChart />
+<FuelTrendChart/>
 
 
 <VehicleUtilizationChart
@@ -562,14 +375,10 @@ vehicles={vehicles}
 />
 
 
-<DriverPerformance />
-
+<DriverPerformance/>
 
 
 </div>
-
-
-
 
 
 
@@ -577,33 +386,28 @@ vehicles={vehicles}
 
 {/* Charts */}
 
-<div
-className="
+
+<div className="
 grid
 grid-cols-1
 md:grid-cols-2
 gap-6
-"
->
+">
 
 
-
-<div
-className="
+<div className="
 bg-white
 rounded-xl
 shadow-md
 p-4
-"
->
+">
 
-<h2
-className="
+
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Vehicle Activity
 
@@ -611,16 +415,14 @@ Vehicle Activity
 
 
 <Suspense
-
 fallback={
-<p className="text-center">
+<p>
 Loading Chart...
 </p>
 }
-
 >
 
-<LineChart />
+<LineChart/>
 
 </Suspense>
 
@@ -631,24 +433,19 @@ Loading Chart...
 
 
 
-
-
-<div
-className="
+<div className="
 bg-white
 rounded-xl
 shadow-md
 p-4
-"
->
+">
 
-<h2
-className="
+
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Monthly Trips
 
@@ -656,16 +453,14 @@ Monthly Trips
 
 
 <Suspense
-
 fallback={
-<p className="text-center">
+<p>
 Loading Chart...
 </p>
 }
-
 >
 
-<BarChart />
+<BarChart/>
 
 </Suspense>
 
@@ -673,7 +468,6 @@ Loading Chart...
 </div>
 
 
-
 </div>
 
 
@@ -681,43 +475,30 @@ Loading Chart...
 
 
 
+{/* MAP */}
 
-
-
-
-{/* Live Map + Alerts */}
-
-
-<div
-className="
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-3
 gap-6
-"
->
+">
 
 
-
-<div
-className="
+<div className="
 lg:col-span-2
 bg-white
 rounded-xl
 shadow-md
 p-4
-overflow-hidden
-"
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Live Vehicle Tracking
 
@@ -726,13 +507,11 @@ Live Vehicle Tracking
 
 
 <Suspense
-
 fallback={
-<p className="text-center">
+<p>
 Loading Map...
 </p>
 }
-
 >
 
 
@@ -746,57 +525,44 @@ vehicles={vehicles}
 </Suspense>
 
 
+</div>
+
+
+
+<RecentAlerts/>
+
 
 </div>
 
 
 
 
-<RecentAlerts />
 
 
-
-</div>
-
+{/* STATUS */}
 
 
-
-
-
-
-
-
-{/* Status Section */}
-
-
-<div
-className="
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-2
 gap-6
-"
->
+">
 
 
-
-<div
-className="
+<div className="
 bg-white
 rounded-xl
 shadow-md
 p-4
-"
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Vehicle Status
 
@@ -805,17 +571,14 @@ Vehicle Status
 
 
 <Suspense
-
 fallback={
-<p className="text-center">
-Loading Chart...
+<p>
+Loading...
 </p>
 }
-
 >
 
-<DoughnutChart />
-
+<DoughnutChart/>
 
 </Suspense>
 
@@ -825,9 +588,7 @@ Loading Chart...
 
 
 
-
-<DriverStatus />
-
+<DriverStatus/>
 
 
 </div>
@@ -838,22 +599,17 @@ Loading Chart...
 
 
 
+<RecentTrips/>
 
 
-{/* Recent Data */}
-
-
-<RecentTrips />
-
-
-
-<VehicleTable />
+<VehicleTable/>
 
 
 
 
 
 </div>
+
 
 );
 
