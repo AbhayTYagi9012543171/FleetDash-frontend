@@ -1,60 +1,38 @@
 import {
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 
 import { useSelector } from "react-redux";
-
-import type {
-  RootState
-} from "../store/store";
-
-
+import type { RootState } from "../store/store";
 
 const ProtectedRoute = () => {
+  const location = useLocation();
 
-
-
-  const isLoggedIn = useSelector(
-    (state: RootState) =>
-      state.auth.isLoggedIn
+  const { isLoggedIn, token } = useSelector(
+    (state: RootState) => state.auth
   );
 
+  const localToken = localStorage.getItem("token");
 
+  const authToken = token || localToken;
 
-  const token =
-    localStorage.getItem("token");
+  const isAuthenticated =
+    !!authToken &&
+    authToken.trim().length > 0;
 
-
-
-
-
-  // User is allowed if Redux OR localStorage has token
-
-  if (!isLoggedIn && !token) {
-
-
+  if (!isLoggedIn && !isAuthenticated) {
     return (
-
       <Navigate
         to="/login"
         replace
+        state={{ from: location }}
       />
-
     );
-
-
   }
 
-
-
-
-
   return <Outlet />;
-
-
 };
-
-
 
 export default ProtectedRoute;

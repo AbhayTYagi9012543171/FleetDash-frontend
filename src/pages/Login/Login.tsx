@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState } from "react";
 
 import {
@@ -20,7 +21,8 @@ import {
 
 
 import {
-  useNavigate
+  useNavigate,
+  useLocation,
 } from "react-router-dom";
 
 
@@ -40,6 +42,11 @@ const Login = () => {
 
   const navigate =
     useNavigate();
+  const location = useLocation();
+
+  const from =
+    (location.state as { from?: { pathname: string } })?.from
+      ?.pathname || "/dashboard";
 
 
 
@@ -98,14 +105,19 @@ const Login = () => {
 
 
 
-      if (
-        loginUser.fulfilled.match(result)
-      ) {
+      if (loginUser.fulfilled.match(result)) {
 
-        navigate("/dashboard");
+        toast.success("Login Successful 🎉");
+
+        navigate(from, {
+          replace: true,
+        });
+
+      } else {
+
+        toast.error("Invalid Email or Password");
 
       }
-
 
     };
 
