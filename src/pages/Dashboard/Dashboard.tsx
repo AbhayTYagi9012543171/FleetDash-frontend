@@ -27,8 +27,7 @@ from "../../components/dashboard/FuelTrendChart";
 import useDashboard 
 from "../../hooks/useDashboard";
 
-import KpiGrid 
-from "../../components/dashboard/KpiGrid";
+import KpiGrid from "../../components/dashboard/KpiGrid";
 
 import FleetSummary 
 from "../../components/Cards/FleetSummary";
@@ -319,13 +318,16 @@ overflow-x-hidden
 {/* HEADER */}
 
 <DashboardHeader
-  lastUpdated={lastUpdated}
-  onRefresh={fetchVehicles}
-  refreshing={refreshing}
+
+dashboard={dashboard}
+
+lastUpdated={lastUpdated}
+
+onRefresh={fetchVehicles}
+
+refreshing={refreshing}
+
 />
-
-
-
 
 
 {/* KPI */}

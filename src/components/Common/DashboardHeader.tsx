@@ -5,38 +5,45 @@ import {
   FaSyncAlt,
   FaUserCircle,
   FaHeartbeat,
+  FaGasPump,
 } from "react-icons/fa";
 
 import { useAppSelector } from "../../redux/hooks";
 
+import type { DashboardData } from "../../hooks/useDashboard";
+
 
 interface DashboardHeaderProps {
 
+  dashboard: DashboardData;
+
   lastUpdated?: string;
 
-  onRefresh?:()=>void;
+  onRefresh?: () => void;
 
-  refreshing?:boolean;
+  refreshing?: boolean;
 
 }
 
 
 
 const DashboardHeader = ({
-lastUpdated,
-onRefresh,
-refreshing
-}:DashboardHeaderProps)=>{
+  dashboard,
+  lastUpdated,
+  onRefresh,
+  refreshing
+}: DashboardHeaderProps) => {
 
 
-const user =
-useAppSelector(
+
+const user = useAppSelector(
 (state)=>state.auth.user
 );
 
 
 
 const hour = new Date().getHours();
+
 
 
 const greeting =
@@ -52,6 +59,8 @@ hour < 18
 
 
 
+
+
 return (
 
 <div
@@ -60,13 +69,14 @@ bg-white
 rounded-2xl
 shadow-sm
 border
+border-gray-100
 p-6
 mb-6
 "
 >
 
 
-{/* TOP SECTION */}
+{/* TOP HEADER */}
 
 <div
 className="
@@ -108,8 +118,20 @@ Fleet Management Control Center
 </p>
 
 
-</div>
+<p
+className="
+text-sm
+text-gray-400
+mt-1
+"
+>
 
+Real-time fleet monitoring & operations dashboard
+
+</p>
+
+
+</div>
 
 
 
@@ -125,7 +147,8 @@ flex-wrap
 >
 
 
-{/* HEALTH */}
+
+{/* Fleet Health */}
 
 <div
 className="
@@ -139,6 +162,7 @@ gap-3
 "
 >
 
+
 <FaHeartbeat
 className="
 text-green-600
@@ -149,23 +173,23 @@ text-2xl
 
 <div>
 
-<p
-className="
+<p className="
 text-xs
 text-gray-500
-"
->
+">
+
 Fleet Health
+
 </p>
 
 
-<p
-className="
+<p className="
 font-bold
 text-green-600
-"
->
+">
+
 92% Excellent
+
 </p>
 
 
@@ -178,7 +202,64 @@ text-green-600
 
 
 
-{/* SYNC */}
+
+{/* Fuel */}
+
+<div
+className="
+bg-purple-50
+px-5
+py-3
+rounded-xl
+flex
+items-center
+gap-3
+"
+>
+
+
+<FaGasPump
+className="
+text-purple-600
+text-2xl
+"
+/>
+
+
+<div>
+
+<p className="
+text-xs
+text-gray-500
+">
+
+Fuel Today
+
+</p>
+
+
+<p className="
+font-bold
+text-purple-600
+">
+
+640 L
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+{/* Sync */}
 
 <div
 className="
@@ -190,21 +271,19 @@ rounded-xl
 >
 
 
-<p
-className="
+<p className="
 text-xs
 text-gray-500
-"
->
+">
 
 Last Sync
 
 </p>
 
 
-<p
-className="
+<p className="
 font-bold
+text-slate-800
 "
 >
 
@@ -219,6 +298,10 @@ font-bold
 
 
 
+
+
+{/* Refresh Button */}
+
 <button
 
 onClick={onRefresh}
@@ -227,6 +310,7 @@ disabled={refreshing}
 
 className="
 bg-blue-600
+hover:bg-blue-700
 text-white
 px-5
 py-3
@@ -235,7 +319,6 @@ flex
 items-center
 gap-2
 font-semibold
-hover:bg-blue-700
 transition
 "
 
@@ -271,6 +354,7 @@ refreshing
 
 
 
+
 {/* USER */}
 
 <div
@@ -287,32 +371,32 @@ rounded-xl
 
 
 <FaUserCircle
+
 className="
 text-3xl
 text-gray-500
 "
+
 />
 
 
 <div>
 
-<p
-className="
+
+<p className="
 font-bold
-"
->
+text-slate-800
+">
 
 {user?.username || "Abhay"}
 
 </p>
 
 
-<p
-className="
+<p className="
 text-sm
 text-gray-500
-"
->
+">
 
 {user?.role || "Administrator"}
 
@@ -326,30 +410,38 @@ text-gray-500
 
 
 
-</div>
 
 
 </div>
 
 
+</div>
 
 
 
 
 
-{/* FLEET OVERVIEW */}
+
+
+{/* FLEET OVERVIEW CARDS */}
 
 
 <div
 className="
 grid
 grid-cols-1
-md:grid-cols-3
+sm:grid-cols-2
+xl:grid-cols-4
 gap-5
 mt-8
 "
 >
 
+
+
+
+
+{/* Total Vehicles */}
 
 <div
 className="
@@ -361,6 +453,7 @@ items-center
 gap-4
 "
 >
+
 
 <div
 className="
@@ -382,27 +475,36 @@ rounded-full
 className="
 text-3xl
 font-bold
+text-slate-800
 "
 >
 
-124
+{dashboard.totalVehicles || 0}
 
 </h2>
 
 
-<p>
+<p className="
+text-gray-600
+">
+
 Total Vehicles
+
 </p>
 
-</div>
-
 
 </div>
 
 
+</div>
 
 
 
+
+
+
+
+{/* Active Vehicles */}
 
 <div
 className="
@@ -436,16 +538,21 @@ rounded-full
 className="
 text-3xl
 font-bold
+text-slate-800
 "
 >
 
-98
+{dashboard.activeVehicles || 0}
 
 </h2>
 
 
-<p>
+<p className="
+text-gray-600
+">
+
 Active Vehicles
+
 </p>
 
 
@@ -458,6 +565,9 @@ Active Vehicles
 
 
 
+
+
+{/* Maintenance */}
 
 <div
 className="
@@ -491,16 +601,21 @@ rounded-full
 className="
 text-3xl
 font-bold
+text-slate-800
 "
 >
 
-12
+{dashboard.totalAlerts || 0}
 
 </h2>
 
 
-<p>
+<p className="
+text-gray-600
+">
+
 Maintenance Due
+
 </p>
 
 
@@ -511,8 +626,75 @@ Maintenance Due
 
 
 
+
+
+
+
+
+{/* Drivers */}
+
+<div
+className="
+bg-cyan-50
+rounded-xl
+p-5
+flex
+items-center
+gap-4
+"
+>
+
+
+<div
+className="
+bg-cyan-600
+text-white
+p-4
+rounded-full
+"
+>
+
+<FaUserCircle/>
+
 </div>
 
+
+<div>
+
+
+<h2
+className="
+text-3xl
+font-bold
+text-slate-800
+"
+>
+
+{dashboard.totalDrivers || 0}
+
+</h2>
+
+
+<p className="
+text-gray-600
+">
+
+Active Drivers
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+</div>
 
 
 
