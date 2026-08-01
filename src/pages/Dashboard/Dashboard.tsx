@@ -5,7 +5,7 @@ import {
 } from "react";
 
 
-
+import useDashboard from "../../hooks/useDashboard";
 import KpiGrid from "../../components/dashboard/KpiGrid";
 
 import FleetSummary from "../../components/Cards/FleetSummary";
@@ -24,29 +24,7 @@ import LiveMap from "../../components/Map/LiveMap";
 import RecentAlerts from "../../components/Alerts/RecentAlerts";
 import DriverStatus from "../../components/Drivers/DriverStatus";
 import RecentTrips from "../../components/Trips/RecentTrips";
-
-
-
-
-
 import { api } from "../../services/api";
-
-
-
-interface DashboardData {
-
-  totalVehicles:number;
-
-  activeVehicles:number;
-
-  totalDrivers:number;
-
-  totalAlerts:number;
-
-  totalReports:number;
-
-}
-
 
 
 interface Vehicle {
@@ -80,90 +58,13 @@ interface Vehicle {
 const Dashboard = () => {
 
 
-  const [dashboard,setDashboard]
-  =
-  useState<DashboardData | null>(null);
+const {
+  dashboard,
+  loading,
+  error,
+} = useDashboard();
+const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
-
-
-  const [vehicles,setVehicles]
-  =
-  useState<Vehicle[]>([]);
-
-
-
-  const [loading,setLoading]
-  =
-  useState(true);
-
-
-
-  const [error,setError]
-  =
-  useState("");
-
-
-
-
-
-
-  // ================= FETCH DASHBOARD =================
-
-
-  const fetchDashboard = async()=>{
-
-
-    try{
-
-
-      const response =
-      await api.get("/dashboard");
-
-
-      console.log(
-        "Dashboard API:",
-        response.data
-      );
-
-
-      if(response.data.success){
-
-        setDashboard(
-          response.data.dashboard
-        );
-
-        setError("");
-
-      }
-
-
-    }
-    catch(err){
-
-
-      console.error(
-        "Dashboard Error:",
-        err
-      );
-
-
-      setError(
-        "Unable to connect to server."
-      );
-
-
-    }
-
-
-  };
-
-
-
-
-
-
-
-  // ================= FETCH VEHICLES =================
 
 
   const fetchVehicles = async()=>{
@@ -234,68 +135,18 @@ const Dashboard = () => {
 
   };
 
+useEffect(() => {
+
+  fetchVehicles();
+
+  const interval = setInterval(() => {
+    fetchVehicles();
+  }, 30000);
 
 
+  return () => clearInterval(interval);
 
-
-
-
-
-  useEffect(()=>{
-
-
-    const loadData =
-    async()=>{
-
-
-      setLoading(true);
-
-
-      await Promise.all([
-
-        fetchDashboard(),
-
-        fetchVehicles()
-
-      ]);
-
-
-      setLoading(false);
-
-
-    };
-
-
-
-    loadData();
-
-
-
-    const interval =
-    setInterval(()=>{
-
-
-      fetchDashboard();
-
-      fetchVehicles();
-
-
-    },30000);
-
-
-
-    return ()=>clearInterval(interval);
-
-
-
-  },[]);
-
-
-
-
-
-
-
+}, []);
 
 
   if(loading){
@@ -435,7 +286,7 @@ overflow-x-hidden
 {/* STAT CARDS */}
 
 {/* KPI Dashboard */}
-<KpiGrid />
+<KpiGrid dashboard={dashboard} />
 
 
 
