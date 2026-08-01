@@ -188,12 +188,6 @@ useEffect(() => {
 
   }
 
-
-
-
-
-
-
   if(error){
 
 
