@@ -6,6 +6,7 @@ interface Props {
   icon: React.ElementType;
   color: string;
   description: string;
+  trend?: string;
 }
 
 const KpiCard = ({
@@ -14,32 +15,117 @@ const KpiCard = ({
   icon: Icon,
   color,
   description,
+  trend,
 }: Props) => {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5">
+    <div
+      className="
+      bg-white
+      rounded-2xl
+      border
+      border-gray-100
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+      duration-300
+      p-5
+      "
+    >
+
       <div className="flex items-center justify-between">
+
         <div>
-          <p className="text-xs uppercase tracking-wide text-gray-500">
+
+          <p className="
+          text-xs
+          uppercase
+          tracking-wide
+          text-gray-500
+          ">
             {title}
           </p>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-2">
+
+          <h2 className="
+          text-3xl
+          font-bold
+          text-gray-900
+          mt-2
+          ">
             {value}
           </h2>
 
-          <p className="text-sm text-gray-400 mt-2">
+
+          <p className="
+          text-sm
+          text-gray-400
+          mt-2
+          ">
             {description}
           </p>
+
+
+          {
+            trend && (
+              <span
+                className={`
+                inline-block
+                mt-3
+                text-xs
+                font-semibold
+                px-3
+                py-1
+                rounded-full
+
+                ${
+                  trend.includes("-")
+                  ?
+                  "bg-red-100 text-red-600"
+                  :
+                  trend === "Attention"
+                  ?
+                  "bg-orange-100 text-orange-600"
+                  :
+                  "bg-green-100 text-green-600"
+                }
+
+                `}
+              >
+                {trend}
+              </span>
+            )
+          }
+
+
         </div>
 
+
+
         <div
-          className={`${color} h-14 w-14 rounded-xl flex items-center justify-center`}
+          className={`
+          ${color}
+          h-14
+          w-14
+          rounded-xl
+          flex
+          items-center
+          justify-center
+          shadow-lg
+          `}
         >
+
           <Icon className="text-white text-2xl" />
+
         </div>
+
+
       </div>
+
+
     </div>
   );
 };
+
 
 export default KpiCard;

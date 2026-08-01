@@ -1,189 +1,189 @@
 import React from "react";
 
+import KpiCard from "./kpiCard";
 
-interface Props {
+import {
+  FaTruck,
+  FaGasPump,
+  FaUserTie,
+  FaWallet,
+  FaTools,
+  FaCheckCircle,
+} from "react-icons/fa";
 
-  title:string;
+import type { DashboardData } from "../../hooks/useDashboard";
 
-  value:string;
 
-  icon:React.ElementType;
 
-  color:string;
-
-  description:string;
-
-  trend?:string;
-
+interface KpiGridProps {
+  dashboard: DashboardData;
 }
 
 
 
-const KpiCard:React.FC<Props> = ({
-  title,
-  value,
-  icon:Icon,
-  color,
-  description,
-  trend
+const KpiGrid: React.FC<KpiGridProps> = ({
+  dashboard
 }) => {
+
+
+
+const stats = [
+
+{
+  title: "Fleet Health Score",
+  value: "92%",
+  icon: FaTruck,
+  color: "bg-gradient-to-r from-green-500 to-emerald-600",
+  description: "Vehicle condition",
+  trend: "+4.5%"
+},
+
+
+{
+  title: "Fuel Consumption",
+  value: "640 L",
+  icon: FaGasPump,
+  color: "bg-gradient-to-r from-yellow-400 to-orange-500",
+  description: "Today's usage",
+  trend: "-2.3%"
+},
+
+
+{
+  title: "Active Drivers",
+  value: String(
+    dashboard.totalDrivers || 0
+  ),
+  icon: FaUserTie,
+  color: "bg-gradient-to-r from-blue-500 to-indigo-600",
+  description: "Currently active",
+  trend: "+6%"
+},
+
+
+{
+  title: "Today's Revenue",
+  value: "₹1,24,000",
+  icon: FaWallet,
+  color: "bg-gradient-to-r from-purple-500 to-pink-600",
+  description: "Total earnings",
+  trend: "+12%"
+},
+
+
+{
+  title: "Vehicle Availability",
+  value: `${dashboard.activeVehicles || 0}/${dashboard.totalVehicles || 0}`,
+  icon: FaCheckCircle,
+  color: "bg-gradient-to-r from-cyan-500 to-blue-600",
+  description: "Ready vehicles",
+  trend: "98%"
+},
+
+
+{
+  title: "Maintenance Due",
+  value: String(
+    dashboard.totalAlerts || 0
+  ),
+  icon: FaTools,
+  color: "bg-gradient-to-r from-red-500 to-rose-600",
+  description: "Service required",
+  trend: "Attention"
+}
+
+
+];
+
+
+
 
 
 return (
 
-<div
-className="
-bg-white
-rounded-2xl
-shadow-md
-border
-border-gray-100
-p-5
-hover:shadow-xl
-transition
-duration-300
-group
-"
->
+<section className="w-full">
 
 
-<div
-className="
-flex
-items-center
-justify-between
-"
->
-
-
-<div>
-
-
-<p
-className="
-text-sm
-text-gray-500
-font-medium
-"
->
-
-{title}
-
-</p>
-
+<div className="mb-5">
 
 
 <h2
 className="
-text-3xl
+text-xl
+sm:text-2xl
 font-bold
 text-slate-800
-mt-2
 "
 >
 
-{value}
+Fleet Performance Overview
 
 </h2>
-
-
-</div>
-
-
-
-
-<div
-className={`
-${color}
-w-14
-h-14
-rounded-xl
-flex
-items-center
-justify-center
-text-white
-text-2xl
-shadow-lg
-group-hover:scale-110
-transition
-`}
->
-
-<Icon />
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-<div
-className="
-mt-4
-flex
-items-center
-justify-between
-"
->
 
 
 <p
 className="
 text-sm
 text-gray-500
+mt-1
 "
 >
 
-{description}
+Real-time fleet monitoring metrics
 
 </p>
 
 
+</div>
 
-{
-trend && (
 
-<span
-className={`
-text-xs
-font-semibold
-px-3
-py-1
-rounded-full
 
-${
-trend.includes("-")
-?
-"bg-red-100 text-red-600"
-:
-trend==="Attention"
-?
-"bg-orange-100 text-orange-600"
-:
-"bg-green-100 text-green-600"
-}
 
-`}
+
+<div
+className="
+grid
+grid-cols-1
+sm:grid-cols-2
+xl:grid-cols-3
+gap-5
+"
 >
 
-{trend}
 
-</span>
+{
+stats.map((item)=>(
 
-)
 
+<KpiCard
+
+key={item.title}
+
+title={item.title}
+
+value={item.value}
+
+icon={item.icon}
+
+color={item.color}
+
+description={item.description}
+
+trend={item.trend}
+
+/>
+
+
+))
 }
 
 
-</div>
-
-
 
 </div>
+
+
+
+</section>
 
 
 );
@@ -192,4 +192,5 @@ trend==="Attention"
 };
 
 
-export default KpiCard;
+
+export default KpiGrid;
