@@ -4,6 +4,8 @@ import {
   useState
 } from "react";
 
+import VehicleUtilizationChart 
+from "../../components/dashboard/VehicleUtilizationChart";
 import RecentTrips from "../../components/Trips/RecentTrips";
 
 import RevenueChart from "../../components/dashboard/RevenueChart";
@@ -299,13 +301,15 @@ overflow-x-hidden
 <div className="
 grid
 grid-cols-1
-xl:grid-cols-2
+xl:grid-cols-3
 gap-6
 ">
 
 <RevenueChart />
 
 <FuelTrendChart />
+
+<VehicleUtilizationChart />
 
 </div>
 
