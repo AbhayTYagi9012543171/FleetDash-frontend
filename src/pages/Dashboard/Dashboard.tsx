@@ -319,13 +319,9 @@ overflow-x-hidden
 {/* HEADER */}
 
 <DashboardHeader
-
-lastUpdated={lastUpdated}
-
-onRefresh={fetchVehicles}
-
-refreshing={refreshing}
-
+  lastUpdated={lastUpdated}
+  onRefresh={fetchVehicles}
+  refreshing={refreshing}
 />
 
 
