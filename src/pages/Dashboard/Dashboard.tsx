@@ -4,7 +4,7 @@ import {
   useState
 } from "react";
 
-
+import DashboardSkeleton from "../../components/Common/DashboardSkeleton";
 import DriverPerformance 
 from "../../components/dashboard/DriverPerformance";
 import VehicleUtilizationChart 
@@ -173,36 +173,11 @@ useEffect(() => {
 }, []);
 
 
-  if(loading){
+if(loading){
 
+  return <DashboardSkeleton />;
 
-    return (
-
-      <div className="
-      flex
-      items-center
-      justify-center
-      h-screen
-      bg-gray-100
-      ">
-
-        <h2 className="
-        text-2xl
-        font-semibold
-        animate-pulse
-        ">
-
-          Loading Dashboard...
-
-        </h2>
-
-
-      </div>
-
-    );
-
-
-  }
+}
 
   if(error){
 
