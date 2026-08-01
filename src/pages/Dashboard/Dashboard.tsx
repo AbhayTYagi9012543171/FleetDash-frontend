@@ -309,7 +309,7 @@ gap-6
 
 <FuelTrendChart />
 
-<VehicleUtilizationChart />
+<VehicleUtilizationChart vehicles={vehicles} />
 
 </div>
 
