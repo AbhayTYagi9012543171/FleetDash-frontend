@@ -20,15 +20,31 @@ import FleetSummary from "../../components/Cards/FleetSummary";
 import DashboardHeader from "../../components/Common/DashboardHeader";
 
 
-import LineChart from "../../components/Charts/LineChart";
-import BarChart from "../../components/Charts/BarChart";
-import DoughnutChart from "../../components/Charts/DoughnutChart";
+
 
 
 import VehicleTable from "../../components/Tables/VehicleTable";
 
 
-import LiveMap from "../../components/Map/LiveMap";
+import { lazy, Suspense } from "react";
+
+
+const LineChart = lazy(
+  () => import("../../components/Charts/LineChart")
+);
+
+const BarChart = lazy(
+  () => import("../../components/Charts/BarChart")
+);
+
+const DoughnutChart = lazy(
+  () => import("../../components/Charts/DoughnutChart")
+);
+
+
+const LiveMap = lazy(
+  () => import("../../components/Map/LiveMap")
+);
 import RecentAlerts from "../../components/Alerts/RecentAlerts";
 import DriverStatus from "../../components/Drivers/DriverStatus";
 
@@ -343,7 +359,15 @@ Vehicle Activity
 
 </h2>
 
-<LineChart />
+<Suspense
+ fallback={
+  <p className="text-center">
+    Loading Chart...
+  </p>
+ }
+>
+  <LineChart />
+</Suspense>
 
 </div>
 
@@ -366,7 +390,15 @@ Monthly Trips
 
 </h2>
 
-<BarChart />
+<Suspense
+ fallback={
+  <p className="text-center">
+    Loading Chart...
+  </p>
+ }
+>
+  <BarChart />
+</Suspense>
 
 </div>
 
@@ -416,11 +448,15 @@ Live Vehicle Tracking
 
 
 
-<LiveMap
-
-vehicles={vehicles}
-
-/>
+<Suspense
+ fallback={
+  <p className="text-center">
+    Loading Map...
+  </p>
+ }
+>
+  <LiveMap vehicles={vehicles}/>
+</Suspense>
 
 
 
@@ -474,7 +510,15 @@ Vehicle Status
 </h2>
 
 
-<DoughnutChart />
+<Suspense
+ fallback={
+  <p className="text-center">
+    Loading Chart...
+  </p>
+ }
+>
+  <DoughnutChart />
+</Suspense>
 
 
 </div>
