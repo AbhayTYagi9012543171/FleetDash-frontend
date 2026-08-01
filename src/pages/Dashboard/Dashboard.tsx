@@ -4,7 +4,10 @@ import {
   useState
 } from "react";
 
+import RecentTrips from "../../components/Trips/RecentTrips";
 
+import RevenueChart from "../../components/dashboard/RevenueChart";
+import FuelTrendChart from "../../components/dashboard/FuelTrendChart";
 import useDashboard from "../../hooks/useDashboard";
 import KpiGrid from "../../components/dashboard/KpiGrid";
 
@@ -23,7 +26,7 @@ import VehicleTable from "../../components/Tables/VehicleTable";
 import LiveMap from "../../components/Map/LiveMap";
 import RecentAlerts from "../../components/Alerts/RecentAlerts";
 import DriverStatus from "../../components/Drivers/DriverStatus";
-import RecentTrips from "../../components/Trips/RecentTrips";
+
 import { api } from "../../services/api";
 
 
@@ -288,32 +291,31 @@ overflow-x-hidden
 {/* KPI Dashboard */}
 <KpiGrid dashboard={dashboard} />
 
-
-
-
-
-
-
-
-
-
 <FleetSummary />
 
 
+{/* ANALYTICS CHARTS */}
 
+<div className="
+grid
+grid-cols-1
+xl:grid-cols-2
+gap-6
+">
 
+<RevenueChart />
 
+<FuelTrendChart />
 
+</div>
 
-{/* CHARTS */}
 
 
 <div className="
 grid
 grid-cols-1
 md:grid-cols-2
-gap-4
-md:gap-6
+gap-6
 ">
 
 
@@ -321,15 +323,11 @@ md:gap-6
 bg-white
 rounded-xl
 shadow-md
-p-3
-sm:p-4
-md:p-6
+p-6
 ">
 
-
 <h2 className="
-text-lg
-sm:text-xl
+text-xl
 font-semibold
 mb-4
 ">
@@ -338,14 +336,9 @@ Vehicle Activity
 
 </h2>
 
-
 <LineChart />
 
-
 </div>
-
-
-
 
 
 
@@ -353,11 +346,8 @@ Vehicle Activity
 bg-white
 rounded-xl
 shadow-md
-p-3
-sm:p-4
-md:p-6
+p-6
 ">
-
 
 <h2 className="
 text-xl
@@ -369,12 +359,9 @@ Monthly Trips
 
 </h2>
 
-
 <BarChart />
 
-
 </div>
-
 
 
 </div>
