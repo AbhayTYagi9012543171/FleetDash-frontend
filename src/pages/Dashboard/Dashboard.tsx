@@ -1,10 +1,13 @@
 
 import {
   useEffect,
-  useState
+  useState,
+  lazy,
+  Suspense,
 } from "react";
 
-import DashboardSkeleton from "../../components/Common/DashboardSkeleton";
+import DashboardSkeleton 
+from "../../components/Common/DashboardSkeleton";
 import DriverPerformance 
 from "../../components/dashboard/DriverPerformance";
 import VehicleUtilizationChart 
@@ -24,9 +27,11 @@ import DashboardHeader from "../../components/Common/DashboardHeader";
 
 
 import VehicleTable from "../../components/Tables/VehicleTable";
+import RecentAlerts from "../../components/Alerts/RecentAlerts";
+import DriverStatus from "../../components/Drivers/DriverStatus";
+import { api } from "../../services/api";
 
 
-import { lazy, Suspense } from "react";
 
 
 const LineChart = lazy(
@@ -45,10 +50,8 @@ const DoughnutChart = lazy(
 const LiveMap = lazy(
   () => import("../../components/Map/LiveMap")
 );
-import RecentAlerts from "../../components/Alerts/RecentAlerts";
-import DriverStatus from "../../components/Drivers/DriverStatus";
 
-import { api } from "../../services/api";
+
 
 
 interface Vehicle {
