@@ -5,7 +5,9 @@ import {
 } from "react";
 
 
-import StatCard from "../../components/Cards/StatCard";
+
+import KpiGrid from "../../components/dashboard/KpiGrid";
+
 import FleetSummary from "../../components/Cards/FleetSummary";
 import DashboardHeader from "../../components/Common/DashboardHeader";
 
@@ -24,12 +26,7 @@ import DriverStatus from "../../components/Drivers/DriverStatus";
 import RecentTrips from "../../components/Trips/RecentTrips";
 
 
-import {
-  FaTruck,
-  FaPlayCircle,
-  FaStopCircle,
-  FaGasPump,
-} from "react-icons/fa";
+
 
 
 import { api } from "../../services/api";
@@ -437,59 +434,11 @@ overflow-x-hidden
 
 {/* STAT CARDS */}
 
-
-<div
-className="
-grid
-grid-cols-1
-sm:grid-cols-2
-lg:grid-cols-3
-xl:grid-cols-4
-gap-4
-"
->
+{/* KPI Dashboard */}
+<KpiGrid />
 
 
-<StatCard
-title="Total Vehicles"
-value={dashboard.totalVehicles}
-icon={<FaTruck />}
-color="text-blue-600"
-percentage="+8%"
-/>
 
-
-<StatCard
-title="Running Vehicles"
-value={dashboard.activeVehicles}
-icon={<FaPlayCircle />}
-color="text-green-600"
-percentage="+12%"
-/>
-
-
-<StatCard
-title="Offline Vehicles"
-value={
-dashboard.totalVehicles -
-dashboard.activeVehicles
-}
-icon={<FaStopCircle />}
-color="text-red-600"
-percentage="-4%"
-/>
-
-
-<StatCard
-title="Fuel Level"
-value="82%"
-icon={<FaGasPump />}
-color="text-yellow-500"
-percentage="+2%"
-/>
-
-
-</div>
 
 
 
