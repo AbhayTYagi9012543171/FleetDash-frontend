@@ -3,10 +3,8 @@ import {
   useState,
   lazy,
   Suspense,
+  useCallback,
 } from "react";
-
-
-// Types
 
 import type {
   Vehicle,
@@ -20,7 +18,6 @@ from "../../components/Cards/FleetHealthCard";
 
 import FleetSummary
 from "../../components/Cards/FleetSummary";
-
 
 
 // Common
@@ -80,7 +77,7 @@ from "../../components/Drivers/DriverStatus";
 
 
 
-// Hooks
+// Hook
 
 import useDashboard
 from "../../hooks/useDashboard";
@@ -96,60 +93,89 @@ import {
 
 
 
+
 // Lazy Components
 
 
 const LineChart = lazy(
-()=>import("../../components/Charts/LineChart")
+()=>import(
+"../../components/Charts/LineChart"
+)
 );
 
 
 const BarChart = lazy(
-()=>import("../../components/Charts/BarChart")
+()=>import(
+"../../components/Charts/BarChart"
+)
 );
 
 
 const DoughnutChart = lazy(
-()=>import("../../components/Charts/DoughnutChart")
+()=>import(
+"../../components/Charts/DoughnutChart"
+)
 );
 
 
 const LiveMap = lazy(
-()=>import("../../components/Map/LiveMap")
+()=>import(
+"../../components/Map/LiveMap"
+)
 );
 
 
 
 
 
-const Dashboard = ()=>{
+
+
+const Dashboard =()=>{
 
 
 const {
 
- dashboard,
+dashboard,
 
- loading,
+loading,
 
- error,
+error,
 
-} = useDashboard();
+refreshDashboard,
+
+}=useDashboard();
 
 
 
 
 
-const [vehicles,setVehicles] =
+const [
+vehicles,
+setVehicles
+]
+=
 useState<Vehicle[]>([]);
 
 
 
-const [refreshing,setRefreshing] =
+
+
+const [
+refreshing,
+setRefreshing
+]
+=
 useState(false);
 
 
 
-const [lastUpdated,setLastUpdated] =
+
+
+const [
+lastUpdated,
+setLastUpdated
+]
+=
 useState("");
 
 
@@ -157,12 +183,97 @@ useState("");
 
 
 
-// ==============================
+
+
+// =========================
 // Fetch Vehicles
-// ==============================
+// =========================
 
 
-const fetchVehicles = async()=>{
+const fetchVehicles =
+useCallback(async()=>{
+
+
+try{
+
+
+const response =
+await api.get("/vehicles");
+
+
+
+const data =
+
+response.data.vehicles ||
+
+response.data.data ||
+
+response.data ||
+
+[];
+
+
+
+
+setVehicles(
+Array.isArray(data)
+?
+data
+:
+[]
+);
+
+
+
+setLastUpdated(
+
+new Date()
+.toLocaleTimeString()
+
+);
+
+
+
+}
+
+catch(error)
+{
+
+
+console.error(
+"Vehicle Error",
+error
+);
+
+
+
+setVehicles([]);
+
+
+
+}
+
+
+
+},[]);
+
+
+
+
+
+
+
+
+
+
+
+// =========================
+// Refresh All
+// =========================
+
+
+const handleRefresh =
+async()=>{
 
 
 try{
@@ -172,70 +283,12 @@ setRefreshing(true);
 
 
 
-const response =
-await api.get("/vehicles");
+await refreshDashboard();
 
 
 
-const data =
-response.data;
+await fetchVehicles();
 
-
-
-
-if(
-Array.isArray(data.vehicles)
-){
-
-
-setVehicles(
-data.vehicles
-);
-
-
-}
-
-else if(
-Array.isArray(data)
-){
-
-
-setVehicles(
-data
-);
-
-
-}
-
-else{
-
-
-setVehicles([]);
-
-
-}
-
-
-
-setLastUpdated(
-new Date()
-.toLocaleTimeString()
-);
-
-
-
-}
-
-catch(error){
-
-
-console.error(
-"Vehicle Fetch Error",
-error
-);
-
-
-setVehicles([]);
 
 
 }
@@ -246,26 +299,10 @@ finally{
 setRefreshing(false);
 
 
+
 }
 
 
-};
-
-
-
-
-
-
-// ==============================
-// Refresh Dashboard
-// ==============================
-
-
-const refreshDashboard = async()=>{
-
-
-await fetchVehicles();
-
 
 };
 
@@ -274,6 +311,12 @@ await fetchVehicles();
 
 
 
+
+
+
+
+
+// Initial Load + Auto Refresh
 
 
 useEffect(()=>{
@@ -284,15 +327,13 @@ fetchVehicles();
 
 
 const timer =
-setInterval(()=>{
+setInterval(
 
+fetchVehicles,
 
-fetchVehicles();
+30000
 
-
-
-},30000);
-
+);
 
 
 
@@ -305,7 +346,10 @@ clearInterval(timer);
 };
 
 
-},[]);
+
+},[
+fetchVehicles
+]);
 
 
 
@@ -313,12 +357,10 @@ clearInterval(timer);
 
 
 
-// ==============================
-// Loading
-// ==============================
 
 
-if(loading){
+if(loading)
+{
 
 
 return (
@@ -336,44 +378,36 @@ return (
 
 
 
-// ==============================
-// Error
-// ==============================
 
 
-if(error){
+if(error)
+{
 
 
 return (
 
-<div
-className="
+<div className="
 min-h-screen
 flex
 items-center
 justify-center
 bg-gray-100
-"
->
+">
 
 
-<div
-className="
+<div className="
 bg-white
-p-8
 rounded-xl
 shadow
-"
->
+p-8
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-bold
 text-red-600
-"
->
+">
 
 {error}
 
@@ -396,28 +430,26 @@ text-red-600
 
 
 
-if(!dashboard){
+
+
+
+if(!dashboard)
+{
 
 
 return (
 
-<div
-className="
-min-h-screen
-flex
-items-center
-justify-center
-"
->
+<div className="
+p-8
+text-center
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-bold
 text-red-500
-"
->
+">
 
 No Dashboard Data Found
 
@@ -438,11 +470,13 @@ No Dashboard Data Found
 
 
 
+
+
+
 return (
 
-<div
 
-className="
+<div className="
 min-h-screen
 bg-gray-100
 p-3
@@ -450,9 +484,9 @@ sm:p-4
 md:p-6
 space-y-6
 overflow-x-hidden
-"
+">
 
->
+
 
 
 
@@ -460,13 +494,14 @@ overflow-x-hidden
 
 {/* HEADER */}
 
+
 <DashboardHeader
 
 dashboard={dashboard}
 
 lastUpdated={lastUpdated}
 
-onRefresh={refreshDashboard}
+onRefresh={handleRefresh}
 
 refreshing={refreshing}
 
@@ -476,7 +511,13 @@ refreshing={refreshing}
 
 
 
+
+
+
+
 {/* KPI */}
+
+
 
 <KpiGrid
 
@@ -490,7 +531,10 @@ dashboard={dashboard}
 
 
 
+
+
 {/* SUMMARY */}
+
 
 <FleetSummary/>
 
@@ -500,18 +544,18 @@ dashboard={dashboard}
 
 
 
+
+
 {/* HEALTH */}
 
-<div
 
-className="
+
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-2
 gap-6
-"
-
->
+">
 
 
 <FleetHealthCard/>
@@ -529,19 +573,17 @@ gap-6
 
 
 
+
 {/* ANALYTICS */}
 
 
-<div
 
-className="
+<div className="
 grid
 grid-cols-1
 2xl:grid-cols-2
 gap-6
-"
-
->
+">
 
 
 <RevenueChart/>
@@ -568,39 +610,36 @@ vehicles={vehicles}
 
 
 
+
+
 {/* CHARTS */}
 
 
-<div
 
-className="
+<div className="
 grid
 grid-cols-1
 md:grid-cols-2
 gap-6
-"
-
->
+">
 
 
 
-<div
-className="
+
+
+<div className="
 bg-white
 rounded-xl
 shadow
 p-4
-"
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Vehicle Activity
 
@@ -608,17 +647,19 @@ Vehicle Activity
 
 
 
+
 <Suspense
+
 fallback={
 <p>
 Loading chart...
 </p>
 }
+
 >
 
 
 <LineChart/>
-
 
 </Suspense>
 
@@ -632,23 +673,21 @@ Loading chart...
 
 
 
-<div
-className="
+
+
+<div className="
 bg-white
 rounded-xl
 shadow
 p-4
-"
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Monthly Trips
 
@@ -658,22 +697,26 @@ Monthly Trips
 
 
 <Suspense
+
 fallback={
 <p>
 Loading chart...
 </p>
 }
+
 >
 
 
 <BarChart/>
-
 
 </Suspense>
 
 
 
 </div>
+
+
+
 
 
 
@@ -690,38 +733,32 @@ Loading chart...
 {/* MAP + ALERTS */}
 
 
-<div
 
-className="
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-3
 gap-6
-"
-
->
+">
 
 
-<div
 
-className="
+
+
+<div className="
 lg:col-span-2
 bg-white
 rounded-xl
 shadow
 p-4
-"
-
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Live Vehicle Tracking
 
@@ -730,11 +767,12 @@ Live Vehicle Tracking
 
 
 
+
 <Suspense
 
 fallback={
 <p>
-Loading Map...
+Loading map...
 </p>
 }
 
@@ -759,7 +797,14 @@ geofences={[]}
 
 
 
+
+
+
 <RecentAlerts/>
+
+
+
+
 
 
 </div>
@@ -772,28 +817,23 @@ geofences={[]}
 
 
 
-{/* STATUS */}
+{/* VEHICLE STATUS */}
 
 
-<div
 
-className="
+<div className="
 bg-white
 rounded-xl
 shadow
 p-4
-"
-
->
+">
 
 
-<h2
-className="
+<h2 className="
 text-xl
 font-semibold
 mb-4
-"
->
+">
 
 Vehicle Status
 
@@ -801,18 +841,18 @@ Vehicle Status
 
 
 
-
 <Suspense
+
 fallback={
 <p>
 Loading...
 </p>
 }
+
 >
 
 
 <DoughnutChart/>
-
 
 </Suspense>
 
@@ -831,16 +871,13 @@ Loading...
 {/* ACTIVITY */}
 
 
-<div
 
-className="
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-2
 gap-6
-"
-
->
+">
 
 
 <ActivityFeed/>
@@ -862,16 +899,13 @@ gap-6
 {/* EXTRA */}
 
 
-<div
 
-className="
+<div className="
 grid
 grid-cols-1
 lg:grid-cols-2
 gap-6
-"
-
->
+">
 
 
 <QuickActions/>
@@ -889,17 +923,13 @@ gap-6
 
 
 
-{/* TRIPS */}
+
+{/* TABLES */}
+
+
 
 <RecentTrips/>
 
-
-
-
-
-
-
-{/* VEHICLES */}
 
 <VehicleTable/>
 

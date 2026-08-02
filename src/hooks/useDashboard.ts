@@ -1,44 +1,54 @@
 import {
   useEffect,
   useState,
+  useCallback,
 } from "react";
 
-
 import {
-  dashboardService
-} from "../services/dashboardService";
+  api,
+} from "../services/api";
 
 
+
+
+// Dashboard Data Type
 
 export interface DashboardData {
+
 
   totalVehicles: number;
 
   activeVehicles: number;
 
+  idleVehicles: number;
+
+  offlineVehicles: number;
+
+
+
   totalDrivers: number;
+
+  activeDrivers: number;
+
+
+
+  totalTrips: number;
 
   todayTrips: number;
 
+
+
   revenue: number;
 
-  fuelConsumed: number;
+  fuelConsumption: number;
 
 
-  // Header / KPI fields
 
   totalAlerts: number;
 
-  maintenanceDue?: number;
-
-
-  // Optional fields
-
-  fleetHealth?: number;
-
-  availableVehicles?: number;
 
 }
+
 
 
 
@@ -48,166 +58,209 @@ export interface DashboardData {
 const useDashboard = () => {
 
 
-  const [
-    dashboard,
-    setDashboard
-  ] = useState<DashboardData | null>(null);
 
+  const [dashboard, setDashboard] =
+    useState<DashboardData | null>(null);
 
 
 
-  const [
-    loading,
-    setLoading
-  ] = useState<boolean>(true);
+  const [loading, setLoading] =
+    useState(true);
 
 
 
+  const [error, setError] =
+    useState("");
 
-  const [
-    error,
-    setError
-  ] = useState<string>("");
 
 
 
 
 
 
-  const fetchDashboard = async () => {
 
+  // ==========================
+  // Fetch Dashboard Data
+  // ==========================
 
-    try {
 
+  const fetchDashboard = useCallback(
+    async () => {
 
-      setLoading(true);
 
+      try {
 
-      setError("");
 
+        setLoading(true);
 
+        setError("");
 
-      const response =
-        await dashboardService.getDashboard();
 
 
+        const response =
+          await api.get("/dashboard");
 
-      /*
-        Backend response can be:
 
-        {
-          totalVehicles: 100,
-          activeVehicles: 80
-        }
 
-        OR
+        console.log(
+          "Dashboard API:",
+          response.data
+        );
 
-        {
-          dashboard:{
-             totalVehicles:100
-          }
-        }
 
-      */
 
 
-      const data =
-        response.dashboard || response;
+        const data =
 
+          response.data.dashboard ||
 
+          response.data.data ||
 
-      setDashboard({
+          response.data;
 
-        totalVehicles:
-          data.totalVehicles || 0,
 
 
-        activeVehicles:
-          data.activeVehicles || 0,
 
 
-        totalDrivers:
-          data.totalDrivers || 0,
 
 
-        todayTrips:
-          data.todayTrips || 0,
+        setDashboard({
 
+          totalVehicles:
+            data.totalVehicles || 0,
 
-        revenue:
-          data.revenue || 0,
 
 
-        fuelConsumed:
-          data.fuelConsumed || 0,
+          activeVehicles:
+            data.activeVehicles || 0,
 
 
-        totalAlerts:
-          data.totalAlerts || 0,
 
+          idleVehicles:
+            data.idleVehicles || 0,
 
-        maintenanceDue:
-          data.maintenanceDue || 0,
 
 
-        fleetHealth:
-          data.fleetHealth || 0,
+          offlineVehicles:
+            data.offlineVehicles || 0,
 
 
-        availableVehicles:
-          data.availableVehicles || 0,
 
-      });
 
+          totalDrivers:
+            data.totalDrivers || 0,
 
 
-    }
-    catch (err) {
 
+          activeDrivers:
+            data.activeDrivers || 0,
 
-      console.error(
-        "Dashboard API Error:",
-        err
-      );
 
 
 
-      setError(
-        "Failed to load dashboard data"
-      );
+          totalTrips:
+            data.totalTrips || 0,
 
 
 
-      setDashboard(null);
+          todayTrips:
+            data.todayTrips || 0,
 
 
-    }
-    finally {
 
 
-      setLoading(false);
 
+          revenue:
+            data.revenue || 0,
 
-    }
 
 
-  };
+          fuelConsumption:
+            data.fuelConsumption || 0,
 
 
 
 
 
+          totalAlerts:
 
+            data.totalAlerts ||
 
+            data.alerts ||
 
-  useEffect(() => {
+            0,
+
+
+
+        });
+
+
+
+
+      }
+
+      catch(error:any){
+
+
+        console.error(
+          "Dashboard Error:",
+          error
+        );
+
+
+
+        setError(
+
+          error?.response?.data?.message ||
+
+          "Failed to load dashboard"
+
+        );
+
+
+      }
+
+
+      finally{
+
+
+        setLoading(false);
+
+
+      }
+
+
+
+    },
+
+    []
+
+  );
+
+
+
+
+
+
+
+
+
+  // ==========================
+  // Initial Load
+  // ==========================
+
+
+  useEffect(()=>{
 
 
     fetchDashboard();
 
 
+  },[
+    fetchDashboard
+  ]);
 
-  }, []);
+
 
 
 
@@ -217,18 +270,31 @@ const useDashboard = () => {
 
   return {
 
+
     dashboard,
+
 
     loading,
 
+
     error,
 
-    refresh: fetchDashboard,
+
+
+    // Manual refresh
+
+    refreshDashboard:
+      fetchDashboard,
+
 
   };
 
 
 };
+
+
+
+
 
 
 
