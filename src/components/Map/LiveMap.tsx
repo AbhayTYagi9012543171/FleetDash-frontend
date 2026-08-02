@@ -4,12 +4,14 @@ import {
   Marker,
   Popup,
   Circle,
+  useMap,
 } from "react-leaflet";
 
 import type { Vehicle } from "../../types/vehicle";
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useEffect } from "react";
 
 
 // ==========================
@@ -30,6 +32,7 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 
 });
+
 
 
 // ==========================
@@ -55,6 +58,7 @@ interface Geofence {
 }
 
 
+
 // ==========================
 // Props
 // ==========================
@@ -66,6 +70,61 @@ interface Props {
   geofences?: Geofence[];
 
 }
+
+
+
+// ==========================
+// Auto Center Map
+// ==========================
+
+const AutoCenter = ({
+  vehicles,
+}: {
+  vehicles: Vehicle[];
+}) => {
+
+
+  const map = useMap();
+
+
+  useEffect(() => {
+
+
+    if (vehicles.length === 0)
+      return;
+
+
+    const firstVehicle = vehicles[0];
+
+
+    if (
+      firstVehicle.latitude &&
+      firstVehicle.longitude
+    ) {
+
+
+      map.setView(
+        [
+          firstVehicle.latitude,
+          firstVehicle.longitude,
+        ],
+        12
+      );
+
+
+    }
+
+
+  }, [vehicles, map]);
+
+
+
+  return null;
+
+};
+
+
+
 
 
 // ==========================
@@ -81,14 +140,43 @@ const LiveMap = ({
 }: Props) => {
 
 
+
   return (
 
-    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden border border-gray-200">
+
+    <div
+      className="
+      relative
+      w-full
+      h-[300px]
+      sm:h-[400px]
+      md:h-[500px]
+      lg:h-[600px]
+      rounded-xl
+      overflow-hidden
+      border
+      border-gray-200
+      "
+    >
 
 
-      {/* Vehicle Count */}
 
-      <div className="absolute z-[999] top-3 left-3 bg-white shadow px-4 py-2 rounded-lg text-sm">
+      {/* Vehicle Counter */}
+
+      <div
+        className="
+        absolute
+        z-[999]
+        top-3
+        left-3
+        bg-white
+        shadow
+        px-4
+        py-2
+        rounded-lg
+        text-sm
+        "
+      >
 
         Vehicles:
 
@@ -97,7 +185,10 @@ const LiveMap = ({
           {vehicles.length}
         </strong>
 
+
       </div>
+
+
 
 
 
@@ -126,6 +217,12 @@ const LiveMap = ({
 
 
 
+        <AutoCenter
+          vehicles={vehicles}
+        />
+
+
+
         <TileLayer
 
 
@@ -139,6 +236,8 @@ const LiveMap = ({
 
 
 
+
+
         {/* ==========================
             Vehicle Markers
         ========================== */}
@@ -147,32 +246,31 @@ const LiveMap = ({
 
         {
 
-          vehicles.map((vehicle) => (
+          vehicles.map((vehicle)=>(
 
 
             <Marker
 
 
-              key={
+              key={String(
 
-                vehicle._id ||
+                vehicle._id ??
 
-                vehicle.id ||
+                vehicle.id ??
 
                 vehicle.vehicleNumber
 
-              }
+              )}
 
 
 
               position={[
 
-                vehicle.latitude ?? 0,
+                Number(vehicle.latitude),
 
-                vehicle.longitude ?? 0,
+                Number(vehicle.longitude),
 
               ]}
-
 
 
             >
@@ -182,20 +280,34 @@ const LiveMap = ({
               <Popup>
 
 
-                <div className="min-w-[220px]">
+                <div
+                  className="min-w-[220px]"
+                >
 
 
-                  <h3 className="font-bold text-blue-600 text-lg mb-3">
 
+                  <h3
+                    className="
+                    font-bold
+                    text-blue-600
+                    text-lg
+                    mb-3
+                    "
+                  >
 
                     {vehicle.vehicleNumber}
-
 
                   </h3>
 
 
 
-                  <div className="space-y-2 text-sm">
+
+                  <div
+                    className="
+                    space-y-2
+                    text-sm
+                    "
+                  >
 
 
 
@@ -207,9 +319,14 @@ const LiveMap = ({
 
                       {" "}
 
-                      {vehicle.driver || "Not Assigned"}
+                      {
+                        vehicle.driver ??
+                        "Not Assigned"
+                      }
 
                     </p>
+
+
 
 
 
@@ -229,6 +346,8 @@ const LiveMap = ({
 
 
 
+
+
                     <p>
 
                       <strong>
@@ -245,57 +364,66 @@ const LiveMap = ({
 
 
 
+
+
                     <p>
+
 
                       <strong>
                         Status:
                       </strong>
 
+
                       {" "}
+
 
 
                       <span
 
+                        className={
 
-                        className={`font-semibold ${
-                          
                           vehicle.status === "Active"
 
-                          ? "text-green-600"
+                          ? "text-green-600 font-bold"
+
 
                           : vehicle.status === "Idle"
 
-                          ? "text-yellow-600"
+                          ? "text-yellow-600 font-bold"
+
 
                           : vehicle.status === "Maintenance"
 
-                          ? "text-orange-600"
+                          ? "text-orange-600 font-bold"
 
-                          : "text-red-600"
 
-                        }`}
+                          : "text-red-600 font-bold"
 
+                        }
 
                       >
 
+
                         {vehicle.status}
 
+
                       </span>
+
 
 
                     </p>
 
 
 
-                    <p>
 
+
+                    <p>
 
                       <strong>
                         Location:
                       </strong>
 
-
-                      <br />
+                      <br/>
 
 
                       {vehicle.latitude},
@@ -309,15 +437,17 @@ const LiveMap = ({
 
 
 
+
                   </div>
+
 
 
 
                 </div>
 
 
-
               </Popup>
+
 
 
 
@@ -327,7 +457,6 @@ const LiveMap = ({
 
           ))
 
-
         }
 
 
@@ -335,33 +464,27 @@ const LiveMap = ({
 
 
         {/* ==========================
-            Geofence Areas
+            Geofence Circle
         ========================== */}
 
 
 
         {
 
-
-          geofences.map((zone) => (
+          geofences.map((zone)=>(
 
 
             <Circle
 
 
-
               key={zone._id}
-
 
 
               center={[
 
-
                 zone.center.latitude,
 
-
                 zone.center.longitude,
-
 
               ]}
 
@@ -373,15 +496,11 @@ const LiveMap = ({
 
               pathOptions={{
 
+                color:"#2563eb",
 
-                color: "#2563eb",
+                fillColor:"#3b82f6",
 
-
-                fillColor: "#3b82f6",
-
-
-                fillOpacity: 0.15,
-
+                fillOpacity:0.15,
 
               }}
 
@@ -390,27 +509,26 @@ const LiveMap = ({
             >
 
 
-
               <Popup>
 
 
-
-                <div className="min-w-[180px]">
-
+                <div>
 
 
-                  <h3 className="font-bold text-blue-600">
-
+                  <h3
+                    className="
+                    font-bold
+                    text-blue-600
+                    "
+                  >
 
                     {zone.name}
-
 
                   </h3>
 
 
 
-                  <p className="mt-2 text-sm">
-
+                  <p>
 
                     Radius:
 
@@ -420,7 +538,6 @@ const LiveMap = ({
 
                     {" meters"}
 
-
                   </p>
 
 
@@ -428,9 +545,7 @@ const LiveMap = ({
                 </div>
 
 
-
               </Popup>
-
 
 
             </Circle>
@@ -439,12 +554,14 @@ const LiveMap = ({
 
           ))
 
-
         }
 
 
 
+
+
       </MapContainer>
+
 
 
     </div>
@@ -452,7 +569,9 @@ const LiveMap = ({
 
   );
 
+
 };
+
 
 
 export default LiveMap;
