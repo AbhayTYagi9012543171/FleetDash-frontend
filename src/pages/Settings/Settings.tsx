@@ -14,6 +14,9 @@ import {
   FiShield,
   FiDatabase,
   FiLock,
+  FiEdit,
+  FiRotateCcw,
+  FiX
 } from "react-icons/fi";
 
 
@@ -23,34 +26,28 @@ import { api } from "../../services/api";
 
 
 
-
-
 interface SettingsData {
 
+  emailNotification:boolean;
 
-emailNotification:boolean;
+  smsNotification:boolean;
 
-smsNotification:boolean;
+  darkMode:boolean;
 
-darkMode:boolean;
+  language:string;
 
-language:string;
+  timezone:string;
 
-timezone:string;
+  twoFactor:boolean;
 
-twoFactor:boolean;
-
-autoBackup:boolean;
+  autoBackup:boolean;
 
 }
 
 
 
-const Settings =()=>{
 
-
-
-const [settings,setSettings]=useState<SettingsData>({
+const defaultSettings:SettingsData={
 
 emailNotification:true,
 
@@ -66,20 +63,46 @@ twoFactor:false,
 
 autoBackup:true,
 
-});
-
-
-
-const [loading,setLoading]=useState(false);
-
-const [saving,setSaving]=useState(false);
+};
 
 
 
 
 
+const Settings=()=>{
 
-// ================= FETCH =================
+
+const [settings,setSettings]=
+useState<SettingsData>(
+defaultSettings
+);
+
+
+
+const [loading,setLoading]=
+useState(false);
+
+
+const [saving,setSaving]=
+useState(false);
+
+
+
+const [showPassword,setShowPassword]=
+useState(false);
+
+
+
+const [password,setPassword]=
+useState("");
+
+
+
+
+
+
+
+// ================= FETCH SETTINGS =================
 
 
 const fetchSettings=async()=>{
@@ -91,7 +114,7 @@ try{
 setLoading(true);
 
 
-const response =
+const response=
 await api.get("/settings");
 
 
@@ -99,11 +122,13 @@ await api.get("/settings");
 if(response.data?.success){
 
 setSettings(
-response.data.settings
+{
+...defaultSettings,
+...response.data.settings
+}
 );
 
 }
-
 
 
 }
@@ -115,7 +140,6 @@ console.error(error);
 toast.error(
 "Unable to load settings"
 );
-
 
 }
 
@@ -146,17 +170,12 @@ fetchSettings();
 
 
 
-
-
 // ================= UPDATE =================
 
 
 const updateSetting=(
-
 key:keyof SettingsData,
-
 value:boolean|string
-
 )=>{
 
 
@@ -217,9 +236,8 @@ console.error(error);
 
 
 toast.error(
-"Failed to update settings"
+"Settings update failed"
 );
-
 
 
 }
@@ -242,6 +260,70 @@ setSaving(false);
 
 
 
+
+// ================= RESET =================
+
+
+const resetSettings=()=>{
+
+
+setSettings(
+defaultSettings
+);
+
+
+toast.success(
+"Settings reset"
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+// ================= CHANGE PASSWORD =================
+
+
+const changePassword=()=>{
+
+
+if(password.length<6){
+
+toast.error(
+"Password minimum 6 characters"
+);
+
+return;
+
+}
+
+
+
+toast.success(
+"Password changed successfully"
+);
+
+
+
+setPassword("");
+
+setShowPassword(false);
+
+
+};
+
+
+
+
+
+
+
 if(loading){
 
 
@@ -252,12 +334,10 @@ h-64
 flex
 items-center
 justify-center
-text-xl
 font-semibold
 ">
 
 Loading Settings...
-
 
 </div>
 
@@ -276,8 +356,9 @@ Loading Settings...
 return (
 
 
-
 <div className="space-y-6">
+
+
 
 
 
@@ -304,7 +385,7 @@ Settings
 text-gray-500
 ">
 
-Manage your FleetDash account and system preferences
+Manage FleetDash account and system preferences
 
 </p>
 
@@ -319,7 +400,8 @@ Manage your FleetDash account and system preferences
 
 
 
-{/* PROFILE CARD */}
+
+{/* PROFILE */}
 
 
 
@@ -328,6 +410,13 @@ bg-white
 shadow
 rounded-xl
 p-6
+flex
+justify-between
+items-center
+">
+
+
+<div className="
 flex
 items-center
 gap-5
@@ -346,9 +435,7 @@ text-blue-600
 text-3xl
 ">
 
-
 <FiUser/>
-
 
 </div>
 
@@ -367,9 +454,11 @@ Admin User
 </h2>
 
 
-<p className="text-gray-500">
+<p className="
+text-gray-500
+">
 
-Fleet Manager Account
+Fleet Manager
 
 </p>
 
@@ -379,6 +468,38 @@ Fleet Manager Account
 
 
 </div>
+
+
+
+
+
+<button
+
+onClick={()=>toast.success("Profile edit opened")}
+
+className="
+flex
+items-center
+gap-2
+bg-blue-600
+text-white
+px-4
+py-2
+rounded-lg
+"
+
+>
+
+<FiEdit/>
+
+Edit Profile
+
+</button>
+
+
+
+</div>
+
 
 
 
@@ -401,33 +522,27 @@ gap-6
 
 
 
-{/* NOTIFICATIONS */}
-
-
-
 <SettingCard
-
-icon={<FiBell/>}
 
 title="Notifications"
 
->
+icon={<FiBell/>}
 
+>
 
 
 <Toggle
 
 label="Email Alerts"
 
-description="Receive vehicle and system alerts"
+description="Receive fleet alerts"
 
 checked={
 settings.emailNotification
 }
 
 onChange={
-v=>
-updateSetting(
+v=>updateSetting(
 "emailNotification",
 v
 )
@@ -438,27 +553,24 @@ v
 
 
 
-
 <Toggle
 
 label="SMS Alerts"
 
-description="Receive emergency messages"
+description="Emergency messages"
 
 checked={
 settings.smsNotification
 }
 
 onChange={
-v=>
-updateSetting(
+v=>updateSetting(
 "smsNotification",
 v
 )
 }
 
 />
-
 
 
 </SettingCard>
@@ -471,34 +583,27 @@ v
 
 
 
-
-
-{/* SECURITY */}
-
-
 <SettingCard
-
-icon={<FiShield/>}
 
 title="Security"
 
->
+icon={<FiShield/>}
 
+>
 
 
 <Toggle
 
 label="Two Factor Authentication"
 
-description="Protect account login"
+description="Secure account login"
 
 checked={
 settings.twoFactor
 }
 
 onChange={
-v=>
-updateSetting(
+v=>updateSetting(
 "twoFactor",
 v
 )
@@ -509,19 +614,20 @@ v
 
 
 <div className="
-flex
-items-center
-gap-3
 border
-p-3
 rounded-lg
+p-4
 ">
 
 
-<FiLock/>
+<div className="
+flex
+justify-between
+">
 
 
 <div>
+
 
 <p className="font-medium">
 
@@ -530,9 +636,12 @@ Password
 </p>
 
 
-<p className="text-sm text-gray-500">
+<p className="
+text-sm
+text-gray-500
+">
 
-Last changed 30 days ago
+Change account password
 
 </p>
 
@@ -540,19 +649,25 @@ Last changed 30 days ago
 </div>
 
 
-<button className="
-ml-auto
-text-blue-600
-">
+<button
 
-Change
+onClick={()=>setShowPassword(true)}
+
+className="
+text-blue-600
+"
+
+>
+
+<FiLock/>
 
 </button>
 
 
-
 </div>
 
+
+</div>
 
 
 
@@ -566,37 +681,27 @@ Change
 
 
 
-
-
-
-
-{/* APPEARANCE */}
-
-
-
 <SettingCard
-
-icon={<FiMoon/>}
 
 title="Appearance"
 
->
+icon={<FiMoon/>}
 
+>
 
 
 <Toggle
 
 label="Dark Mode"
 
-description="Enable dark dashboard theme"
+description="Enable dark theme"
 
 checked={
 settings.darkMode
 }
 
 onChange={
-v=>
-updateSetting(
+v=>updateSetting(
 "darkMode",
 v
 )
@@ -616,17 +721,11 @@ v
 
 
 
-
-
-{/* LANGUAGE */}
-
-
-
 <SettingCard
 
-icon={<FiGlobe/>}
+title="Language"
 
-title="Language Preference"
+icon={<FiGlobe/>}
 
 >
 
@@ -644,36 +743,24 @@ value={
 settings.language
 }
 
-
 onChange={
-e=>
-updateSetting(
+e=>updateSetting(
 "language",
 e.target.value
 )
 }
 
-
 >
 
 
-<option>
-English
-</option>
+<option>English</option>
 
+<option>Hindi</option>
 
-<option>
-Hindi
-</option>
-
-
-<option>
-French
-</option>
+<option>French</option>
 
 
 </select>
-
 
 
 </SettingCard>
@@ -686,25 +773,16 @@ French
 
 
 
-
-
-
-
-{/* TIMEZONE */}
-
-
-
 <SettingCard
 
-icon={<FiClock/>}
-
 title="Timezone"
+
+icon={<FiClock/>}
 
 >
 
 
-<input
-
+<select
 
 className="
 border
@@ -717,18 +795,32 @@ value={
 settings.timezone
 }
 
-
 onChange={
-e=>
-updateSetting(
+e=>updateSetting(
 "timezone",
 e.target.value
 )
 }
 
+>
 
-/>
 
+<option>
+Asia/Kolkata
+</option>
+
+
+<option>
+America/New_York
+</option>
+
+
+<option>
+Europe/London
+</option>
+
+
+</select>
 
 
 </SettingCard>
@@ -741,48 +833,39 @@ e.target.value
 
 
 
-
-
-
-
-{/* DATABASE */}
-
-
-
 <SettingCard
+
+title="Database"
 
 icon={<FiDatabase/>}
 
-title="Data Management"
-
 >
-
 
 
 <Toggle
 
 label="Automatic Backup"
 
-description="Backup fleet data daily"
+description="Daily fleet backup"
 
 checked={
 settings.autoBackup
 }
 
-
 onChange={
-v=>
-updateSetting(
+v=>updateSetting(
 "autoBackup",
 v
 )
 }
 
-
 />
 
 
+
 </SettingCard>
+
+
 
 
 
@@ -796,6 +879,10 @@ v
 
 
 
+<div className="
+flex
+gap-4
+">
 
 
 <button
@@ -804,21 +891,16 @@ onClick={saveSettings}
 
 disabled={saving}
 
-
 className="
 bg-blue-600
-hover:bg-blue-700
-disabled:bg-blue-300
 text-white
 px-6
 py-3
-rounded-xl
+rounded-lg
 flex
-items-center
 gap-2
-font-semibold
+items-center
 "
-
 
 >
 
@@ -827,19 +909,12 @@ font-semibold
 
 
 {
-
 saving
-
 ?
-
 "Saving..."
-
 :
-
 "Save Changes"
-
 }
-
 
 
 </button>
@@ -848,10 +923,161 @@ saving
 
 
 
+
+<button
+
+onClick={resetSettings}
+
+className="
+bg-gray-700
+text-white
+px-6
+py-3
+rounded-lg
+flex
+gap-2
+items-center
+"
+
+>
+
+
+<FiRotateCcw/>
+
+Reset
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* PASSWORD MODAL */}
+
+
+
+{
+showPassword &&
+
+
+<div className="
+fixed
+inset-0
+bg-black/40
+flex
+items-center
+justify-center
+">
+
+
+<div className="
+bg-white
+p-6
+rounded-xl
+w-96
+space-y-4
+">
+
+
+<div className="
+flex
+justify-between
+">
+
+
+<h2 className="
+text-xl
+font-bold
+">
+
+Change Password
+
+</h2>
+
+
+<button
+
+onClick={()=>setShowPassword(false)}
+
+>
+
+<FiX/>
+
+</button>
+
+
+</div>
+
+
+
+<input
+
+type="password"
+
+className="
+border
+p-3
+w-full
+rounded-lg
+"
+
+placeholder="New Password"
+
+value={password}
+
+onChange={
+e=>setPassword(e.target.value)
+}
+
+/>
+
+
+
+
+<button
+
+onClick={changePassword}
+
+className="
+bg-blue-600
+text-white
+w-full
+py-3
+rounded-lg
+"
+
+>
+
+Update Password
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+}
+
+
+
 </div>
 
 
 );
+
 
 };
 
@@ -863,23 +1089,19 @@ saving
 
 
 
-// ================= CARD =================
-
-
-
 const SettingCard=({
 
-icon,
-
 title,
+
+icon,
 
 children
 
 }:{
 
-icon:React.ReactNode;
-
 title:string;
+
+icon:React.ReactNode;
 
 children:React.ReactNode;
 
@@ -901,8 +1123,8 @@ space-y-5
 text-xl
 font-bold
 flex
-items-center
 gap-3
+items-center
 ">
 
 
@@ -919,7 +1141,6 @@ text-blue-600
 
 
 </h2>
-
 
 
 {children}
@@ -939,11 +1160,6 @@ text-blue-600
 
 
 
-
-
-
-
-// ================= TOGGLE =================
 
 
 const Toggle=({
@@ -966,12 +1182,10 @@ checked:boolean;
 
 onChange:(v:boolean)=>void;
 
-
 })=>{
 
 
 return (
-
 
 <div className="
 flex
@@ -981,7 +1195,6 @@ items-center
 
 
 <div>
-
 
 <p className="
 font-medium
@@ -1007,32 +1220,18 @@ text-gray-500
 
 
 
+
 <button
 
 onClick={()=>onChange(!checked)}
 
 className={`
-
 w-12
 h-6
 rounded-full
-transition
 p-1
-
-${
-
-checked
-
-?
-
-"bg-blue-600"
-
-:
-
-"bg-gray-300"
-
-}
-
+transition
+${checked?"bg-blue-600":"bg-gray-300"}
 `}
 
 >
@@ -1041,27 +1240,12 @@ checked
 <div
 
 className={`
-
 bg-white
 w-4
 h-4
 rounded-full
 transition
-
-${
-
-checked
-
-?
-
-"translate-x-6"
-
-:
-
-""
-
-}
-
+${checked?"translate-x-6":""}
 `}
 
 />
@@ -1078,7 +1262,6 @@ checked
 
 
 };
-
 
 
 
