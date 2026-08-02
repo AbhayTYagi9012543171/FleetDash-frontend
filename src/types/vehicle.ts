@@ -2,21 +2,21 @@ export interface Vehicle {
 
   _id?: string;
 
-  id?: number;
+  id?: string | number;
 
   vehicleNumber: string;
 
   driver?: string;
-
-  speed: number;
-
-  fuel: number;
 
   status:
     | "Active"
     | "Idle"
     | "Maintenance"
     | "Offline";
+
+  speed: number;
+
+  fuel: number;
 
   latitude: number;
 
