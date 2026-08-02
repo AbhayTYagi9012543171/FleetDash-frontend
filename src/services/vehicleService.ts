@@ -13,7 +13,11 @@ export interface Vehicle {
 
   fuel: number;
 
-  status: "Active" | "Idle" | "Offline";
+  status:
+    | "Active"
+    | "Idle"
+    | "Maintenance"
+    | "Offline";
 
   latitude: number;
 
@@ -32,7 +36,9 @@ export const vehicleService = {
 
   async getVehicles(): Promise<Vehicle[]> {
 
+
     const response = await api.get("/vehicles");
+
 
     console.log(
       "Vehicle API Data:",
@@ -40,7 +46,8 @@ export const vehicleService = {
     );
 
 
-    return response.data.vehicles;
+    return response.data.vehicles || [];
+
 
   },
 
@@ -52,11 +59,14 @@ export const vehicleService = {
 
   async getVehicle(id: string) {
 
+
     const response = await api.get(
       `/vehicles/${id}`
     );
 
+
     return response.data;
+
 
   },
 
@@ -66,7 +76,10 @@ export const vehicleService = {
   // CREATE VEHICLE
   // =====================
 
-  async createVehicle(data: Vehicle) {
+  async createVehicle(
+    data: Vehicle
+  ) {
+
 
     const response = await api.post(
       "/vehicles",
@@ -75,6 +88,7 @@ export const vehicleService = {
 
 
     return response.data;
+
 
   },
 
@@ -89,6 +103,7 @@ export const vehicleService = {
     data: Partial<Vehicle>
   ) {
 
+
     const response = await api.put(
       `/vehicles/${id}`,
       data
@@ -96,6 +111,7 @@ export const vehicleService = {
 
 
     return response.data;
+
 
   },
 
@@ -105,7 +121,10 @@ export const vehicleService = {
   // DELETE VEHICLE
   // =====================
 
-  async deleteVehicle(id: string) {
+  async deleteVehicle(
+    id: string
+  ) {
+
 
     const response = await api.delete(
       `/vehicles/${id}`
@@ -114,6 +133,8 @@ export const vehicleService = {
 
     return response.data;
 
+
   }
+
 
 };

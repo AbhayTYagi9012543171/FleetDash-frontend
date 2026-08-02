@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 
 import type { DashboardData } from "../../hooks/useDashboard";
+import type { DashboardStat } from "../../types/dashboard";
 
 
 interface KpiGridProps {
@@ -26,7 +27,7 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
 
 
-  const stats = [
+  const stats: DashboardStat[] = [
 
     {
       title: "Fleet Health Score",

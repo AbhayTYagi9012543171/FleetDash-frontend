@@ -1,4 +1,4 @@
-import React from "react";
+import type { IconType } from "react-icons";
 
 
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
 
   value: string;
 
-  icon: React.ElementType;
+  icon: IconType;
 
   color: string;
 

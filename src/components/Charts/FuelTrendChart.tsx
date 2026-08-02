@@ -2,15 +2,17 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
- PointElement,
+  PointElement,
   LineElement,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
 
+
 import { Line } from "react-chartjs-2";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+
 
 ChartJS.register(
   CategoryScale,
@@ -22,204 +24,410 @@ ChartJS.register(
   Filler
 );
 
+
+
 const FuelTrendChart = () => {
 
-  const [filter, setFilter] = useState("Monthly");
+
 
   const labels = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+
+    "Week 1",
+    "Week 2",
+    "Week 3",
+    "Week 4",
+
   ];
+
+
+
 
   const fuel = [
-    620,
-    680,
-    640,
-    720,
-    760,
-    790,
-    810,
-    845,
-    860,
-    890,
-    920,
-    980,
+
+    450,
+    520,
+    480,
+    600,
+
   ];
 
+
+
+
+
   const data = useMemo(
+
     () => ({
+
       labels,
-      datasets: [
+
+
+      datasets:[
+
         {
-          label: "Fuel Consumption (L)",
-          data: fuel,
-          borderColor: "#16a34a",
-          backgroundColor: "rgba(22,163,74,0.15)",
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        },
-      ],
+
+          label:"Fuel Consumption (Liters)",
+
+          data:fuel,
+
+          fill:true,
+
+          tension:0.4,
+
+          borderWidth:3,
+
+          pointRadius:5,
+
+          pointHoverRadius:7,
+
+        }
+
+      ]
+
+
     }),
+
     []
+
   );
+
+
+
+
+
 
   const options = {
 
-    responsive: true,
 
-    maintainAspectRatio: false,
+    responsive:true,
 
-    plugins: {
 
-      legend: {
+    maintainAspectRatio:false,
 
-        display: false,
 
-      },
+    plugins:{
 
-    },
 
-    scales: {
+      legend:{
 
-      y: {
-
-        beginAtZero: true,
+        display:true,
 
       },
 
+
+      tooltip:{
+
+
+        callbacks:{
+
+
+          label:(context:any)=>{
+
+            return `${context.raw} L consumed`;
+
+          }
+
+
+        }
+
+
+      }
+
+
     },
+
+
+
+    scales:{
+
+
+      y:{
+
+
+        beginAtZero:true,
+
+
+        ticks:{
+
+
+          callback:(value:any)=>{
+
+            return value+" L";
+
+          }
+
+
+        }
+
+
+      }
+
+
+    }
+
 
   };
-    return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
 
-      {/* Header */}
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
-        <div>
 
-          <h2 className="text-2xl font-bold text-slate-800">
-            Fuel Consumption Trend
-          </h2>
 
-          <p className="text-sm text-gray-500 mt-1">
-            Monitor fuel usage and efficiency
-          </p>
+return (
 
-        </div>
+<div
 
-        {/* Filters */}
+className="
+bg-white
+rounded-2xl
+shadow-lg
+border
+border-gray-200
+p-6
+"
 
-        <div className="flex gap-2 flex-wrap">
+>
 
-          {["Today", "Week", "Monthly", "Year"].map((item) => (
 
-            <button
-              key={item}
-              onClick={() => setFilter(item)}
-              className={`
-                px-4
-                py-2
-                rounded-lg
-                font-medium
-                transition
-                ${
-                  filter === item
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }
-              `}
-            >
-              {item}
-            </button>
+<div
+className="
+mb-6
+"
+>
 
-          ))}
 
-        </div>
+<h2
+className="
+text-2xl
+font-bold
+text-slate-800
+"
+>
 
-      </div>
+Fuel Consumption Trend
 
-      {/* Summary Cards */}
+</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
 
-        <div className="bg-green-50 rounded-xl p-5">
+<p
+className="
+text-sm
+text-gray-500
+mt-1
+"
+>
 
-          <p className="text-sm text-gray-500">
-            Fuel Used
-          </p>
+Weekly fuel usage monitoring
 
-          <h2 className="text-3xl font-bold text-green-700 mt-2">
-            980 L
-          </h2>
+</p>
 
-          <span className="text-green-600 font-semibold">
-            +6.8%
-          </span>
 
-        </div>
+</div>
 
-        <div className="bg-blue-50 rounded-xl p-5">
 
-          <p className="text-sm text-gray-500">
-            Average / Vehicle
-          </p>
 
-          <h2 className="text-3xl font-bold text-blue-700 mt-2">
-            48 L
-          </h2>
 
-          <span className="text-blue-600 font-semibold">
-            Efficient
-          </span>
 
-        </div>
 
-        <div className="bg-orange-50 rounded-xl p-5">
+<div
 
-          <p className="text-sm text-gray-500">
-            Fuel Efficiency
-          </p>
+className="
+grid
+grid-cols-1
+md:grid-cols-3
+gap-5
+mb-6
+"
 
-          <h2 className="text-3xl font-bold text-orange-600 mt-2">
-            16.8 km/L
-          </h2>
+>
 
-          <span className="text-green-600 font-semibold">
-            Excellent
-          </span>
 
-        </div>
 
-      </div>
 
-      {/* Chart */}
+<div
+className="
+bg-green-50
+rounded-xl
+p-5
+"
+>
 
-      <div className="h-96">
 
-        <Line
-          data={data}
-          options={options}
-        />
+<p className="text-sm text-gray-500">
 
-      </div>
+Total Fuel Used
 
-    </div>
-  );
+</p>
+
+
+<h3
+className="
+text-3xl
+font-bold
+text-green-700
+mt-2
+"
+>
+
+2050 L
+
+</h3>
+
+
+<span
+className="
+text-green-600
+font-semibold
+"
+>
+
++6.8%
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<div
+className="
+bg-blue-50
+rounded-xl
+p-5
+"
+>
+
+
+<p className="text-sm text-gray-500">
+
+Average / Week
+
+</p>
+
+
+<h3
+className="
+text-3xl
+font-bold
+text-blue-700
+mt-2
+"
+>
+
+512 L
+
+</h3>
+
+
+<span
+className="
+text-blue-600
+font-semibold
+"
+>
+
+Stable
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div
+className="
+bg-orange-50
+rounded-xl
+p-5
+"
+>
+
+
+<p className="text-sm text-gray-500">
+
+Fuel Efficiency
+
+</p>
+
+
+<h3
+className="
+text-3xl
+font-bold
+text-orange-600
+mt-2
+"
+>
+
+14.8 km/L
+
+</h3>
+
+
+<span
+className="
+text-green-600
+font-semibold
+"
+>
+
+Excellent
+
+</span>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<div
+className="
+h-96
+"
+>
+
+
+<Line
+
+data={data}
+
+options={options}
+
+/>
+
+
+</div>
+
+
+
+
+
+</div>
+
+);
+
 
 };
+
+
 
 export default FuelTrendChart;

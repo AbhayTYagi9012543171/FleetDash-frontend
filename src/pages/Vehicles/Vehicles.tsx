@@ -8,19 +8,9 @@ import {
 } from "react-icons/fi";
 
 import { vehicleService } from "../../services/vehicleService";
+import type { Vehicle } from "../../types/vehicle";
 
-interface Vehicle {
-  _id?: string;
-  vehicleNumber: string;
-  driver?: string;
-  speed: number;
-  fuel: number;
-  status: "Active" | "Idle" | "Offline";
-  latitude: number;
-  longitude: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
+
 
 const Vehicles = () => {
   // ==========================
@@ -40,7 +30,12 @@ const Vehicles = () => {
 
   const [formData, setFormData] = useState({
     vehicleNumber: "",
-    status: "Idle" as "Active" | "Idle" | "Offline",
+    status:
+  "Idle" as
+  | "Active"
+  | "Idle"
+  | "Maintenance"
+  | "Offline",
     speed: 0,
     fuel: 100,
     latitude: 28.6139,
