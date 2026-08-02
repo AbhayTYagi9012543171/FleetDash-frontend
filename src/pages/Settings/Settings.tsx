@@ -1,24 +1,43 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { FiSave } from "react-icons/fi";
+
+import {
+  FiSave,
+  FiBell,
+  FiMoon,
+  FiGlobe,
+  FiClock,
+} from "react-icons/fi";
+
+
+import toast from "react-hot-toast";
+
 
 import { api } from "../../services/api";
 
 
 
-interface SettingsData{
 
-emailNotification:boolean;
 
-smsNotification:boolean;
+interface SettingsData {
 
-darkMode:boolean;
+  emailNotification:boolean;
 
-language:string;
+  smsNotification:boolean;
 
-timezone:string;
+  darkMode:boolean;
+
+  language:string;
+
+  timezone:string;
 
 }
+
+
+
 
 
 
@@ -47,20 +66,37 @@ useState(false);
 
 
 
+const [saving,setSaving]=
+useState(false);
 
 
 
-const fetchSettings=async()=>{
+
+
+
+// ============================
+// Fetch Settings
+// ============================
+
+
+const fetchSettings = async()=>{
 
 
 try{
+
+
+setLoading(true);
+
 
 
 const response =
 await api.get("/settings");
 
 
-if(response.data.success){
+
+if(
+response.data?.success
+){
 
 setSettings(
 response.data.settings
@@ -73,7 +109,25 @@ response.data.settings
 
 catch(error){
 
-console.log(error);
+
+console.error(
+"Settings Error:",
+error
+);
+
+
+toast.error(
+"Failed to load settings"
+);
+
+
+}
+
+finally{
+
+
+setLoading(false);
+
 
 }
 
@@ -86,9 +140,12 @@ console.log(error);
 
 
 
+
 useEffect(()=>{
 
+
 fetchSettings();
+
 
 },[]);
 
@@ -99,7 +156,19 @@ fetchSettings();
 
 
 
-const updateSetting=(key:keyof SettingsData,value:any)=>{
+
+// ============================
+// Update State
+// ============================
+
+
+const updateSetting = (
+
+key:keyof SettingsData,
+
+value:boolean|string
+
+)=>{
 
 
 setSettings({
@@ -121,38 +190,59 @@ setSettings({
 
 
 
-const saveSettings=async()=>{
+// ============================
+// Save
+// ============================
+
+
+const saveSettings = async()=>{
 
 
 try{
 
 
-setLoading(true);
+setSaving(true);
+
 
 
 await api.put(
+
 "/settings",
+
 settings
+
 );
 
 
 
-alert(
-"Settings Updated Successfully"
+toast.success(
+"Settings updated successfully"
 );
+
 
 
 }
 
 catch(error){
 
-console.log(error);
+
+console.error(
+error
+);
+
+
+toast.error(
+"Update failed"
+);
+
 
 }
 
 finally{
 
-setLoading(false);
+
+setSaving(false);
+
 
 }
 
@@ -167,12 +257,48 @@ setLoading(false);
 
 
 
+if(loading){
+
+
+return (
+
+<div className="
+flex
+justify-center
+items-center
+h-64
+">
+
+Loading Settings...
+
+
+</div>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
 return (
 
 <div className="space-y-6">
 
 
-<h1 className="text-3xl font-bold">
+
+
+
+<h1 className="
+text-3xl
+font-bold
+text-gray-800
+">
 
 Settings
 
@@ -181,68 +307,90 @@ Settings
 
 
 
-<div className="bg-white shadow rounded-xl p-6 space-y-5">
+
+<div className="
+grid
+grid-cols-1
+lg:grid-cols-2
+gap-6
+">
 
 
 
-<div className="flex justify-between">
 
 
-<span>
-Email Notification
-</span>
+
+{/* Notification */}
 
 
-<input
+<div className="
+bg-white
+rounded-xl
+shadow
+p-6
+space-y-5
+">
 
-type="checkbox"
+
+<h2 className="
+text-xl
+font-bold
+flex
+items-center
+gap-2
+">
+
+<FiBell/>
+
+Notifications
+
+</h2>
+
+
+
+
+
+<Toggle
+
+label="Email Notification"
 
 checked={
 settings.emailNotification
 }
 
 onChange={
-(e)=>
+(value)=>
 updateSetting(
 "emailNotification",
-e.target.checked
+value
 )
 }
 
 />
 
 
-</div>
 
 
 
+<Toggle
 
-
-<div className="flex justify-between">
-
-
-<span>
-SMS Notification
-</span>
-
-
-<input
-
-type="checkbox"
+label="SMS Notification"
 
 checked={
 settings.smsNotification
 }
 
 onChange={
-(e)=>
+(value)=>
 updateSetting(
 "smsNotification",
-e.target.checked
+value
 )
 }
 
 />
+
+
 
 
 </div>
@@ -252,31 +400,57 @@ e.target.checked
 
 
 
-<div className="flex justify-between">
 
 
-<span>
-Dark Mode
-</span>
+
+{/* Appearance */}
 
 
-<input
+<div className="
+bg-white
+rounded-xl
+shadow
+p-6
+space-y-5
+">
 
-type="checkbox"
+
+<h2 className="
+text-xl
+font-bold
+flex
+items-center
+gap-2
+">
+
+<FiMoon/>
+
+Appearance
+
+</h2>
+
+
+
+
+
+<Toggle
+
+label="Dark Mode"
 
 checked={
 settings.darkMode
 }
 
 onChange={
-(e)=>
+(value)=>
 updateSetting(
 "darkMode",
-e.target.checked
+value
 )
 }
 
 />
+
 
 
 </div>
@@ -286,17 +460,46 @@ e.target.checked
 
 
 
-<div>
 
 
-<label>
+
+{/* Language */}
+
+
+
+<div className="
+bg-white
+rounded-xl
+shadow
+p-6
+space-y-4
+">
+
+
+<h2 className="
+text-xl
+font-bold
+flex
+items-center
+gap-2
+">
+
+<FiGlobe/>
+
 Language
-</label>
+
+</h2>
+
 
 
 <select
 
-className="border p-2 rounded w-full"
+className="
+border
+rounded-lg
+p-3
+w-full
+"
 
 value={
 settings.language
@@ -326,6 +529,7 @@ Hindi
 </select>
 
 
+
 </div>
 
 
@@ -334,17 +538,46 @@ Hindi
 
 
 
-<div>
 
 
-<label>
+{/* Timezone */}
+
+
+
+<div className="
+bg-white
+rounded-xl
+shadow
+p-6
+space-y-4
+">
+
+
+<h2 className="
+text-xl
+font-bold
+flex
+items-center
+gap-2
+">
+
+<FiClock/>
+
 Timezone
-</label>
+
+</h2>
+
+
 
 
 <input
 
-className="border p-2 rounded w-full"
+className="
+border
+rounded-lg
+p-3
+w-full
+"
 
 value={
 settings.timezone
@@ -361,7 +594,18 @@ e.target.value
 />
 
 
+
 </div>
+
+
+
+
+
+
+
+</div>
+
+
 
 
 
@@ -373,7 +617,20 @@ e.target.value
 
 onClick={saveSettings}
 
-className="bg-blue-600 text-white px-5 py-3 rounded-lg flex items-center gap-2"
+disabled={saving}
+
+className="
+bg-blue-600
+hover:bg-blue-700
+disabled:bg-blue-300
+text-white
+px-6
+py-3
+rounded-lg
+flex
+items-center
+gap-2
+"
 
 >
 
@@ -382,7 +639,7 @@ className="bg-blue-600 text-white px-5 py-3 rounded-lg flex items-center gap-2"
 
 
 {
-loading
+saving
 ?
 "Saving..."
 :
@@ -399,6 +656,126 @@ loading
 </div>
 
 
+);
+
+
+};
+
+
+
+
+
+
+
+
+
+
+// ============================
+// Toggle Component
+// ============================
+
+
+const Toggle =({
+
+label,
+
+checked,
+
+onChange
+
+}:{
+
+label:string;
+
+checked:boolean;
+
+onChange:(value:boolean)=>void;
+
+})=>{
+
+
+return (
+
+<div className="
+flex
+justify-between
+items-center
+">
+
+
+<span>
+
+{label}
+
+</span>
+
+
+
+
+<button
+
+onClick={()=>onChange(!checked)}
+
+className={`
+
+w-12
+h-6
+rounded-full
+p-1
+transition
+
+${
+
+checked
+
+?
+
+"bg-blue-600"
+
+:
+
+"bg-gray-300"
+
+}
+
+`}
+
+>
+
+
+<div
+
+className={`
+
+bg-white
+w-4
+h-4
+rounded-full
+transition
+
+${
+
+checked
+
+?
+
+"translate-x-6"
+
+:
+
+""
+
+}
+
+`}
+
+/>
+
+
+</button>
+
+
+
 </div>
 
 
@@ -406,6 +783,9 @@ loading
 
 
 };
+
+
+
 
 
 export default Settings;
