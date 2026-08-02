@@ -10,11 +10,14 @@ import {
   FiMoon,
   FiGlobe,
   FiClock,
+  FiUser,
+  FiShield,
+  FiDatabase,
+  FiLock,
 } from "react-icons/fi";
 
 
 import toast from "react-hot-toast";
-
 
 import { api } from "../../services/api";
 
@@ -24,28 +27,30 @@ import { api } from "../../services/api";
 
 interface SettingsData {
 
-  emailNotification:boolean;
 
-  smsNotification:boolean;
+emailNotification:boolean;
 
-  darkMode:boolean;
+smsNotification:boolean;
 
-  language:string;
+darkMode:boolean;
 
-  timezone:string;
+language:string;
+
+timezone:string;
+
+twoFactor:boolean;
+
+autoBackup:boolean;
 
 }
-
-
-
 
 
 
 const Settings =()=>{
 
 
-const [settings,setSettings]=
-useState<SettingsData>({
+
+const [settings,setSettings]=useState<SettingsData>({
 
 emailNotification:true,
 
@@ -55,31 +60,29 @@ darkMode:false,
 
 language:"English",
 
-timezone:"Asia/Kolkata"
+timezone:"Asia/Kolkata",
+
+twoFactor:false,
+
+autoBackup:true,
 
 });
 
 
 
-const [loading,setLoading]=
-useState(false);
+const [loading,setLoading]=useState(false);
 
-
-
-const [saving,setSaving]=
-useState(false);
+const [saving,setSaving]=useState(false);
 
 
 
 
 
 
-// ============================
-// Fetch Settings
-// ============================
+// ================= FETCH =================
 
 
-const fetchSettings = async()=>{
+const fetchSettings=async()=>{
 
 
 try{
@@ -88,15 +91,12 @@ try{
 setLoading(true);
 
 
-
 const response =
 await api.get("/settings");
 
 
 
-if(
-response.data?.success
-){
+if(response.data?.success){
 
 setSettings(
 response.data.settings
@@ -105,19 +105,15 @@ response.data.settings
 }
 
 
+
 }
 
 catch(error){
 
-
-console.error(
-"Settings Error:",
-error
-);
-
+console.error(error);
 
 toast.error(
-"Failed to load settings"
+"Unable to load settings"
 );
 
 
@@ -125,9 +121,7 @@ toast.error(
 
 finally{
 
-
 setLoading(false);
-
 
 }
 
@@ -140,12 +134,9 @@ setLoading(false);
 
 
 
-
 useEffect(()=>{
 
-
 fetchSettings();
-
 
 },[]);
 
@@ -157,12 +148,10 @@ fetchSettings();
 
 
 
-// ============================
-// Update State
-// ============================
+// ================= UPDATE =================
 
 
-const updateSetting = (
+const updateSetting=(
 
 key:keyof SettingsData,
 
@@ -190,12 +179,10 @@ setSettings({
 
 
 
-// ============================
-// Save
-// ============================
+// ================= SAVE =================
 
 
-const saveSettings = async()=>{
+const saveSettings=async()=>{
 
 
 try{
@@ -216,7 +203,7 @@ settings
 
 
 toast.success(
-"Settings updated successfully"
+"Settings saved successfully"
 );
 
 
@@ -226,14 +213,13 @@ toast.success(
 catch(error){
 
 
-console.error(
-error
-);
+console.error(error);
 
 
 toast.error(
-"Update failed"
+"Failed to update settings"
 );
+
 
 
 }
@@ -256,24 +242,24 @@ setSaving(false);
 
 
 
-
 if(loading){
 
 
 return (
 
 <div className="
-flex
-justify-center
-items-center
 h-64
+flex
+items-center
+justify-center
+text-xl
+font-semibold
 ">
 
 Loading Settings...
 
 
 </div>
-
 
 );
 
@@ -286,12 +272,21 @@ Loading Settings...
 
 
 
+
 return (
+
+
 
 <div className="space-y-6">
 
 
 
+
+
+{/* HEADER */}
+
+
+<div>
 
 
 <h1 className="
@@ -303,6 +298,91 @@ text-gray-800
 Settings
 
 </h1>
+
+
+<p className="
+text-gray-500
+">
+
+Manage your FleetDash account and system preferences
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* PROFILE CARD */}
+
+
+
+<div className="
+bg-white
+shadow
+rounded-xl
+p-6
+flex
+items-center
+gap-5
+">
+
+
+<div className="
+w-16
+h-16
+rounded-full
+bg-blue-100
+flex
+items-center
+justify-center
+text-blue-600
+text-3xl
+">
+
+
+<FiUser/>
+
+
+</div>
+
+
+
+<div>
+
+
+<h2 className="
+text-xl
+font-bold
+">
+
+Admin User
+
+</h2>
+
+
+<p className="text-gray-500">
+
+Fleet Manager Account
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
 
 
 
@@ -320,49 +400,36 @@ gap-6
 
 
 
-{/* Notification */}
+
+{/* NOTIFICATIONS */}
 
 
-<div className="
-bg-white
-rounded-xl
-shadow
-p-6
-space-y-5
-">
 
+<SettingCard
 
-<h2 className="
-text-xl
-font-bold
-flex
-items-center
-gap-2
-">
+icon={<FiBell/>}
 
-<FiBell/>
+title="Notifications"
 
-Notifications
-
-</h2>
-
-
+>
 
 
 
 <Toggle
 
-label="Email Notification"
+label="Email Alerts"
+
+description="Receive vehicle and system alerts"
 
 checked={
 settings.emailNotification
 }
 
 onChange={
-(value)=>
+v=>
 updateSetting(
 "emailNotification",
-value
+v
 )
 }
 
@@ -374,22 +441,113 @@ value
 
 <Toggle
 
-label="SMS Notification"
+label="SMS Alerts"
+
+description="Receive emergency messages"
 
 checked={
 settings.smsNotification
 }
 
 onChange={
-(value)=>
+v=>
 updateSetting(
 "smsNotification",
-value
+v
 )
 }
 
 />
 
+
+
+</SettingCard>
+
+
+
+
+
+
+
+
+
+
+
+{/* SECURITY */}
+
+
+<SettingCard
+
+icon={<FiShield/>}
+
+title="Security"
+
+>
+
+
+
+<Toggle
+
+label="Two Factor Authentication"
+
+description="Protect account login"
+
+checked={
+settings.twoFactor
+}
+
+onChange={
+v=>
+updateSetting(
+"twoFactor",
+v
+)
+}
+
+/>
+
+
+
+<div className="
+flex
+items-center
+gap-3
+border
+p-3
+rounded-lg
+">
+
+
+<FiLock/>
+
+
+<div>
+
+<p className="font-medium">
+
+Password
+
+</p>
+
+
+<p className="text-sm text-gray-500">
+
+Last changed 30 days ago
+
+</p>
+
+
+</div>
+
+
+<button className="
+ml-auto
+text-blue-600
+">
+
+Change
+
+</button>
 
 
 
@@ -398,38 +556,31 @@ value
 
 
 
+</SettingCard>
 
 
 
 
 
-{/* Appearance */}
 
 
-<div className="
-bg-white
-rounded-xl
-shadow
-p-6
-space-y-5
-">
 
 
-<h2 className="
-text-xl
-font-bold
-flex
-items-center
-gap-2
-">
-
-<FiMoon/>
-
-Appearance
-
-</h2>
 
 
+
+
+{/* APPEARANCE */}
+
+
+
+<SettingCard
+
+icon={<FiMoon/>}
+
+title="Appearance"
+
+>
 
 
 
@@ -437,15 +588,17 @@ Appearance
 
 label="Dark Mode"
 
+description="Enable dark dashboard theme"
+
 checked={
 settings.darkMode
 }
 
 onChange={
-(value)=>
+v=>
 updateSetting(
 "darkMode",
-value
+v
 )
 }
 
@@ -453,7 +606,7 @@ value
 
 
 
-</div>
+</SettingCard>
 
 
 
@@ -463,33 +616,19 @@ value
 
 
 
-{/* Language */}
+
+
+{/* LANGUAGE */}
 
 
 
-<div className="
-bg-white
-rounded-xl
-shadow
-p-6
-space-y-4
-">
+<SettingCard
 
+icon={<FiGlobe/>}
 
-<h2 className="
-text-xl
-font-bold
-flex
-items-center
-gap-2
-">
+title="Language Preference"
 
-<FiGlobe/>
-
-Language
-
-</h2>
-
+>
 
 
 <select
@@ -505,13 +644,15 @@ value={
 settings.language
 }
 
+
 onChange={
-(e)=>
+e=>
 updateSetting(
 "language",
 e.target.value
 )
 }
+
 
 >
 
@@ -526,11 +667,16 @@ Hindi
 </option>
 
 
+<option>
+French
+</option>
+
+
 </select>
 
 
 
-</div>
+</SettingCard>
 
 
 
@@ -540,37 +686,25 @@ Hindi
 
 
 
-{/* Timezone */}
 
 
 
-<div className="
-bg-white
-rounded-xl
-shadow
-p-6
-space-y-4
-">
+
+{/* TIMEZONE */}
 
 
-<h2 className="
-text-xl
-font-bold
-flex
-items-center
-gap-2
-">
 
-<FiClock/>
+<SettingCard
 
-Timezone
+icon={<FiClock/>}
 
-</h2>
+title="Timezone"
 
-
+>
 
 
 <input
+
 
 className="
 border
@@ -583,21 +717,72 @@ value={
 settings.timezone
 }
 
+
 onChange={
-(e)=>
+e=>
 updateSetting(
 "timezone",
 e.target.value
 )
 }
 
+
 />
 
 
 
-</div>
+</SettingCard>
 
 
+
+
+
+
+
+
+
+
+
+
+
+{/* DATABASE */}
+
+
+
+<SettingCard
+
+icon={<FiDatabase/>}
+
+title="Data Management"
+
+>
+
+
+
+<Toggle
+
+label="Automatic Backup"
+
+description="Backup fleet data daily"
+
+checked={
+settings.autoBackup
+}
+
+
+onChange={
+v=>
+updateSetting(
+"autoBackup",
+v
+)
+}
+
+
+/>
+
+
+</SettingCard>
 
 
 
@@ -619,6 +804,7 @@ onClick={saveSettings}
 
 disabled={saving}
 
+
 className="
 bg-blue-600
 hover:bg-blue-700
@@ -626,11 +812,13 @@ disabled:bg-blue-300
 text-white
 px-6
 py-3
-rounded-lg
+rounded-xl
 flex
 items-center
 gap-2
+font-semibold
 "
+
 
 >
 
@@ -639,18 +827,102 @@ gap-2
 
 
 {
+
 saving
+
 ?
+
 "Saving..."
+
 :
-"Save Settings"
+
+"Save Changes"
+
 }
+
 
 
 </button>
 
 
 
+
+
+</div>
+
+
+);
+
+};
+
+
+
+
+
+
+
+
+
+// ================= CARD =================
+
+
+
+const SettingCard=({
+
+icon,
+
+title,
+
+children
+
+}:{
+
+icon:React.ReactNode;
+
+title:string;
+
+children:React.ReactNode;
+
+})=>{
+
+
+return (
+
+<div className="
+bg-white
+shadow
+rounded-xl
+p-6
+space-y-5
+">
+
+
+<h2 className="
+text-xl
+font-bold
+flex
+items-center
+gap-3
+">
+
+
+<span className="
+text-blue-600
+">
+
+{icon}
+
+</span>
+
+
+{title}
+
+
+</h2>
+
+
+
+{children}
 
 
 </div>
@@ -670,14 +942,15 @@ saving
 
 
 
-// ============================
-// Toggle Component
-// ============================
+
+// ================= TOGGLE =================
 
 
-const Toggle =({
+const Toggle=({
 
 label,
+
+description,
 
 checked,
 
@@ -687,14 +960,18 @@ onChange
 
 label:string;
 
+description:string;
+
 checked:boolean;
 
-onChange:(value:boolean)=>void;
+onChange:(v:boolean)=>void;
+
 
 })=>{
 
 
 return (
+
 
 <div className="
 flex
@@ -703,11 +980,29 @@ items-center
 ">
 
 
-<span>
+<div>
+
+
+<p className="
+font-medium
+">
 
 {label}
 
-</span>
+</p>
+
+
+<p className="
+text-sm
+text-gray-500
+">
+
+{description}
+
+</p>
+
+
+</div>
 
 
 
@@ -721,8 +1016,8 @@ className={`
 w-12
 h-6
 rounded-full
-p-1
 transition
+p-1
 
 ${
 
@@ -783,6 +1078,7 @@ checked
 
 
 };
+
 
 
 
