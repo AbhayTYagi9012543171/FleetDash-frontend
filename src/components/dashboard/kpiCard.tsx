@@ -1,13 +1,23 @@
 import React from "react";
 
+
 interface Props {
+
   title: string;
+
   value: string;
+
   icon: React.ElementType;
+
   color: string;
+
   description: string;
+
   trend?: string;
+
 }
+
+
 
 const KpiCard = ({
   title,
@@ -17,8 +27,43 @@ const KpiCard = ({
   description,
   trend,
 }: Props) => {
+
+
+
+  const getTrendStyle = () => {
+
+    if (!trend) return "";
+
+
+    if (
+      trend.includes("-")
+    ) {
+
+      return "bg-red-100 text-red-600";
+
+    }
+
+
+    if (
+      trend === "Attention"
+    ) {
+
+      return "bg-orange-100 text-orange-600";
+
+    }
+
+
+    return "bg-green-100 text-green-600";
+
+  };
+
+
+
+
   return (
+
     <div
+
       className="
       bg-white
       rounded-2xl
@@ -31,44 +76,82 @@ const KpiCard = ({
       duration-300
       p-5
       "
+
     >
 
-      <div className="flex items-center justify-between">
+
+
+      <div
+        className="
+        flex
+        items-center
+        justify-between
+        gap-4
+        "
+      >
+
+
+
 
         <div>
 
-          <p className="
-          text-xs
-          uppercase
-          tracking-wide
-          text-gray-500
-          ">
+
+          <p
+            className="
+            text-xs
+            uppercase
+            tracking-wider
+            text-gray-500
+            font-semibold
+            "
+          >
+
             {title}
+
           </p>
 
 
-          <h2 className="
-          text-3xl
-          font-bold
-          text-gray-900
-          mt-2
-          ">
+
+
+
+          <h2
+            className="
+            text-3xl
+            font-bold
+            text-gray-900
+            mt-2
+            "
+          >
+
             {value}
+
           </h2>
 
 
-          <p className="
-          text-sm
-          text-gray-400
-          mt-2
-          ">
+
+
+
+          <p
+            className="
+            text-sm
+            text-gray-400
+            mt-2
+            "
+          >
+
             {description}
+
           </p>
+
+
+
 
 
           {
             trend && (
+
               <span
+
                 className={`
                 inline-block
                 mt-3
@@ -77,32 +160,31 @@ const KpiCard = ({
                 px-3
                 py-1
                 rounded-full
-
-                ${
-                  trend.includes("-")
-                  ?
-                  "bg-red-100 text-red-600"
-                  :
-                  trend === "Attention"
-                  ?
-                  "bg-orange-100 text-orange-600"
-                  :
-                  "bg-green-100 text-green-600"
-                }
-
+                ${getTrendStyle()}
                 `}
+
               >
+
                 {trend}
+
               </span>
+
             )
+
           }
+
 
 
         </div>
 
 
 
+
+
+
+
         <div
+
           className={`
           ${color}
           h-14
@@ -112,20 +194,40 @@ const KpiCard = ({
           items-center
           justify-center
           shadow-lg
+          flex-shrink-0
           `}
+
         >
 
-          <Icon className="text-white text-2xl" />
+
+          <Icon
+
+            className="
+            text-white
+            text-2xl
+            "
+
+            aria-hidden="true"
+
+          />
+
 
         </div>
+
+
 
 
       </div>
 
 
+
+
     </div>
+
   );
+
 };
+
 
 
 export default KpiCard;
