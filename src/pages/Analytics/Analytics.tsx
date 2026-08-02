@@ -3,14 +3,18 @@ import {
   useState,
 } from "react";
 
+
+
 import {
   FiRefreshCw,
   FiTruck,
   FiUsers,
   FiAlertTriangle,
   FiFileText,
+  FiDownload,
+  FiDollarSign,
+  FiDroplet,
 } from "react-icons/fi";
-
 
 import {
   Chart as ChartJS,
@@ -30,6 +34,10 @@ import {
   Doughnut,
   Line,
 } from "react-chartjs-2";
+
+
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 import {
@@ -81,6 +89,12 @@ totalAlerts:number;
 
 totalReports:number;
 
+fuelConsumed:number;
+
+revenue:number;
+
+fleetHealth:number;
+
 
 }
 
@@ -90,13 +104,9 @@ totalReports:number;
 
 
 
-const Analytics =()=>{
 
+const defaultData:AnalyticsData={
 
-
-const [analytics,setAnalytics]
-=
-useState<AnalyticsData>({
 
 totalVehicles:0,
 
@@ -110,29 +120,16 @@ totalDrivers:0,
 
 totalAlerts:0,
 
-totalReports:0
+totalReports:0,
 
-});
+fuelConsumed:0,
 
+revenue:0,
 
-
-
-
-const [loading,setLoading]
-=
-useState(true);
+fleetHealth:0
 
 
-
-const [refreshing,setRefreshing]
-=
-useState(false);
-
-
-
-const [error,setError]
-=
-useState("");
+};
 
 
 
@@ -141,11 +138,47 @@ useState("");
 
 
 
+const Analytics=()=>{
 
-// Fetch Analytics
 
-const fetchAnalytics =
-async()=>{
+const [
+analytics,
+setAnalytics
+]=useState<AnalyticsData>(
+defaultData
+);
+
+
+
+const [
+loading,
+setLoading
+]=useState(true);
+
+
+
+const [
+refreshing,
+setRefreshing
+]=useState(false);
+
+
+
+const [
+error,
+setError
+]=useState("");
+
+
+
+
+
+
+
+// ================= FETCH =================
+
+
+const fetchAnalytics=async()=>{
 
 
 try{
@@ -156,91 +189,65 @@ setError("");
 
 
 const response =
-await api.get("/analytics");
-
-
-
-console.log(
-"Analytics API:",
-response.data
+await api.get(
+"/analytics"
 );
-
 
 
 
 const data =
 
-response.data.analytics ||
+response.data?.analytics ||
 
-response.data.data ||
+response.data?.data ||
 
 response.data;
 
 
 
-
-
 setAnalytics({
 
-totalVehicles:
-data.totalVehicles || 0,
+totalVehicles:data.totalVehicles || 0,
 
+activeVehicles:data.activeVehicles || 0,
 
-activeVehicles:
-data.activeVehicles || 0,
+idleVehicles:data.idleVehicles || 0,
 
+offlineVehicles:data.offlineVehicles || 0,
 
-idleVehicles:
-data.idleVehicles || 0,
+totalDrivers:data.totalDrivers || 0,
 
+totalAlerts:data.totalAlerts || 0,
 
-offlineVehicles:
-data.offlineVehicles || 0,
+totalReports:data.totalReports || 0,
 
+fuelConsumed:data.fuelConsumed || 0,
 
-totalDrivers:
-data.totalDrivers || 0,
+revenue:data.revenue || 0,
 
-
-totalAlerts:
-data.totalAlerts || 0,
-
-
-totalReports:
-data.totalReports || 0,
-
+fleetHealth:data.fleetHealth || 0
 
 });
 
 
-
-
 }
-
 catch(error:any){
-
-
-console.error(error);
-
 
 
 setError(
 
 error?.response?.data?.message ||
 
-"Failed to load analytics"
+"Analytics loading failed"
 
 );
 
 
-
 }
-
 finally{
 
 
 setLoading(false);
-
 
 setRefreshing(false);
 
@@ -249,9 +256,6 @@ setRefreshing(false);
 
 
 };
-
-
-
 
 
 
@@ -272,10 +276,7 @@ fetchAnalytics();
 
 
 
-
-
-const handleRefresh =
-async()=>{
+const refresh=async()=>{
 
 
 setRefreshing(true);
@@ -293,8 +294,101 @@ await fetchAnalytics();
 
 
 
+// ================= EXPORT PDF =================
 
-const StatCard =({
+
+const exportPDF=()=>{
+
+
+const pdf =
+new jsPDF();
+
+
+
+pdf.text(
+"FleetDash Analytics Report",
+14,
+15
+);
+
+
+
+autoTable(pdf,{
+
+startY:25,
+
+
+head:[
+
+[
+"Metric",
+"Value"
+]
+
+],
+
+
+body:[
+
+[
+"Total Vehicles",
+analytics.totalVehicles
+],
+
+[
+"Active Vehicles",
+analytics.activeVehicles
+],
+
+[
+"Drivers",
+analytics.totalDrivers
+],
+
+[
+"Alerts",
+analytics.totalAlerts
+],
+
+[
+"Revenue",
+analytics.revenue
+],
+
+[
+"Fuel",
+analytics.fuelConsumed
+],
+
+[
+"Fleet Health",
+`${analytics.fleetHealth}%`
+]
+
+
+]
+
+
+});
+
+
+pdf.save(
+"FleetDash_Analytics.pdf"
+);
+
+
+
+};
+
+
+
+
+
+
+
+
+
+const Card=({
 
 title,
 
@@ -306,13 +400,12 @@ icon
 
 title:string;
 
-value:number;
+value:string|number;
 
 icon:React.ReactNode;
 
 
 })=>(
-
 
 
 <div className="
@@ -326,7 +419,6 @@ p-5
 <div className="
 flex
 justify-between
-items-center
 ">
 
 
@@ -339,16 +431,14 @@ text-gray-500
 </p>
 
 
-
 <div className="
-text-xl
 text-blue-600
+text-xl
 ">
 
 {icon}
 
 </div>
-
 
 
 </div>
@@ -371,13 +461,10 @@ value
 }
 
 
-
 </h2>
 
 
-
 </div>
-
 
 
 );
@@ -390,7 +477,8 @@ value
 
 
 
-const vehicleStatusChart={
+
+const vehicleChart={
 
 
 labels:[
@@ -418,6 +506,7 @@ analytics.offlineVehicles
 
 ]
 
+
 }]
 
 
@@ -429,16 +518,18 @@ analytics.offlineVehicles
 
 
 
-const fleetDistributionChart={
+
+
+const fleetChart={
 
 
 labels:[
 
-"Active Fleet",
+"Active",
 
-"Idle Fleet",
+"Idle",
 
-"Offline Fleet"
+"Offline"
 
 ],
 
@@ -468,54 +559,9 @@ analytics.offlineVehicles
 
 
 
-const systemOverviewChart={
 
 
-labels:[
-
-"Vehicles",
-
-"Drivers",
-
-"Alerts",
-
-"Reports"
-
-],
-
-
-datasets:[{
-
-
-label:"Total",
-
-data:[
-
-analytics.totalVehicles,
-
-analytics.totalDrivers,
-
-analytics.totalAlerts,
-
-analytics.totalReports
-
-]
-
-
-}]
-
-
-};
-
-
-
-
-
-
-
-
-
-const fleetActivityChart={
+const revenueChart={
 
 
 labels:[
@@ -538,21 +584,21 @@ labels:[
 datasets:[{
 
 
-label:"Vehicle Activity",
+label:"Revenue",
 
 data:[
 
-12,
+120000,
 
-25,
+180000,
 
-18,
+250000,
 
-35,
+220000,
 
-30,
+300000,
 
-45
+analytics.revenue
 
 ]
 
@@ -569,7 +615,63 @@ data:[
 
 
 
-const chartOptions={
+
+
+const fuelChart={
+
+
+labels:[
+
+"Jan",
+
+"Feb",
+
+"Mar",
+
+"Apr",
+
+"May",
+
+"Jun"
+
+],
+
+
+datasets:[{
+
+
+label:"Fuel Consumption",
+
+data:[
+
+3000,
+
+3500,
+
+2800,
+
+4200,
+
+3900,
+
+analytics.fuelConsumed
+
+]
+
+
+}]
+
+
+};
+
+
+
+
+
+
+
+
+const options={
 
 
 responsive:true,
@@ -581,7 +683,8 @@ plugins:{
 legend:{
 
 
-position:"bottom" as const
+position:
+"bottom" as const
 
 
 }
@@ -600,7 +703,7 @@ position:"bottom" as const
 
 
 
-return(
+return (
 
 
 <div className="
@@ -614,18 +717,14 @@ space-y-8
 
 
 
-
-{/* Header */}
+{/* HEADER */}
 
 
 <div className="
 flex
-flex-col
-sm:flex-row
 justify-between
-gap-4
+items-center
 ">
-
 
 
 <div>
@@ -641,15 +740,13 @@ Analytics Dashboard
 </h1>
 
 
-
 <p className="
 text-gray-500
 ">
 
-Fleet performance overview
+Fleet performance intelligence
 
 </p>
-
 
 
 </div>
@@ -658,15 +755,15 @@ Fleet performance overview
 
 
 
+<div className="
+flex
+gap-3
+">
+
 
 <button
 
-
-onClick={handleRefresh}
-
-
-disabled={refreshing}
-
+onClick={refresh}
 
 className="
 bg-blue-600
@@ -677,21 +774,17 @@ rounded-lg
 flex
 items-center
 gap-2
-disabled:opacity-50
 "
-
 
 >
 
 
 <FiRefreshCw
-
-className={
-  refreshing
-    ? "animate-spin"
-    : ""
-}
-
+  className={
+    refreshing
+      ? "animate-spin"
+      : ""
+  }
 />
 
 
@@ -702,6 +795,35 @@ Refresh
 
 
 
+
+
+<button
+
+onClick={exportPDF}
+
+className="
+bg-green-600
+text-white
+px-5
+py-3
+rounded-lg
+flex
+gap-2
+items-center
+"
+
+>
+
+
+<FiDownload/>
+
+Export
+
+
+</button>
+
+
+</div>
 
 
 </div>
@@ -717,7 +839,6 @@ Refresh
 {
 error &&
 
-
 <div className="
 bg-red-100
 text-red-700
@@ -729,7 +850,6 @@ rounded-lg
 
 </div>
 
-
 }
 
 
@@ -740,21 +860,19 @@ rounded-lg
 
 
 
-{/* Stats */}
-
+{/* KPI */}
 
 
 <div className="
 grid
 grid-cols-1
-sm:grid-cols-2
-xl:grid-cols-4
+md:grid-cols-3
+xl:grid-cols-6
 gap-5
 ">
 
 
-
-<StatCard
+<Card
 
 title="Vehicles"
 
@@ -765,9 +883,7 @@ icon={<FiTruck/>}
 />
 
 
-
-
-<StatCard
+<Card
 
 title="Drivers"
 
@@ -778,9 +894,7 @@ icon={<FiUsers/>}
 />
 
 
-
-
-<StatCard
+<Card
 
 title="Alerts"
 
@@ -791,9 +905,7 @@ icon={<FiAlertTriangle/>}
 />
 
 
-
-
-<StatCard
+<Card
 
 title="Reports"
 
@@ -803,6 +915,27 @@ icon={<FiFileText/>}
 
 />
 
+
+<Card
+
+title="Fuel"
+
+value={`${analytics.fuelConsumed} L`}
+
+icon={<FiDroplet/>}
+
+/>
+
+
+<Card
+
+title="Revenue"
+
+value={`₹${analytics.revenue}`}
+
+icon={<FiDollarSign/>}
+
+/>
 
 
 
@@ -816,8 +949,50 @@ icon={<FiFileText/>}
 
 
 
-{/* Charts */}
+{/* HEALTH */}
 
+
+<div className="
+bg-white
+shadow
+rounded-xl
+p-6
+">
+
+
+<h2 className="
+text-xl
+font-bold
+">
+
+Fleet Health Score
+
+</h2>
+
+
+<div className="
+text-5xl
+font-bold
+text-blue-600
+mt-4
+">
+
+{analytics.fleetHealth}%
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* CHARTS */}
 
 
 <div className="
@@ -831,7 +1006,6 @@ gap-6
 
 
 
-
 <div className="
 bg-white
 shadow
@@ -839,31 +1013,23 @@ rounded-xl
 p-6
 ">
 
-
-<h2 className="
-font-bold
-text-xl
-mb-5
-">
+<h2 className="font-bold mb-5">
 
 Vehicle Status
 
 </h2>
 
 
-
 <Bar
 
-data={vehicleStatusChart}
+data={vehicleChart}
 
-options={chartOptions}
+options={options}
 
 />
 
 
 </div>
-
-
 
 
 
@@ -877,30 +1043,23 @@ rounded-xl
 p-6
 ">
 
-
-<h2 className="
-font-bold
-text-xl
-mb-5
-">
+<h2 className="font-bold mb-5">
 
 Fleet Distribution
 
 </h2>
 
 
-
 <Doughnut
 
-data={fleetDistributionChart}
+data={fleetChart}
 
-options={chartOptions}
+options={options}
 
 />
 
 
 </div>
-
 
 
 
@@ -915,62 +1074,18 @@ rounded-xl
 p-6
 ">
 
+<h2 className="font-bold mb-5">
 
-<h2 className="
-font-bold
-text-xl
-mb-5
-">
-
-System Overview
+Revenue Trend
 
 </h2>
-
-
-
-<Bar
-
-data={systemOverviewChart}
-
-options={chartOptions}
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="
-bg-white
-shadow
-rounded-xl
-p-6
-">
-
-
-<h2 className="
-font-bold
-text-xl
-mb-5
-">
-
-Fleet Activity Trend
-
-</h2>
-
 
 
 <Line
 
-data={fleetActivityChart}
+data={revenueChart}
 
-options={chartOptions}
+options={options}
 
 />
 
@@ -978,6 +1093,34 @@ options={chartOptions}
 </div>
 
 
+
+
+
+
+<div className="
+bg-white
+shadow
+rounded-xl
+p-6
+">
+
+<h2 className="font-bold mb-5">
+
+Fuel Consumption Trend
+
+</h2>
+
+
+<Line
+
+data={fuelChart}
+
+options={options}
+
+/>
+
+
+</div>
 
 
 
@@ -997,7 +1140,6 @@ options={chartOptions}
 
 
 );
-
 
 
 };
