@@ -11,12 +11,16 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+
 import type { DashboardData } from "../../hooks/useDashboard";
 import type { DashboardStat } from "../../types/dashboard";
 
 
+
 interface KpiGridProps {
+
   dashboard: DashboardData;
+
 }
 
 
@@ -57,9 +61,10 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
     {
       title: "Active Drivers",
-      value: String(
-        dashboard.totalDrivers || 0
-      ),
+      value:
+        String(
+          dashboard.totalDrivers || 0
+        ),
       icon: FaUserTie,
       color:
         "bg-gradient-to-r from-blue-500 to-indigo-600",
@@ -72,7 +77,8 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
     {
       title: "Today's Revenue",
-      value: "₹1,25,000",
+      value:
+        "₹1,25,000",
       icon: FaWallet,
       color:
         "bg-gradient-to-r from-purple-500 to-pink-600",
@@ -86,12 +92,12 @@ const KpiGrid: React.FC<KpiGridProps> = ({
     {
       title: "Vehicle Availability",
       value:
-        `${dashboard.activeVehicles || 42}/${dashboard.totalVehicles || 50}`,
+        `${dashboard.activeVehicles || 0}/${dashboard.totalVehicles || 0}`,
       icon: FaCheckCircle,
       color:
         "bg-gradient-to-r from-cyan-500 to-blue-600",
       description:
-        "84% vehicles available",
+        "Available vehicles",
       trend:
         "+3 Vehicles",
     },
@@ -99,9 +105,10 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
     {
       title: "Maintenance Due",
-      value: String(
-        dashboard.totalAlerts || 0
-      ),
+      value:
+        String(
+          dashboard.totalAlerts || 0
+        ),
       icon: FaTools,
       color:
         "bg-gradient-to-r from-red-500 to-rose-600",
@@ -117,22 +124,14 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
 
 
-
   return (
 
-    <section
-      className="
-      w-full
-      "
-    >
+    <section className="w-full">
 
 
-      <div
-        className="
-        mb-5
-        "
-      >
+      {/* Heading */}
 
+      <div className="mb-5">
 
         <h2
           className="
@@ -146,7 +145,6 @@ const KpiGrid: React.FC<KpiGridProps> = ({
           Fleet Performance Overview
 
         </h2>
-
 
 
         <p
@@ -168,6 +166,7 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
 
 
+      {/* KPI Cards */}
 
       <div
         className="
@@ -182,7 +181,6 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
         {
           stats.map((item)=>(
-
 
             <KpiCard
 
@@ -202,7 +200,6 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
             />
 
-
           ))
         }
 
@@ -213,12 +210,9 @@ const KpiGrid: React.FC<KpiGridProps> = ({
 
     </section>
 
-
   );
 
-
 };
-
 
 
 export default KpiGrid;

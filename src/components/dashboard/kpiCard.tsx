@@ -35,18 +35,14 @@ const KpiCard = ({
     if (!trend) return "";
 
 
-    if (
-      trend.includes("-")
-    ) {
+    if (trend.includes("-")) {
 
       return "bg-red-100 text-red-600";
 
     }
 
 
-    if (
-      trend === "Attention"
-    ) {
+    if (trend === "Attention") {
 
       return "bg-orange-100 text-orange-600";
 
@@ -63,7 +59,6 @@ const KpiCard = ({
   return (
 
     <div
-
       className="
       bg-white
       rounded-2xl
@@ -76,9 +71,7 @@ const KpiCard = ({
       duration-300
       p-5
       "
-
     >
-
 
 
       <div
@@ -91,7 +84,7 @@ const KpiCard = ({
       >
 
 
-
+        {/* Content */}
 
         <div>
 
@@ -112,8 +105,6 @@ const KpiCard = ({
 
 
 
-
-
           <h2
             className="
             text-3xl
@@ -126,8 +117,6 @@ const KpiCard = ({
             {value}
 
           </h2>
-
-
 
 
 
@@ -145,13 +134,10 @@ const KpiCard = ({
 
 
 
-
-
           {
             trend && (
 
               <span
-
                 className={`
                 inline-block
                 mt-3
@@ -162,7 +148,6 @@ const KpiCard = ({
                 rounded-full
                 ${getTrendStyle()}
                 `}
-
               >
 
                 {trend}
@@ -170,7 +155,6 @@ const KpiCard = ({
               </span>
 
             )
-
           }
 
 
@@ -181,10 +165,9 @@ const KpiCard = ({
 
 
 
-
+        {/* Icon */}
 
         <div
-
           className={`
           ${color}
           h-14
@@ -196,30 +179,20 @@ const KpiCard = ({
           shadow-lg
           flex-shrink-0
           `}
-
         >
 
-
           <Icon
-
             className="
             text-white
             text-2xl
             "
-
-            aria-hidden="true"
-
           />
-
 
         </div>
 
 
 
-
       </div>
-
-
 
 
     </div>
@@ -227,7 +200,6 @@ const KpiCard = ({
   );
 
 };
-
 
 
 export default KpiCard;

@@ -7,119 +7,169 @@ import {
   useMap,
 } from "react-leaflet";
 
-import type { Vehicle } from "../../types/vehicle";
+import {
+  useEffect,
+  useMemo,
+} from "react";
+
+import type {
+  Vehicle,
+} from "../../types/vehicle";
+
 
 import "leaflet/dist/leaflet.css";
+
 import L from "leaflet";
-import { useEffect } from "react";
+
 
 
 // ==========================
 // Leaflet Icon Fix
 // ==========================
 
+
 delete (L.Icon.Default.prototype as any)._getIconUrl;
+
 
 L.Icon.Default.mergeOptions({
 
   iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
 
   iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
 
   shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 
 });
 
 
 
+
 // ==========================
-// Geofence Interface
+// Vehicle Icon
 // ==========================
+
+
+const vehicleIcon = new L.Icon({
+
+  iconUrl:
+  "https://cdn-icons-png.flaticon.com/512/744/744465.png",
+
+  iconSize:[
+    40,
+    40
+  ],
+
+  iconAnchor:[
+    20,
+    20
+  ],
+
+
+});
+
+
+
+
+
+// ==========================
+// Geofence
+// ==========================
+
 
 interface Geofence {
 
-  _id: string;
+  _id:string;
 
-  name: string;
+  name:string;
 
-  center: {
-
-    latitude: number;
-
-    longitude: number;
-
+  center:{
+    latitude:number;
+    longitude:number;
   };
 
-  radius: number;
+  radius:number;
 
 }
 
 
 
-// ==========================
-// Props
-// ==========================
+
 
 interface Props {
 
-  vehicles: Vehicle[];
+ vehicles:Vehicle[];
 
-  geofences?: Geofence[];
+ geofences?:Geofence[];
 
 }
 
 
 
+
+
+
+
+
 // ==========================
-// Auto Center Map
+// Auto Center
 // ==========================
+
 
 const AutoCenter = ({
-  vehicles,
-}: {
-  vehicles: Vehicle[];
-}) => {
+ vehicles,
+}:{
+ vehicles:Vehicle[];
+})=>{
 
 
-  const map = useMap();
-
-
-  useEffect(() => {
-
-
-    if (vehicles.length === 0)
-      return;
-
-
-    const firstVehicle = vehicles[0];
-
-
-    if (
-      firstVehicle.latitude &&
-      firstVehicle.longitude
-    ) {
-
-
-      map.setView(
-        [
-          firstVehicle.latitude,
-          firstVehicle.longitude,
-        ],
-        12
-      );
-
-
-    }
-
-
-  }, [vehicles, map]);
+const map = useMap();
 
 
 
-  return null;
+useEffect(()=>{
+
+
+const validVehicle =
+vehicles.find(
+(v)=>
+Number.isFinite(v.latitude)
+&&
+Number.isFinite(v.longitude)
+);
+
+
+
+if(validVehicle){
+
+
+map.flyTo(
+
+[
+validVehicle.latitude,
+validVehicle.longitude
+],
+
+12,
+
+{
+duration:1
+}
+
+);
+
+
+}
+
+
+},[vehicles,map]);
+
+
+
+return null;
+
 
 };
 
@@ -127,447 +177,529 @@ const AutoCenter = ({
 
 
 
+
+
+
+
+
 // ==========================
-// Live Map Component
+// Component
 // ==========================
+
 
 const LiveMap = ({
 
-  vehicles,
+vehicles,
 
-  geofences = [],
+geofences=[],
 
-}: Props) => {
+}:Props)=>{
 
 
 
-  return (
 
 
-    <div
-      className="
-      relative
-      w-full
-      h-[300px]
-      sm:h-[400px]
-      md:h-[500px]
-      lg:h-[600px]
-      rounded-xl
-      overflow-hidden
-      border
-      border-gray-200
-      "
-    >
+const validVehicles =
+useMemo(()=>{
 
 
+return vehicles.filter(
 
-      {/* Vehicle Counter */}
+(v)=>
 
-      <div
-        className="
-        absolute
-        z-[999]
-        top-3
-        left-3
-        bg-white
-        shadow
-        px-4
-        py-2
-        rounded-lg
-        text-sm
-        "
-      >
+Number.isFinite(
+Number(v.latitude)
+)
 
-        Vehicles:
+&&
 
-        <strong>
-          {" "}
-          {vehicles.length}
-        </strong>
+Number.isFinite(
+Number(v.longitude)
+)
 
 
-      </div>
+);
 
 
+},[vehicles]);
 
 
 
-      <MapContainer
 
 
-        center={[
 
-          28.6139,
+return (
 
-          77.2090,
+<div
 
-        ]}
+className="
+relative
+w-full
+h-[350px]
+sm:h-[450px]
+lg:h-[600px]
+rounded-2xl
+overflow-hidden
+border
+shadow
+"
 
+>
 
-        zoom={12}
 
 
-        scrollWheelZoom={true}
+{/* Counter */}
 
 
-        className="w-full h-full"
+<div
 
+className="
+absolute
+z-[1000]
+top-4
+left-4
+bg-white
+shadow-lg
+rounded-xl
+px-4
+py-3
+"
 
-      >
+>
 
 
+<p
+className="
+text-sm
+text-gray-500
+"
+>
 
-        <AutoCenter
-          vehicles={vehicles}
-        />
+Live Vehicles
 
+</p>
 
 
-        <TileLayer
+<h2
+className="
+text-xl
+font-bold
+text-blue-600
+"
+>
 
+{validVehicles.length}
 
-          attribution="&copy; OpenStreetMap Contributors"
+</h2>
 
 
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+</div>
 
 
-        />
 
 
 
 
 
-        {/* ==========================
-            Vehicle Markers
-        ========================== */}
 
 
+<MapContainer
 
-        {
 
-          vehicles.map((vehicle)=>(
+center={[
+28.6139,
+77.2090
+]}
 
 
-            <Marker
+zoom={11}
 
 
-              key={String(
+className="
+w-full
+h-full
+"
 
-                vehicle._id ??
 
-                vehicle.id ??
+>
 
-                vehicle.vehicleNumber
 
-              )}
+<AutoCenter
+vehicles={validVehicles}
+/>
 
 
 
-              position={[
 
-                Number(vehicle.latitude),
 
-                Number(vehicle.longitude),
+<TileLayer
 
-              ]}
 
+attribution="
+&copy; OpenStreetMap
+"
 
-            >
 
+url="
+https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+"
 
 
-              <Popup>
+/>
 
 
-                <div
-                  className="min-w-[220px]"
-                >
 
 
 
-                  <h3
-                    className="
-                    font-bold
-                    text-blue-600
-                    text-lg
-                    mb-3
-                    "
-                  >
 
-                    {vehicle.vehicleNumber}
 
-                  </h3>
 
+{
+validVehicles.map(
+(vehicle)=>(
 
 
+<Marker
 
-                  <div
-                    className="
-                    space-y-2
-                    text-sm
-                    "
-                  >
+key={
+vehicle._id ||
+vehicle.vehicleNumber
+}
 
 
+position={[
 
-                    <p>
+vehicle.latitude,
 
-                      <strong>
-                        Driver:
-                      </strong>
+vehicle.longitude
 
-                      {" "}
+]}
 
-                      {
-                        vehicle.driver ??
-                        "Not Assigned"
-                      }
 
-                    </p>
+icon={vehicleIcon}
 
 
+>
 
 
+<Popup>
 
-                    <p>
 
-                      <strong>
-                        Speed:
-                      </strong>
+<div
+className="
+min-w-[240px]
+"
+>
 
-                      {" "}
 
-                      {vehicle.speed}
+<h2
+className="
+font-bold
+text-lg
+text-blue-600
+mb-3
+"
+>
 
-                      {" km/h"}
+🚚 {vehicle.vehicleNumber}
 
-                    </p>
+</h2>
 
 
 
+<p>
 
+<b>
+Driver:
+</b>
 
-                    <p>
+{" "}
 
-                      <strong>
-                        Fuel:
-                      </strong>
+{
 
-                      {" "}
+typeof vehicle.driver==="object"
 
-                      {vehicle.fuel}
+?
 
-                      %
+(vehicle.driver as any)
+?.fullName
 
-                    </p>
+:
 
+vehicle.driver
 
+||
 
+"Not Assigned"
 
+}
 
-                    <p>
 
+</p>
 
-                      <strong>
-                        Status:
-                      </strong>
 
 
-                      {" "}
 
+<p>
 
+<b>
+Speed:
+</b>
 
-                      <span
+{" "}
 
-                        className={
+{vehicle.speed}
 
-                          vehicle.status === "Active"
+km/h
 
-                          ? "text-green-600 font-bold"
+</p>
 
 
-                          : vehicle.status === "Idle"
 
-                          ? "text-yellow-600 font-bold"
 
+<p>
 
-                          : vehicle.status === "Maintenance"
+<b>
+Fuel:
+</b>
 
-                          ? "text-orange-600 font-bold"
+{" "}
 
+{vehicle.fuel}%
 
-                          : "text-red-600 font-bold"
+</p>
 
-                        }
 
-                      >
 
 
-                        {vehicle.status}
+<p>
 
+<b>
+Status:
+</b>
 
-                      </span>
+{" "}
 
+<span
 
+className={
 
-                    </p>
+vehicle.status==="Active"
 
+?
 
+"text-green-600 font-bold"
 
+:
 
+vehicle.status==="Idle"
 
-                    <p>
+?
 
-                      <strong>
-                        Location:
-                      </strong>
+"text-yellow-600 font-bold"
 
-                      <br/>
+:
 
+"text-red-600 font-bold"
 
-                      {vehicle.latitude},
+}
 
-                      {" "}
+>
 
-                      {vehicle.longitude}
+{vehicle.status}
 
+</span>
 
-                    </p>
 
+</p>
 
 
 
-                  </div>
+<hr
+className="
+my-2
+"
+/>
 
 
+<p
+className="
+text-xs
+text-gray-500
+"
+>
 
+📍
 
-                </div>
+{vehicle.latitude},
 
+{vehicle.longitude}
 
-              </Popup>
+</p>
 
 
+</div>
 
 
-            </Marker>
+</Popup>
 
 
+</Marker>
 
-          ))
 
-        }
+)
 
+)
 
+}
 
 
 
-        {/* ==========================
-            Geofence Circle
-        ========================== */}
 
 
 
-        {
 
-          geofences.map((zone)=>(
 
 
-            <Circle
+{/* Geofences */}
 
 
-              key={zone._id}
 
+{
 
-              center={[
+geofences.map(
 
-                zone.center.latitude,
+(zone)=>(
 
-                zone.center.longitude,
 
-              ]}
+<Circle
 
 
+key={zone._id}
 
-              radius={zone.radius}
 
+center={[
 
+zone.center.latitude,
 
-              pathOptions={{
+zone.center.longitude
 
-                color:"#2563eb",
+]}
 
-                fillColor:"#3b82f6",
 
-                fillOpacity:0.15,
+radius={zone.radius}
 
-              }}
 
 
+pathOptions={{
 
-            >
+color:"#2563eb",
 
+fillOpacity:0.15
 
-              <Popup>
+}}
 
 
-                <div>
 
+>
 
-                  <h3
-                    className="
-                    font-bold
-                    text-blue-600
-                    "
-                  >
 
-                    {zone.name}
+<Popup>
 
-                  </h3>
+<b>
+{zone.name}
+</b>
 
 
+<br/>
 
-                  <p>
+Radius:
 
-                    Radius:
+{" "}
 
-                    {" "}
+{zone.radius}
 
-                    {zone.radius}
+meters
 
-                    {" meters"}
 
-                  </p>
+</Popup>
 
 
 
-                </div>
+</Circle>
 
 
-              </Popup>
+)
 
+)
 
-            </Circle>
+}
 
 
 
-          ))
 
-        }
 
 
 
+{
 
+validVehicles.length===0 &&
 
-      </MapContainer>
 
+<div
 
+className="
+absolute
+inset-0
+z-[999]
+flex
+items-center
+justify-center
+pointer-events-none
+"
 
-    </div>
+>
 
 
-  );
+<div
+
+className="
+bg-white
+shadow
+rounded-xl
+px-6
+py-4
+"
+
+>
+
+
+No vehicle location available
+
+
+</div>
+
+
+</div>
+
+
+}
+
+
+
+
+</MapContainer>
+
+
+
+
+
+
+
+</div>
+
+
+);
 
 
 };
