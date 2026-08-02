@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   FaUserTie,
   FaStar,
@@ -16,31 +18,75 @@ import type { Driver } from "../../services/driverService";
 const DriverPerformance = () => {
 
 
-
   const {
     drivers,
-    loading
+    loading,
   } = useDrivers();
 
 
 
 
 
-  if (loading) {
 
+  // Loading State
+
+  if (loading) {
 
     return (
 
       <div
         className="
         bg-white
-        rounded-xl
-        shadow-md
+        rounded-2xl
+        shadow-lg
+        border
+        border-gray-200
         p-6
         "
       >
 
-        Loading Drivers...
+        <div className="animate-pulse space-y-4">
+
+          <div className="h-6 bg-gray-200 rounded w-1/3" />
+
+          <div className="h-20 bg-gray-200 rounded" />
+
+          <div className="h-20 bg-gray-200 rounded" />
+
+          <div className="h-20 bg-gray-200 rounded" />
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+
+
+
+  // Empty State
+
+  if (!drivers || drivers.length === 0) {
+
+    return (
+
+      <div
+        className="
+        bg-white
+        rounded-2xl
+        shadow-lg
+        border
+        border-gray-200
+        p-6
+        text-center
+        text-gray-400
+        "
+      >
+
+        No Driver Data Available
 
       </div>
 
@@ -56,9 +102,7 @@ const DriverPerformance = () => {
 
   return (
 
-
     <div
-
       className="
       bg-white
       rounded-2xl
@@ -67,23 +111,22 @@ const DriverPerformance = () => {
       border-gray-200
       p-6
       "
-
     >
 
 
 
 
+      {/* Header */}
+
       <div className="mb-6">
 
 
         <h2
-
           className="
           text-2xl
           font-bold
           text-slate-800
           "
-
         >
 
           Driver Performance
@@ -93,19 +136,16 @@ const DriverPerformance = () => {
 
 
         <p
-
           className="
           text-sm
           text-gray-500
           mt-1
           "
-
         >
 
           Driver safety, trips and efficiency analytics
 
         </p>
-
 
 
       </div>
@@ -116,329 +156,362 @@ const DriverPerformance = () => {
 
 
 
+      {/* Drivers List */}
 
-      <div
-        className="
-        space-y-5
-        "
-      >
-
+      <div className="space-y-6">
 
 
         {
-          drivers.slice(0,5).map(
+          drivers
+            .slice(0, 5)
+            .map(
+              (
+                driver: Driver,
+                index: number
+              ) => {
 
-            (driver: Driver,index:number)=>(
 
-
-              <div
-
-                key={driver._id}
-
-                className="
-                flex
-                flex-col
-                md:flex-row
-                md:items-center
-                justify-between
-                gap-4
-                border-b
-                pb-4
-                "
-
-              >
+                const performance =
+                  Math.max(
+                    0,
+                    95 - index * 3
+                  );
 
 
 
+                return (
 
-
-                {/* Driver Info */}
-
-
-                <div
-                  className="
-                  flex
-                  items-center
-                  gap-4
+                  <div
+                    key={
+                      driver._id ?? index
+                    }
+                    className="
+                  border-b
+                  pb-5
+                  last:border-none
                   "
-                >
-
-
-
-                  <div
-
-                    className="
-                    bg-blue-600
-                    text-white
-                    p-3
-                    rounded-full
-                    "
-
                   >
 
-                    <FaUserTie />
-
-                  </div>
 
 
 
 
+                    {/* Profile + Metrics */}
 
-                  <div>
 
-
-                    <h3
+                    <div
                       className="
-                      font-semibold
-                      text-lg
-                      "
+                    flex
+                    flex-col
+                    lg:flex-row
+                    lg:items-center
+                    justify-between
+                    gap-5
+                    "
                     >
 
-                      #{index + 1} {driver.fullName}
-
-                    </h3>
 
 
 
-                    <p
-                      className="
-                      text-sm
-                      text-gray-500
+
+                      {/* Driver Profile */}
+
+
+                      <div
+                        className="
+                      flex
+                      items-center
+                      gap-4
                       "
-                    >
-
-                      Experience: {driver.experience} years
-
-                    </p>
+                      >
 
 
+                        <div
+                          className="
+                        h-14
+                        w-14
+                        rounded-full
+                        bg-blue-600
+                        text-white
+                        flex
+                        items-center
+                        justify-center
+                        text-xl
+                        "
+                        >
 
-                    <p
-                      className="
-                      text-sm
-                      text-gray-500
+                          <FaUserTie />
+
+                        </div>
+
+
+
+
+
+
+                        <div>
+
+
+                          <h3
+                            className="
+                          text-lg
+                          font-bold
+                          text-slate-800
+                          "
+                          >
+
+                            #{index + 1} {driver.fullName}
+
+                          </h3>
+
+
+
+                          <p
+                            className="
+                          text-sm
+                          text-gray-500
+                          "
+                          >
+
+                            Experience:
+                            {" "}
+                            {driver.experience}
+                            {" "}
+                            years
+
+                          </p>
+
+
+
+
+
+                          <span
+                            className={`
+                          inline-block
+                          mt-2
+                          px-3
+                          py-1
+                          rounded-full
+                          text-xs
+                          font-semibold
+                        ${driver.status === "Available"
+                                ? "bg-green-100 text-green-600"
+                                :
+                                "bg-orange-100 text-orange-600"
+                              }
+                          `}
+                          >
+
+                            {driver.status}
+
+                          </span>
+
+
+
+                        </div>
+
+
+                      </div>
+
+
+
+
+
+
+
+
+                      {/* Metrics */}
+
+
+                      <div
+                        className="
+                      grid
+                      grid-cols-2
+                      sm:grid-cols-4
+                      gap-5
                       "
-                    >
+                      >
 
-                      Status: {driver.status}
 
-                    </p>
+
+                        <Metric
+
+                          icon={<FaShieldAlt />}
+
+                          value={
+                            driver.status === "Driving"
+                              ? "95%"
+                              : "85%"
+                          }
+
+                          label="Safety"
+
+                          color="text-green-600"
+
+                        />
+
+
+
+
+
+
+                        <Metric
+
+                          icon={<FaRoute />}
+
+                          value={
+                            String(
+                              30 + index * 5
+                            )
+                          }
+
+                          label="Trips"
+
+                          color="text-blue-600"
+
+                        />
+
+
+
+
+
+
+
+                        <Metric
+
+                          icon={<FaStar />}
+
+                          value={
+                            (
+                              4.8 -
+                              index * 0.1
+                            )
+                              .toFixed(1)
+                          }
+
+                          label="Rating"
+
+                          color="text-yellow-500"
+
+                        />
+
+
+
+
+
+
+
+
+                        <Metric
+
+                          icon={<FaGasPump />}
+
+                          value={
+                            `${92 - index * 3}%`
+                          }
+
+                          label="Efficiency"
+
+                          color="text-orange-500"
+
+                        />
+
+
+
+
+                      </div>
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    {/* Performance Progress */}
+
+
+                    <div className="mt-5">
+
+
+                      <div
+                        className="
+                      flex
+                      justify-between
+                      text-xs
+                      mb-2
+                      "
+                      >
+
+                        <span>
+                          Performance Score
+                        </span>
+
+
+                        <span
+                          className="
+                        font-semibold
+                        "
+                        >
+
+                          {performance}%
+
+                        </span>
+
+
+                      </div>
+
+
+
+
+
+                      <div
+                        className="
+                      h-2
+                      bg-gray-200
+                      rounded-full
+                      overflow-hidden
+                      "
+                      >
+
+                        <div
+
+                          className="
+                        h-full
+                        bg-blue-600
+                        rounded-full
+                        "
+
+                          style={{
+                            width: `${performance}%`
+                          }}
+
+                        />
+
+
+                      </div>
+
+
+
+                    </div>
+
+
 
 
 
                   </div>
 
+                );
 
-
-                </div>
-
-
-
-
-
-
-
-
-
-                {/* Performance Metrics */}
-
-
-                <div
-
-                  className="
-                  grid
-                  grid-cols-2
-                  sm:grid-cols-4
-                  gap-4
-                  text-sm
-                  "
-
-                >
-
-
-
-
-
-                  <div
-                    className="
-                    text-center
-                    "
-                  >
-
-                    <FaShieldAlt
-                      className="
-                      mx-auto
-                      text-green-600
-                      "
-                    />
-
-
-                    <p className="font-bold">
-
-                      {driver.status === "Driving"
-                      ? "95%"
-                      : "85%"}
-
-                    </p>
-
-
-                    <span className="text-gray-500">
-
-                      Safety
-
-                    </span>
-
-
-                  </div>
-
-
-
-
-
-
-
-                  <div
-                    className="
-                    text-center
-                    "
-                  >
-
-
-                    <FaRoute
-                      className="
-                      mx-auto
-                      text-blue-600
-                      "
-                    />
-
-
-                    <p className="font-bold">
-
-                      {30 + index * 5}
-
-                    </p>
-
-
-                    <span className="text-gray-500">
-
-                      Trips
-
-                    </span>
-
-
-                  </div>
-
-
-
-
-
-
-
-                  <div
-
-                    className="
-                    text-center
-                    "
-
-                  >
-
-
-                    <FaStar
-
-                      className="
-                      mx-auto
-                      text-yellow-500
-                      "
-
-                    />
-
-
-                    <p className="font-bold">
-
-                      {(
-                        4.8 - index * 0.1
-                      ).toFixed(1)}
-
-                    </p>
-
-
-                    <span className="text-gray-500">
-
-                      Rating
-
-                    </span>
-
-
-                  </div>
-
-
-
-
-
-
-
-
-                  <div
-
-                    className="
-                    text-center
-                    "
-
-                  >
-
-
-
-                    <FaGasPump
-
-                      className="
-                      mx-auto
-                      text-orange-500
-                      "
-
-                    />
-
-
-
-                    <p className="font-bold">
-
-                      {92 - index * 3}%
-
-                    </p>
-
-
-
-                    <span className="text-gray-500">
-
-                      Efficiency
-
-                    </span>
-
-
-
-                  </div>
-
-
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-              </div>
-
+              }
 
             )
 
-          )
-
         }
-
 
 
 
@@ -450,11 +523,88 @@ const DriverPerformance = () => {
 
     </div>
 
+  );
+
+};
+
+
+
+
+
+
+
+// Metric Component
+
+
+const Metric = ({
+  icon,
+  value,
+  label,
+  color,
+}: {
+  icon: ReactNode;
+  value: string;
+  label: string;
+  color: string;
+}) => {
+
+
+  return (
+
+    <div
+      className="
+      text-center
+      "
+    >
+
+
+      <div
+        className={`
+        text-xl
+        mx-auto
+        ${color}
+        `}
+      >
+
+        {icon}
+
+      </div>
+
+
+
+      <p
+        className="
+        font-bold
+        mt-1
+        "
+      >
+
+        {value}
+
+      </p>
+
+
+
+      <span
+        className="
+        text-xs
+        text-gray-500
+        "
+      >
+
+        {label}
+
+      </span>
+
+
+
+    </div>
 
   );
 
-
 };
+
+
 
 
 

@@ -7,7 +7,15 @@ import {
   Legend,
 } from "chart.js";
 
-import { Bar } from "react-chartjs-2";
+import {
+  Bar,
+} from "react-chartjs-2";
+
+import type {
+  ChartOptions,
+} from "chart.js";
+
+
 
 ChartJS.register(
   CategoryScale,
@@ -17,17 +25,47 @@ ChartJS.register(
   Legend
 );
 
+
+
+
+
 interface Props {
+
   labels?: string[];
+
   values?: number[];
+
+  title?: string;
+
+  label?: string;
+
 }
 
+
+
+
+
 const BarChart = ({
+
   labels,
+
   values,
+
+  title = "Monthly Trips",
+
+  label = "Trips",
+
 }: Props) => {
-  const data = {
-    labels: labels || [
+
+
+
+
+const data = {
+
+
+  labels:
+    labels ??
+    [
       "Jan",
       "Feb",
       "Mar",
@@ -36,11 +74,17 @@ const BarChart = ({
       "Jun",
     ],
 
-    datasets: [
-      {
-        label: "Trips",
 
-        data: values || [
+
+  datasets:[
+
+    {
+
+      label,
+
+      data:
+        values ??
+        [
           120,
           150,
           180,
@@ -49,7 +93,11 @@ const BarChart = ({
           280,
         ],
 
-        backgroundColor: [
+
+
+      backgroundColor:
+
+        [
           "#2563eb",
           "#16a34a",
           "#f59e0b",
@@ -58,75 +106,223 @@ const BarChart = ({
           "#0ea5e9",
         ],
 
-        borderRadius: 8,
 
-        maxBarThickness: 40,
-      },
-    ],
-  };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+      borderRadius:8,
 
-    plugins: {
-      legend: {
-        display: false,
-      },
 
-      tooltip: {
-        backgroundColor: "#1f2937",
-        titleColor: "#ffffff",
-        bodyColor: "#ffffff",
-        padding: 10,
-      },
-    },
+      maxBarThickness:40,
 
-    scales: {
-      y: {
-        beginAtZero: true,
 
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
+    }
 
-        grid: {
-          color: "#e5e7eb",
-        },
-      },
+  ]
 
-      x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-        },
 
-        grid: {
-          display: false,
-        },
-      },
-    },
-  };
-
-  return (
-    <div
-      className="
-      w-full
-      h-64
-      sm:h-72
-      md:h-80
-      overflow-hidden
-      "
-    >
-      <Bar
-        data={data}
-        options={options}
-      />
-    </div>
-  );
 };
+
+
+
+
+
+
+
+const options:ChartOptions<"bar"> = {
+
+
+  responsive:true,
+
+
+  maintainAspectRatio:false,
+
+
+
+  plugins:{
+
+
+    legend:{
+
+
+      display:false,
+
+
+    },
+
+
+
+    tooltip:{
+
+
+      enabled:true,
+
+
+      padding:10,
+
+
+    }
+
+
+  },
+
+
+
+
+
+
+
+  scales:{
+
+
+    y:{
+
+
+      beginAtZero:true,
+
+
+      ticks:{
+
+
+        precision:0,
+
+
+      },
+
+
+      grid:{
+
+
+        color:"#e5e7eb",
+
+
+      }
+
+
+    },
+
+
+
+
+
+    x:{
+
+
+      grid:{
+
+
+        display:false,
+
+
+      }
+
+
+    }
+
+
+  }
+
+
+
+};
+
+
+
+
+
+
+
+
+return (
+
+<div
+
+className="
+bg-white
+rounded-2xl
+shadow-lg
+border
+border-gray-200
+p-5
+w-full
+"
+
+>
+
+
+
+<div className="mb-4">
+
+
+<h2
+
+className="
+text-xl
+font-bold
+text-slate-800
+"
+
+>
+
+{title}
+
+</h2>
+
+
+
+<p
+
+className="
+text-sm
+text-gray-500
+"
+
+>
+
+Monthly trip performance analytics
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+<div
+
+className="
+h-[300px]
+"
+
+>
+
+
+<Bar
+
+data={data}
+
+options={options}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+);
+
+
+};
+
+
+
+
 
 export default BarChart;

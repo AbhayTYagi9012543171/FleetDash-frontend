@@ -5,7 +5,18 @@ import {
   Legend,
 } from "chart.js";
 
-import { Doughnut } from "react-chartjs-2";
+import {
+  Doughnut,
+} from "react-chartjs-2";
+
+import type {
+  ChartOptions,
+} from "chart.js";
+
+import type {
+  Vehicle,
+} from "../../types/vehicle";
+
 
 
 ChartJS.register(
@@ -16,31 +27,6 @@ ChartJS.register(
 
 
 
-interface Vehicle {
-
-  _id?: string;
-
-  id?: number;
-
-  vehicleNumber?: string;
-
-  driver?: string;
-
-  speed?: number;
-
-  fuel?: number;
-
-  status:
-    | "Active"
-    | "Idle"
-    | "Maintenance"
-    | "Offline";
-
-  latitude?: number;
-
-  longitude?: number;
-
-}
 
 
 interface Props {
@@ -53,50 +39,73 @@ interface Props {
 
 
 
+
+
 const VehicleUtilizationChart = ({
-  vehicles = []
+
+  vehicles = [],
+
 }: Props) => {
+
+
 
 
 
 const active =
 vehicles.filter(
-(v)=>v.status==="Active"
+(vehicle)=>vehicle.status==="Active"
 ).length;
+
 
 
 
 const idle =
 vehicles.filter(
-(v)=>v.status==="Idle"
+(vehicle)=>vehicle.status==="Idle"
 ).length;
+
+
 
 
 
 const maintenance =
 vehicles.filter(
-(v)=>v.status==="Maintenance"
+(vehicle)=>vehicle.status==="Maintenance"
 ).length;
+
+
 
 
 
 const offline =
 vehicles.filter(
-(v)=>v.status==="Offline"
+(vehicle)=>vehicle.status==="Offline"
 ).length;
 
 
 
+
+
+
 const total =
-vehicles.length || 100;
+vehicles.length;
+
+
 
 
 
 
 const availability =
+
+total > 0
+
+?
 Math.round(
 ((active + idle) / total) * 100
-);
+)
+
+:
+0;
 
 
 
@@ -110,33 +119,64 @@ const data = {
 labels:[
 
 "Active",
+
 "Idle",
+
 "Maintenance",
-"Offline"
+
+"Offline",
 
 ],
+
 
 
 datasets:[
 
 {
 
+
 data:[
 
 active,
+
 idle,
+
 maintenance,
-offline
+
+offline,
 
 ],
 
-borderWidth:0,
+
+
+backgroundColor:[
+
+"#22c55e",
+
+"#facc15",
+
+"#f97316",
+
+"#ef4444",
+
+],
+
+
+
+borderColor:"#ffffff",
+
+
+borderWidth:2,
+
 
 hoverOffset:12,
 
+
 }
 
+
 ]
+
 
 };
 
@@ -146,7 +186,9 @@ hoverOffset:12,
 
 
 
-const options = {
+
+
+const options:ChartOptions<"doughnut"> = {
 
 
 responsive:true,
@@ -155,16 +197,21 @@ responsive:true,
 maintainAspectRatio:false,
 
 
+
 cutout:"72%",
+
+
 
 
 plugins:{
 
 
+
 legend:{
 
 
-position:"bottom" as const,
+position:"bottom",
+
 
 
 labels:{
@@ -173,20 +220,32 @@ labels:{
 usePointStyle:true,
 
 
-padding:20
+padding:20,
+
+
+}
+
+
+},
+
+
+
+
+tooltip:{
+
+
+padding:10,
 
 
 }
 
 
 }
-
-
-}
-
 
 
 };
+
+
 
 
 
@@ -212,13 +271,18 @@ p-6
 
 
 
+{/* Header */}
+
+
 <div
+
 className="
 flex
 justify-between
 items-center
 mb-6
 "
+
 >
 
 
@@ -240,12 +304,15 @@ Vehicle Utilization
 </h2>
 
 
+
 <p
+
 className="
 text-sm
 text-gray-500
 mt-1
 "
+
 >
 
 Fleet availability and operational status
@@ -258,14 +325,18 @@ Fleet availability and operational status
 
 
 
+
 <div
+
 className="
 bg-green-50
 px-5
 py-3
 rounded-xl
 "
+
 >
+
 
 <p className="text-xs text-gray-500">
 
@@ -275,11 +346,13 @@ Availability
 
 
 <h3
+
 className="
 text-2xl
 font-bold
 text-green-600
 "
+
 >
 
 {availability}%
@@ -290,7 +363,6 @@ text-green-600
 </div>
 
 
-
 </div>
 
 
@@ -301,7 +373,11 @@ text-green-600
 
 
 
+{/* Status Cards */}
+
+
 <div
+
 className="
 grid
 grid-cols-2
@@ -309,99 +385,55 @@ lg:grid-cols-4
 gap-4
 mb-6
 "
+
 >
 
 
-<div className="bg-green-50 rounded-xl p-4">
+<StatusCard
 
-<p className="text-gray-500 text-sm">
+title="Active"
 
-Active
+value={active}
 
-</p>
+style="bg-green-50 text-green-600"
 
-
-<h3 className="text-3xl font-bold text-green-600">
-
-{active}
-
-</h3>
-
-</div>
+/>
 
 
 
+<StatusCard
 
+title="Idle"
 
-<div className="bg-yellow-50 rounded-xl p-4">
+value={idle}
 
+style="bg-yellow-50 text-yellow-600"
 
-<p className="text-gray-500 text-sm">
-
-Idle
-
-</p>
-
-
-<h3 className="text-3xl font-bold text-yellow-600">
-
-{idle}
-
-</h3>
-
-
-</div>
+/>
 
 
 
+<StatusCard
+
+title="Maintenance"
+
+value={maintenance}
+
+style="bg-orange-50 text-orange-600"
+
+/>
 
 
 
+<StatusCard
 
-<div className="bg-orange-50 rounded-xl p-4">
+title="Offline"
 
+value={offline}
 
-<p className="text-gray-500 text-sm">
+style="bg-red-50 text-red-600"
 
-Maintenance
-
-</p>
-
-
-<h3 className="text-3xl font-bold text-orange-600">
-
-{maintenance}
-
-</h3>
-
-
-</div>
-
-
-
-
-
-
-
-<div className="bg-red-50 rounded-xl p-4">
-
-
-<p className="text-gray-500 text-sm">
-
-Offline
-
-</p>
-
-
-<h3 className="text-3xl font-bold text-red-600">
-
-{offline}
-
-</h3>
-
-
-</div>
-
+/>
 
 
 </div>
@@ -413,12 +445,44 @@ Offline
 
 
 
+
+{
+total === 0 ?
+
+
+(
 
 <div
+
+className="
+h-[420px]
+flex
+items-center
+justify-center
+text-gray-400
+"
+
+>
+
+No Vehicle Data Available
+
+</div>
+
+)
+
+
+:
+
+
+(
+
+<div
+
 className="
 relative
 h-[420px]
 "
+
 >
 
 
@@ -429,6 +493,8 @@ data={data}
 options={options}
 
 />
+
+
 
 
 
@@ -457,11 +523,13 @@ Total Fleet
 
 
 <h2
+
 className="
 text-5xl
 font-bold
 text-slate-800
 "
+
 >
 
 {total}
@@ -471,11 +539,13 @@ text-slate-800
 
 
 <p
+
 className="
 text-green-600
 font-semibold
 mt-2
 "
+
 >
 
 {availability}% Available
@@ -483,22 +553,30 @@ mt-2
 </p>
 
 
-
 </div>
 
 
 
 </div>
 
+)
+
+
+}
 
 
 
 
 
 
+
+
+
+{/* Footer Stats */}
 
 
 <div
+
 className="
 grid
 grid-cols-1
@@ -506,72 +584,43 @@ md:grid-cols-3
 gap-4
 mt-8
 "
+
 >
 
 
-<div className="bg-gray-50 rounded-xl p-4">
+<InfoCard
 
-<p className="text-gray-500">
+title="Utilization Rate"
 
-Utilization Rate
+value="84%"
 
-</p>
+color="text-blue-600"
 
-
-<h3 className="text-2xl font-bold text-blue-600">
-
-84%
-
-</h3>
-
-
-</div>
+/>
 
 
 
+<InfoCard
 
+title="Running Vehicles"
 
-<div className="bg-gray-50 rounded-xl p-4">
+value={String(active)}
 
+color="text-green-600"
 
-<p className="text-gray-500">
-
-Running Vehicles
-
-</p>
-
-
-<h3 className="text-2xl font-bold text-green-600">
-
-{active}
-
-</h3>
-
-
-</div>
+/>
 
 
 
+<InfoCard
 
+title="Service Due"
 
-<div className="bg-gray-50 rounded-xl p-4">
+value={String(maintenance)}
 
+color="text-orange-600"
 
-<p className="text-gray-500">
-
-Service Due
-
-</p>
-
-
-<h3 className="text-2xl font-bold text-orange-600">
-
-{maintenance}
-
-</h3>
-
-
-</div>
+/>
 
 
 
@@ -588,6 +637,133 @@ Service Due
 
 
 };
+
+
+
+
+
+
+
+
+
+const StatusCard = ({
+
+title,
+
+value,
+
+style,
+
+}:{
+
+title:string;
+
+value:number;
+
+style:string;
+
+})=>(
+
+<div
+
+className={`
+rounded-xl
+p-4
+${style}
+`}
+
+>
+
+
+<p className="text-sm">
+
+{title}
+
+</p>
+
+
+<h3
+
+className="
+text-3xl
+font-bold
+mt-2
+"
+
+>
+
+{value}
+
+</h3>
+
+
+</div>
+
+);
+
+
+
+
+
+
+
+
+const InfoCard = ({
+
+title,
+
+value,
+
+color,
+
+}:{
+
+title:string;
+
+value:string;
+
+color:string;
+
+})=>(
+
+<div
+
+className="
+bg-gray-50
+rounded-xl
+p-4
+"
+
+>
+
+
+<p className="text-gray-500">
+
+{title}
+
+</p>
+
+
+<h3
+
+className={`
+text-2xl
+font-bold
+${color}
+`}
+
+>
+
+{value}
+
+</h3>
+
+
+</div>
+
+);
+
+
 
 
 

@@ -9,9 +9,18 @@ import {
   Filler,
 } from "chart.js";
 
+import {
+  Line,
+} from "react-chartjs-2";
 
-import { Line } from "react-chartjs-2";
-import { useMemo } from "react";
+import {
+  useMemo,
+} from "react";
+
+import type {
+  ChartOptions,
+} from "chart.js";
+
 
 
 ChartJS.register(
@@ -26,69 +35,67 @@ ChartJS.register(
 
 
 
-const FuelTrendChart = () => {
+
+
+interface Props {
+
+  labels?: string[];
+
+  values?: number[];
+
+}
 
 
 
-  const labels = [
 
+
+
+const FuelTrendChart = ({
+
+  labels,
+
+  values,
+
+}: Props) => {
+
+
+
+
+const chartLabels =
+  labels ??
+  [
     "Week 1",
     "Week 2",
     "Week 3",
     "Week 4",
-
   ];
 
 
 
-
-  const fuel = [
-
+const fuelData =
+  values ??
+  [
     450,
     520,
     480,
     600,
-
   ];
 
 
 
 
 
-  const data = useMemo(
-
-    () => ({
-
-      labels,
-
-
-      datasets:[
-
-        {
-
-          label:"Fuel Consumption (Liters)",
-
-          data:fuel,
-
-          fill:true,
-
-          tension:0.4,
-
-          borderWidth:3,
-
-          pointRadius:5,
-
-          pointHoverRadius:7,
-
-        }
-
-      ]
+const totalFuel =
+  fuelData.reduce(
+    (sum,value)=>sum+value,
+    0
+  );
 
 
-    }),
 
-    []
-
+const averageFuel =
+  Math.round(
+    totalFuel / fuelData.length
   );
 
 
@@ -96,77 +103,177 @@ const FuelTrendChart = () => {
 
 
 
-  const options = {
+
+const data = useMemo(
+
+()=>({
 
 
-    responsive:true,
+labels:chartLabels,
 
 
-    maintainAspectRatio:false,
+datasets:[
+
+{
+
+label:
+"Fuel Consumption (Liters)",
 
 
-    plugins:{
+data:fuelData,
 
 
-      legend:{
-
-        display:true,
-
-      },
+fill:true,
 
 
-      tooltip:{
+tension:0.4,
 
 
-        callbacks:{
+borderWidth:3,
 
 
-          label:(context:any)=>{
-
-            return `${context.raw} L consumed`;
-
-          }
+pointRadius:5,
 
 
-        }
+pointHoverRadius:7,
 
 
-      }
+borderColor:"#16a34a",
 
 
-    },
+backgroundColor:
+"rgba(22,163,74,0.15)",
+
+
+}
+
+]
+
+
+}),
+
+[
+ chartLabels,
+ fuelData
+]
+
+);
 
 
 
-    scales:{
 
 
-      y:{
 
 
-        beginAtZero:true,
 
 
-        ticks:{
+const options:ChartOptions<"line"> = {
 
 
-          callback:(value:any)=>{
-
-            return value+" L";
-
-          }
+responsive:true,
 
 
-        }
+maintainAspectRatio:false,
 
 
-      }
+
+plugins:{
 
 
-    }
+legend:{
 
 
-  };
+display:true,
+
+
+position:"bottom",
+
+
+},
+
+
+
+
+tooltip:{
+
+
+callbacks:{
+
+
+label:(context)=>{
+
+
+return `${context.raw} L consumed`;
+
+
+}
+
+
+}
+
+
+}
+
+
+},
+
+
+
+
+
+scales:{
+
+
+
+y:{
+
+
+beginAtZero:true,
+
+
+ticks:{
+
+
+callback:(value)=>{
+
+
+return `${value} L`;
+
+
+}
+
+
+}
+
+
+},
+
+
+
+x:{
+
+
+grid:{
+
+
+display:false,
+
+
+}
+
+
+}
+
+
+
+}
+
+
+};
+
+
+
+
 
 
 
@@ -188,19 +295,20 @@ p-6
 >
 
 
-<div
-className="
-mb-6
-"
->
+
+{/* Header */}
+
+<div className="mb-6">
 
 
 <h2
+
 className="
 text-2xl
 font-bold
 text-slate-800
 "
+
 >
 
 Fuel Consumption Trend
@@ -208,12 +316,15 @@ Fuel Consumption Trend
 </h2>
 
 
+
 <p
+
 className="
 text-sm
 text-gray-500
 mt-1
 "
+
 >
 
 Weekly fuel usage monitoring
@@ -226,6 +337,12 @@ Weekly fuel usage monitoring
 
 
 
+
+
+
+
+
+{/* Summary Cards */}
 
 
 <div
@@ -244,13 +361,14 @@ mb-6
 
 
 <div
+
 className="
 bg-green-50
 rounded-xl
 p-5
 "
->
 
+>
 
 <p className="text-sm text-gray-500">
 
@@ -260,25 +378,22 @@ Total Fuel Used
 
 
 <h3
+
 className="
 text-3xl
 font-bold
 text-green-700
 mt-2
 "
+
 >
 
-2050 L
+{totalFuel} L
 
 </h3>
 
 
-<span
-className="
-text-green-600
-font-semibold
-"
->
+<span className="text-green-600 font-semibold">
 
 +6.8%
 
@@ -294,11 +409,13 @@ font-semibold
 
 
 <div
+
 className="
 bg-blue-50
 rounded-xl
 p-5
 "
+
 >
 
 
@@ -310,25 +427,22 @@ Average / Week
 
 
 <h3
+
 className="
 text-3xl
 font-bold
 text-blue-700
 mt-2
 "
+
 >
 
-512 L
+{averageFuel} L
 
 </h3>
 
 
-<span
-className="
-text-blue-600
-font-semibold
-"
->
+<span className="text-blue-600 font-semibold">
 
 Stable
 
@@ -343,13 +457,14 @@ Stable
 
 
 
-
 <div
+
 className="
 bg-orange-50
 rounded-xl
 p-5
 "
+
 >
 
 
@@ -361,12 +476,14 @@ Fuel Efficiency
 
 
 <h3
+
 className="
 text-3xl
 font-bold
 text-orange-600
 mt-2
 "
+
 >
 
 14.8 km/L
@@ -374,12 +491,7 @@ mt-2
 </h3>
 
 
-<span
-className="
-text-green-600
-font-semibold
-"
->
+<span className="text-green-600 font-semibold">
 
 Excellent
 
@@ -390,6 +502,8 @@ Excellent
 
 
 
+
+
 </div>
 
 
@@ -399,10 +513,16 @@ Excellent
 
 
 
+
+{/* Chart */}
+
+
 <div
+
 className="
 h-96
 "
+
 >
 
 
@@ -416,6 +536,7 @@ options={options}
 
 
 </div>
+
 
 
 

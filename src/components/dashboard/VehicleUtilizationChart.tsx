@@ -60,7 +60,6 @@ const VehicleUtilizationChart = ({
 
 
 
-
   const data: ChartData[] = [
 
     {
@@ -88,21 +87,19 @@ const VehicleUtilizationChart = ({
 
 
 
-
   const COLORS = [
 
-    "#22c55e", // Active
-
-    "#facc15", // Idle
-
-    "#f97316", // Maintenance
-
-    "#ef4444", // Offline
+    "#22c55e",
+    "#eab308",
+    "#f97316",
+    "#ef4444",
 
   ];
 
 
 
+  const totalVehicles =
+    vehicles.length;
 
 
 
@@ -111,38 +108,61 @@ const VehicleUtilizationChart = ({
     <div
       className="
       bg-white
-      rounded-xl
-      shadow-md
+      rounded-2xl
+      shadow-lg
+      border
+      border-gray-200
       p-6
       "
     >
 
 
 
-      <h2
-        className="
-        text-xl
-        font-semibold
-        mb-6
-        text-gray-800
-        "
-      >
+      {/* Header */}
 
-        Vehicle Utilization
+      <div className="mb-5">
 
-      </h2>
 
+        <h2
+          className="
+          text-xl
+          font-bold
+          text-slate-800
+          "
+        >
+
+          Vehicle Utilization
+
+        </h2>
+
+
+
+        <p
+          className="
+          text-sm
+          text-gray-500
+          mt-1
+          "
+        >
+
+          Real-time vehicle status distribution
+
+        </p>
+
+
+      </div>
 
 
 
 
 
       {
-        vehicles.length === 0 ? (
+        totalVehicles === 0 ? (
+
 
           <div
             className="
-            h-[300px]
+            h-[320px]
             flex
             items-center
             justify-center
@@ -154,13 +174,16 @@ const VehicleUtilizationChart = ({
 
           </div>
 
+
+
         ) : (
 
 
           <ResponsiveContainer
             width="100%"
-            height={300}
+            height={320}
           >
+
 
             <PieChart>
 
@@ -177,17 +200,21 @@ const VehicleUtilizationChart = ({
 
                 cy="50%"
 
-                outerRadius={100}
+                innerRadius={60}
+
+                outerRadius={110}
+
+                paddingAngle={5}
 
                 label
 
               >
 
 
-
                 {
                   data.map(
-                    (entry, index) => (
+                    (entry,index)=>(
+
 
                       <Cell
 
@@ -196,15 +223,15 @@ const VehicleUtilizationChart = ({
                         }
 
                         fill={
-                          COLORS[index] ?? "#64748b"
+                          COLORS[index]
                         }
 
                       />
 
+
                     )
                   )
                 }
-
 
 
               </Pie>
@@ -212,11 +239,23 @@ const VehicleUtilizationChart = ({
 
 
 
+              <Tooltip
 
-              <Tooltip />
+                formatter={(value)=>
+                  `${value} Vehicles`
+                }
 
-              <Legend />
+              />
 
+
+
+              <Legend
+
+                verticalAlign="bottom"
+
+                height={36}
+
+              />
 
 
 
@@ -228,6 +267,63 @@ const VehicleUtilizationChart = ({
 
         )
       }
+
+
+
+
+
+      {/* Summary */}
+
+      <div
+        className="
+        grid
+        grid-cols-2
+        gap-4
+        mt-5
+        "
+      >
+
+
+        <div
+          className="
+          bg-green-50
+          rounded-xl
+          p-3
+          "
+        >
+
+          <p className="text-xs text-gray-500">
+            Active
+          </p>
+
+          <h3 className="text-xl font-bold text-green-600">
+            {active}
+          </h3>
+
+        </div>
+
+
+
+        <div
+          className="
+          bg-red-50
+          rounded-xl
+          p-3
+          "
+        >
+
+          <p className="text-xs text-gray-500">
+            Offline
+          </p>
+
+          <h3 className="text-xl font-bold text-red-600">
+            {offline}
+          </h3>
+
+        </div>
+
+
+      </div>
 
 
 
