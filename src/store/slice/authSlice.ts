@@ -6,103 +6,91 @@ import {
 import { api } from "../../services/api";
 
 
+
 // ================= USER TYPE =================
 
-interface User {
 
-  _id: string;
+export interface User {
 
-  username: string;
+  _id:string;
 
-  email: string;
+  username:string;
 
-  phoneNumber: string;
+  email:string;
 
-  role?: string;
+  phoneNumber:string;
 
-  status?: string;
+  role?:string;
+
+  status?:string;
 
 }
 
 
-// ================= AUTH STATE =================
+
+// ================= STATE =================
+
 
 interface AuthState {
 
-  user: User | null;
 
-  token: string | null;
-
-  isLoggedIn: boolean;
-
-  loading: boolean;
-
-  error: string | null;
-
-}
+  user:User|null;
 
 
-// ================= LOAD SAVED USER =================
-
-const savedToken =
-  localStorage.getItem("token");
+  token:string|null;
 
 
-const savedUser =
-  localStorage.getItem("user");
+  isLoggedIn:boolean;
 
 
-let userData: User | null = null;
+  loading:boolean;
 
 
-try {
-
-  userData = savedUser
-    ? JSON.parse(savedUser)
-    : null;
+  error:string|null;
 
 
 }
 
-catch(error){
-
-  console.error(
-    "User parse error:",
-    error
-  );
 
 
-  localStorage.removeItem("user");
+// ================= LOCAL STORAGE =================
 
-  userData = null;
 
-}
+const token =
+localStorage.getItem("token");
+
+
+const user =
+localStorage.getItem("user");
 
 
 
-// ================= INITIAL STATE =================
+const initialState:AuthState = {
 
 
-const initialState: AuthState = {
+user:user
+?
+JSON.parse(user)
+:
+null,
 
 
-  user:userData,
+token,
 
 
-  token:savedToken,
+isLoggedIn:
+Boolean(token),
 
 
-  isLoggedIn:
-    !!savedToken,
+loading:false,
 
 
-  loading:false,
-
-
-  error:null,
+error:null,
 
 
 };
+
+
 
 
 
@@ -117,22 +105,28 @@ createAsyncThunk(
 "auth/register",
 
 
-async(
+async(data:{
 
 
-data:{
- username:string;
- phoneNumber:string;
- email:string;
- password:string;
+username:string;
+
+
+phoneNumber:string;
+
+
+email:string;
+
+
+password:string;
+
+
 },
 
-
 {
- rejectWithValue
+
+rejectWithValue
 
 }
-
 
 )=>{
 
@@ -154,28 +148,19 @@ data
 return response.data;
 
 
-
 }
 
 catch(error:any){
 
 
-console.error(
-
-"Register Error:",
-
-error.response?.data
-
-);
-
-
-
 return rejectWithValue(
+
 
 error.response?.data?.message ||
 
 "Registration failed"
 
+
 );
 
 
@@ -185,6 +170,8 @@ error.response?.data?.message ||
 }
 
 );
+
+
 
 
 
@@ -203,7 +190,6 @@ createAsyncThunk(
 
 async(
 
-
 credentials:{
 
 
@@ -215,33 +201,17 @@ password:string;
 
 },
 
-
 {
 
 rejectWithValue
 
 }
 
-
 )=>{
 
 
+
 try{
-
-
-console.log(
-"========== LOGIN START =========="
-);
-
-
-
-console.log(
-
-"Email:",
-
-credentials.email
-
-);
 
 
 
@@ -256,15 +226,6 @@ credentials
 
 
 
-console.log(
-
-"Backend Response:",
-
-response.data
-
-);
-
-
 
 const {
 
@@ -276,25 +237,13 @@ user
 
 
 
-// =======================
-// CHECK TOKEN
-// =======================
-
 
 if(!token){
 
 
-console.error(
-
-"Token missing from backend"
-
-);
-
-
-
 return rejectWithValue(
 
-"Token not received"
+"Token missing"
 
 );
 
@@ -302,10 +251,6 @@ return rejectWithValue(
 }
 
 
-
-// =======================
-// SAVE TOKEN
-// =======================
 
 
 localStorage.setItem(
@@ -318,11 +263,6 @@ token
 
 
 
-// =======================
-// SAVE USER
-// =======================
-
-
 localStorage.setItem(
 
 "user",
@@ -333,24 +273,17 @@ JSON.stringify(user)
 
 
 
-console.log(
 
-"Saved Token:",
-
-localStorage.getItem("token")
-
-);
+// Axios header update
 
 
+api.defaults.headers.common[
 
-console.log(
+"Authorization"
 
-"Saved User:",
+]=
 
-localStorage.getItem("user")
-
-);
-
+`Bearer ${token}`;
 
 
 
@@ -373,24 +306,77 @@ catch(error:any){
 
 
 
-console.error(
-
-"Login Error:",
-
-error.response?.data ||
-
-error.message
-
-);
-
-
-
 return rejectWithValue(
+
 
 error.response?.data?.message ||
 
 "Login failed"
 
+
+);
+
+
+
+}
+
+
+
+}
+
+);
+
+
+
+
+
+
+
+
+
+
+// ================= GET PROFILE =================
+
+
+export const getCurrentUser =
+createAsyncThunk(
+
+
+"auth/profile",
+
+
+async(_,{
+
+rejectWithValue
+
+})=>{
+
+
+try{
+
+
+const response =
+await api.get(
+
+"/auth/profile"
+
+);
+
+
+
+return response.data.user;
+
+
+
+}
+
+catch(error:any){
+
+
+return rejectWithValue(
+
+"User fetch failed"
+
 );
 
 
@@ -407,7 +393,11 @@ error.response?.data?.message ||
 
 
 
-// ================= AUTH SLICE =================
+
+
+
+// ================= SLICE =================
+
 
 
 const authSlice =
@@ -425,18 +415,7 @@ reducers:{
 
 
 
-// ================= LOGOUT =================
-
-
 logout:(state)=>{
-
-
-console.log(
-
-"Logout clicked"
-
-);
-
 
 
 state.user=null;
@@ -448,20 +427,12 @@ state.token=null;
 state.isLoggedIn=false;
 
 
-state.loading=false;
-
-
-state.error=null;
-
-
-
 
 localStorage.removeItem(
 
 "token"
 
 );
-
 
 
 localStorage.removeItem(
@@ -472,19 +443,31 @@ localStorage.removeItem(
 
 
 
-console.log(
+delete api.defaults.headers.common[
 
-"Local storage cleared"
+"Authorization"
 
-);
+];
+
+
+
+},
+
+
+
+
+clearError:(state)=>{
+
+
+state.error=null;
+
+
+}
 
 
 
 },
 
-
-
-},
 
 
 
@@ -492,12 +475,13 @@ console.log(
 extraReducers:(builder)=>{
 
 
-
 builder
 
 
 
-// ================= REGISTER =================
+
+
+// REGISTER
 
 
 .addCase(
@@ -518,6 +502,7 @@ state.error=null;
 
 
 
+
 .addCase(
 
 registerUser.fulfilled,
@@ -527,12 +512,14 @@ registerUser.fulfilled,
 
 state.loading=false;
 
+
 state.error=null;
 
 
 }
 
 )
+
 
 
 
@@ -559,7 +546,9 @@ action.payload as string;
 
 
 
-// ================= LOGIN =================
+
+
+// LOGIN
 
 
 .addCase(
@@ -571,12 +560,15 @@ loginUser.pending,
 
 state.loading=true;
 
+
 state.error=null;
 
 
 }
 
 )
+
+
 
 
 
@@ -604,13 +596,10 @@ action.payload.user;
 state.isLoggedIn=true;
 
 
-
-state.error=null;
-
-
 }
 
 )
+
 
 
 
@@ -625,10 +614,10 @@ loginUser.rejected,
 state.loading=false;
 
 
-state.token=null;
-
-
 state.user=null;
+
+
+state.token=null;
 
 
 state.isLoggedIn=false;
@@ -638,9 +627,46 @@ state.error =
 action.payload as string;
 
 
+
+}
+
+)
+
+
+
+
+
+
+
+
+// PROFILE
+
+
+.addCase(
+
+getCurrentUser.fulfilled,
+
+(state,action)=>{
+
+
+state.user =
+action.payload;
+
+
+
+localStorage.setItem(
+
+"user",
+
+JSON.stringify(action.payload)
+
+);
+
+
 }
 
 );
+
 
 
 
@@ -653,9 +679,13 @@ action.payload as string;
 
 
 
+
+
 export const {
 
-logout
+logout,
+
+clearError
 
 }=authSlice.actions;
 

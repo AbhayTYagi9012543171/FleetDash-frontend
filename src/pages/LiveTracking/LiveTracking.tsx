@@ -9,6 +9,7 @@ import {
   FiRefreshCw,
   FiMapPin,
   FiTruck,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 
@@ -19,6 +20,7 @@ import { socket } from "../../services/socket";
 import LiveMap from "../../components/Map/LiveMap";
 
 import type { Vehicle } from "../../types/vehicle";
+
 
 
 
@@ -43,31 +45,64 @@ interface Geofence {
 
 
 
-// ==========================
-// Live Tracking
-// ==========================
 
-const LiveTracking = () => {
+const LiveTracking =()=>{
 
 
-const [vehicles,setVehicles] =
+const [
+vehicles,
+setVehicles
+]=
 useState<Vehicle[]>([]);
 
 
-const [geofences,setGeofences] =
+
+const [
+geofences,
+setGeofences
+]=
 useState<Geofence[]>([]);
 
 
-const [loading,setLoading] =
+
+const [
+loading,
+setLoading
+]=
 useState(false);
 
 
-const [search,setSearch] =
+
+const [
+search,
+setSearch
+]=
 useState("");
 
 
-const [status,setStatus] =
+
+const [
+status,
+setStatus
+]=
 useState("All");
+
+
+
+const [
+lastUpdated,
+setLastUpdated
+]=
+useState("");
+
+
+
+const [
+error,
+setError
+]=
+useState("");
+
 
 
 
@@ -77,7 +112,9 @@ useState("All");
 // Fetch Vehicles
 // ==========================
 
-const fetchVehicles = async()=>{
+
+const fetchVehicles =
+async()=>{
 
 
 try{
@@ -85,28 +122,24 @@ try{
 
 setLoading(true);
 
+setError("");
+
+
 
 const response =
 await api.get("/vehicles");
 
 
 
-console.log(
-"Vehicle Response:",
-response.data
-);
+let data:Vehicle[]=[];
 
 
 
 if(
-Array.isArray(response.data.vehicles)
+Array.isArray(response.data?.vehicles)
 ){
 
-
-setVehicles(
-response.data.vehicles
-);
-
+data=response.data.vehicles;
 
 }
 
@@ -114,30 +147,33 @@ else if(
 Array.isArray(response.data)
 ){
 
+data=response.data;
 
-setVehicles(
-response.data
+}
+
+
+
+setVehicles(data);
+
+
+
+setLastUpdated(
+new Date()
+.toLocaleTimeString()
 );
 
 
-}
-
-else{
-
-
-setVehicles([]);
 
 }
 
+catch(err:any){
 
 
-}
-catch(error){
+console.error(err);
 
 
-console.error(
-"Vehicle Fetch Error:",
-error
+setError(
+"Unable to load vehicles"
 );
 
 
@@ -163,12 +199,15 @@ setLoading(false);
 
 
 
+
+
 // ==========================
 // Fetch Geofences
 // ==========================
 
 
-const fetchGeofences = async()=>{
+const fetchGeofences =
+async()=>{
 
 
 try{
@@ -179,22 +218,15 @@ await api.get("/geofences");
 
 
 
-console.log(
-"Geofence Response:",
-response.data
-);
+let data:Geofence[]=[];
 
 
 
 if(
-Array.isArray(response.data.geofences)
+Array.isArray(response.data?.geofences)
 ){
 
-
-setGeofences(
-response.data.geofences
-);
-
+data=response.data.geofences;
 
 }
 
@@ -202,36 +234,29 @@ else if(
 Array.isArray(response.data)
 ){
 
-
-setGeofences(
-response.data
-);
-
-
-}
-
-else{
-
-
-setGeofences([]);
+data=response.data;
 
 }
 
 
 
+setGeofences(data);
+
+
+
 }
+
 catch(error){
 
 
 console.error(
-"Geofence Error:",
+"Geofence Error",
 error
 );
 
 
-setGeofences([]);
-
 }
+
 
 
 };
@@ -242,8 +267,10 @@ setGeofences([]);
 
 
 
+
+
 // ==========================
-// Socket
+// Socket Connection
 // ==========================
 
 
@@ -260,51 +287,67 @@ socket.connect();
 
 
 
+
+
 socket.on(
+
 "vehicleUpdate",
+
 (updatedVehicle:Vehicle)=>{
 
 
+
 setVehicles(
-(previous)=>
+(prev)=>
 
 
-previous.map(
+prev.map(
 (vehicle)=>
 
-
-(
-vehicle._id &&
-updatedVehicle._id &&
 vehicle._id === updatedVehicle._id
-)
 
 ?
 
-
 {
-
 ...vehicle,
-
 ...updatedVehicle
-
 }
-
 
 :
 
 vehicle
 
-
-
 )
 
 );
 
 
+
+setLastUpdated(
+new Date()
+.toLocaleTimeString()
+);
+
+
+
 }
 
 );
+
+
+
+
+
+const interval =
+setInterval(()=>{
+
+
+fetchVehicles();
+
+
+},30000);
+
+
 
 
 
@@ -319,11 +362,15 @@ socket.off(
 socket.disconnect();
 
 
+clearInterval(interval);
+
+
 };
 
 
 
 },[]);
+
 
 
 
@@ -347,7 +394,7 @@ return vehicles.filter(
 
 const searchMatch =
 vehicle.vehicleNumber
-.toLowerCase()
+?.toLowerCase()
 .includes(
 search.toLowerCase()
 );
@@ -355,7 +402,8 @@ search.toLowerCase()
 
 
 const statusMatch =
-status==="All" ||
+status==="All"
+||
 vehicle.status===status;
 
 
@@ -384,14 +432,14 @@ status
 
 
 
-
 // ==========================
-// Statistics
+// Stats
 // ==========================
 
 
 const total =
 vehicles.length;
+
 
 
 const active =
@@ -428,21 +476,32 @@ v=>v.status==="Offline"
 
 
 
+
 return (
 
 <div className="space-y-6">
 
 
 
+
+
 {/* HEADER */}
 
-<div className="flex justify-between items-center">
+
+<div className="
+flex
+justify-between
+items-center
+">
 
 
 <div>
 
 
-<h1 className="text-3xl font-bold">
+<h1 className="
+text-3xl
+font-bold
+">
 
 Live Tracking
 
@@ -451,12 +510,27 @@ Live Tracking
 
 <p className="text-gray-500">
 
-Monitor fleet vehicles in real time
+Real time fleet monitoring
 
 </p>
 
 
+
+{
+lastUpdated &&
+
+<p className="text-sm text-gray-400">
+
+Updated:
+{lastUpdated}
+
+</p>
+
+}
+
+
 </div>
+
 
 
 
@@ -472,10 +546,9 @@ px-5
 py-3
 rounded-lg
 flex
-gap-2
 items-center
+gap-2
 "
-
 
 >
 
@@ -497,6 +570,30 @@ Refresh
 
 
 
+{
+error &&
+
+<div className="
+bg-red-100
+text-red-700
+p-4
+rounded-lg
+flex
+gap-2
+">
+
+<FiAlertTriangle/>
+
+{error}
+
+</div>
+
+}
+
+
+
+
+
 
 
 {/* STATS */}
@@ -505,17 +602,12 @@ Refresh
 <div className="
 grid
 grid-cols-1
-sm:grid-cols-2
-xl:grid-cols-5
+md:grid-cols-5
 gap-5
 ">
 
 
-<StatCard
-title="Total"
-value={total}
-/>
-
+<StatCard title="Total" value={total}/>
 
 <StatCard
 title="Active"
@@ -545,6 +637,7 @@ color="text-red-600"
 />
 
 
+
 </div>
 
 
@@ -555,25 +648,24 @@ color="text-red-600"
 
 
 
-{/* SEARCH */}
-
+{/* FILTER */}
 
 
 <div className="
 bg-white
-shadow
-rounded-xl
 p-5
+rounded-xl
+shadow
 flex
 gap-4
 ">
 
 
 <div className="
-border
-rounded-lg
 flex
 items-center
+border
+rounded-lg
 px-3
 flex-1
 ">
@@ -590,12 +682,16 @@ p-3
 outline-none
 "
 
-placeholder="Search vehicle"
+placeholder="
+Search vehicle number
+"
 
 value={search}
 
 onChange={
-e=>setSearch(e.target.value)
+e=>setSearch(
+e.target.value
+)
 }
 
 />
@@ -605,7 +701,17 @@ e=>setSearch(e.target.value)
 
 
 
+
+
 <select
+
+value={status}
+
+onChange={
+e=>setStatus(
+e.target.value
+)
+}
 
 className="
 border
@@ -613,36 +719,25 @@ rounded-lg
 px-4
 "
 
-value={status}
-
-onChange={
-e=>setStatus(e.target.value)
-}
-
 >
 
-
-<option value="All">
+<option>
 All
 </option>
 
-
-<option value="Active">
+<option>
 Active
 </option>
 
-
-<option value="Idle">
+<option>
 Idle
 </option>
 
-
-<option value="Maintenance">
+<option>
 Maintenance
 </option>
 
-
-<option value="Offline">
+<option>
 Offline
 </option>
 
@@ -665,46 +760,44 @@ Offline
 {/* MAP */}
 
 
+
 <div className="
 bg-white
 shadow
 rounded-xl
-p-4
+p-5
 ">
 
 
-<div className="
+<h2 className="
+font-bold
+text-xl
+mb-4
 flex
 gap-2
-mb-4
 ">
 
-
 <FiMapPin/>
-
-
-<h2 className="text-xl font-bold">
 
 Live Vehicle Map
 
 </h2>
 
 
-</div>
-
-
-
 
 <LiveMap
 
-vehicles={filteredVehicles}
+vehicles={
+filteredVehicles
+}
 
-geofences={geofences}
+geofences={
+geofences
+}
 
 />
 
 
-
 </div>
 
 
@@ -715,21 +808,20 @@ geofences={geofences}
 
 
 
-{/* VEHICLE LIST */}
-
+{/* VEHICLE CARDS */}
 
 
 <div className="
 bg-white
-shadow
 rounded-xl
+shadow
 ">
 
 
 <h2 className="
 text-xl
 font-bold
-p-4
+p-5
 border-b
 ">
 
@@ -740,22 +832,32 @@ Vehicles
 
 
 
-{
-loading &&
 
-<p className="p-4">
+{
+loading ?
+
+<p className="p-5">
 
 Loading vehicles...
 
 </p>
 
-}
+
+:
 
 
+filteredVehicles.length===0 ?
+
+<p className="p-5 text-gray-500">
+
+No vehicles found
+
+</p>
 
 
+:
 
-{
+
 filteredVehicles.map(
 (vehicle)=>(
 
@@ -764,20 +866,21 @@ filteredVehicles.map(
 
 key={
 vehicle._id ??
-vehicle.id ??
 vehicle.vehicleNumber
 }
 
 className="
-p-4
+p-5
 border-b
 "
-
 
 >
 
 
-<div className="flex justify-between">
+<div className="
+flex
+justify-between
+">
 
 
 <div>
@@ -792,13 +895,15 @@ border-b
 
 <p className="text-gray-500">
 
-{vehicle.driver ?? "Not Assigned"}
+{
+vehicle.driver ??
+"Not Assigned"
+}
 
 </p>
 
 
 </div>
-
 
 
 <FiTruck/>
@@ -808,19 +913,23 @@ border-b
 
 
 
-
 <p>
-Speed : {vehicle.speed} km/h
+Speed:
+{vehicle.speed ?? 0}
+km/h
 </p>
 
 
+
 <p>
-Fuel : {vehicle.fuel}%
+Fuel:
+{vehicle.fuel ?? 0}%
 </p>
 
 
+
 <p>
-Status :
+Status:
 <b>
 {" "}
 {vehicle.status}
@@ -832,22 +941,26 @@ Status :
 </div>
 
 
-
 )
 
 )
+
+
 
 }
 
 
 
-</div>
-
-
-
 
 </div>
 
+
+
+
+
+
+
+</div>
 
 );
 
@@ -860,9 +973,6 @@ Status :
 
 
 
-// ==========================
-// Stat Card
-// ==========================
 
 
 const StatCard =({
@@ -882,10 +992,8 @@ value:number;
 
 color?:string;
 
-})=>{
+})=>(
 
-
-return (
 
 <div className="
 bg-white
@@ -902,7 +1010,6 @@ p-5
 </p>
 
 
-
 <h2 className={`
 text-3xl
 font-bold
@@ -914,14 +1021,10 @@ ${color}
 </h2>
 
 
-
 </div>
 
+
 );
-
-
-};
-
 
 
 

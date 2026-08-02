@@ -1,158 +1,360 @@
 import axios from "axios";
+
 import type {
   AxiosError,
-  InternalAxiosRequestConfig,
   AxiosResponse,
+  InternalAxiosRequestConfig,
 } from "axios";
+
+
+
+// ======================================
+// API BASE URL
+// ======================================
+
+
+const API_URL =
+import.meta.env.VITE_API_URL ||
+"http://localhost:5003/api";
+
+
+
 
 // ======================================
 // Axios Instance
 // ======================================
 
+
 export const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:5003/api",
 
-  headers: {
-    "Content-Type": "application/json",
-  },
+baseURL: API_URL,
 
-  withCredentials: false,
 
-  timeout: 15000,
+headers:{
+
+"Content-Type":"application/json",
+
+},
+
+
+withCredentials:false,
+
+
+timeout:15000,
+
+
 });
 
+
+
+
+
 // ======================================
-// Request Interceptor
+// Logout Helper
 // ======================================
+
+
+const logoutUser =()=>{
+
+
+localStorage.removeItem(
+"token"
+);
+
+
+localStorage.removeItem(
+"user"
+);
+
+
+delete api.defaults.headers.common[
+"Authorization"
+];
+
+
+
+};
+
+
+
+
+
+
+
+// ======================================
+// REQUEST INTERCEPTOR
+// ======================================
+
 
 api.interceptors.request.use(
 
-  (config: InternalAxiosRequestConfig) => {
 
-    const token = localStorage.getItem("token");
+(config:InternalAxiosRequestConfig)=>{
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
 
-    if (import.meta.env.DEV) {
-      console.log(
-        "➡️",
-        config.method?.toUpperCase(),
-        `${config.baseURL}${config.url}`
-      );
+const token =
+localStorage.getItem("token");
 
-      console.log("TOKEN:", token);
-    }
 
-    return config;
 
-  },
+if(token){
 
-  (error: AxiosError) => {
 
-    if (import.meta.env.DEV) {
-      console.error("❌ Request Error:", error.message);
-    }
+config.headers.Authorization =
+`Bearer ${token}`;
 
-    return Promise.reject(error);
 
-  }
+}
+
+
+
+if(import.meta.env.DEV){
+
+
+console.log(
+
+"🚀 API REQUEST",
+
+{
+
+method:
+config.method?.toUpperCase(),
+
+url:
+`${config.baseURL}${config.url}`,
+
+token:
+token
+?
+"Present"
+:
+"Missing"
+
+}
 
 );
 
+
+}
+
+
+
+return config;
+
+
+},
+
+
+
+(error)=>{
+
+
+return Promise.reject(error);
+
+
+}
+
+
+
+);
+
+
+
+
+
+
+
+
 // ======================================
-// Response Interceptor
+// RESPONSE INTERCEPTOR
 // ======================================
+
 
 api.interceptors.response.use(
 
-  (response: AxiosResponse) => {
 
-    if (import.meta.env.DEV) {
-      console.log(
-        "✅ API Response:",
-        response.data
-      );
-    }
+(response:AxiosResponse)=>{
 
-    return response;
 
-  },
+if(import.meta.env.DEV){
 
-  (error: AxiosError) => {
 
-    if (import.meta.env.DEV) {
+console.log(
 
-      console.error(
-        "❌ API Error:",
-        error.response?.status
-      );
+"✅ API SUCCESS",
 
-      console.error(
-        "Message:",
-        error.response?.data || error.message
-      );
+{
 
-    }
+status:
+response.status,
 
-    // =============================
-    // Unauthorized
-    // =============================
+data:
+response.data
 
-    if (error.response?.status === 401) {
+}
 
-      console.warn("⚠️ Session Expired");
+);
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
 
-      if (
-        window.location.pathname !== "/login"
-      ) {
-        window.location.href = "/login";
-      }
+}
 
-    }
 
-    // =============================
-    // Forbidden
-    // =============================
 
-    if (error.response?.status === 403) {
+return response;
 
-      console.warn("⛔ Access Denied");
 
-    }
+},
 
-    // =============================
-    // Server Error
-    // =============================
 
-    if (error.response?.status === 500) {
 
-      console.error(
-        "🚨 Internal Server Error"
-      );
 
-    }
+(error:AxiosError)=>{
 
-    // =============================
-    // Network Error
-    // =============================
 
-    if (!error.response) {
 
-      console.error(
-        "🌐 Network Error. Backend may be offline."
-      );
+const status =
+error.response?.status;
 
-    }
 
-    return Promise.reject(error);
 
-  }
+if(import.meta.env.DEV){
+
+
+console.error(
+
+"❌ API FAILED",
+
+{
+
+status,
+
+message:
+error.message,
+
+data:
+error.response?.data
+
+}
+
+);
+
+
+}
+
+
+
+
+
+// =============================
+// Unauthorized
+// =============================
+
+
+if(status===401){
+
+
+
+console.warn(
+"Session expired"
+);
+
+
+
+logoutUser();
+
+
+
+if(
+window.location.pathname !== "/login"
+){
+
+
+window.location.replace(
+"/login"
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+// =============================
+// Forbidden
+// =============================
+
+
+if(status===403){
+
+
+console.warn(
+"Access Forbidden"
+);
+
+
+}
+
+
+
+
+
+
+
+// =============================
+// Server Error
+// =============================
+
+
+if(status && status>=500){
+
+
+console.error(
+"Server Error"
+);
+
+
+}
+
+
+
+
+
+
+
+// =============================
+// Network Error
+// =============================
+
+
+if(!error.response){
+
+
+console.error(
+
+"Network Error - Backend unavailable"
+
+);
+
+
+}
+
+
+
+
+
+return Promise.reject(error);
+
+
+
+}
+
+
 
 );
