@@ -1,33 +1,44 @@
 import { api } from "./api";
+import type { Vehicle } from "../types/vehicle";
 
 
-export interface Vehicle {
 
-  _id?: string;
+// ===============================
+// Response Types
+// ===============================
 
-  vehicleNumber: string;
 
-  driver?: string;
+interface VehicleListResponse {
 
-  speed: number;
+  success?: boolean;
 
-  fuel: number;
-
-  status:
-    | "Active"
-    | "Idle"
-    | "Maintenance"
-    | "Offline";
-
-  latitude: number;
-
-  longitude: number;
+  vehicles: Vehicle[];
 
 }
 
 
 
+interface VehicleResponse {
+
+  success?: boolean;
+
+  message?: string;
+
+  vehicle?: Vehicle;
+
+}
+
+
+
+
+
+// ===============================
+// Vehicle Service
+// ===============================
+
+
 export const vehicleService = {
+
 
 
   // =====================
@@ -37,19 +48,47 @@ export const vehicleService = {
   async getVehicles(): Promise<Vehicle[]> {
 
 
-    const response = await api.get("/vehicles");
+    try {
 
 
-    console.log(
-      "Vehicle API Data:",
-      response.data
-    );
+      const response =
+        await api.get<VehicleListResponse>(
+          "/vehicles"
+        );
 
 
-    return response.data.vehicles || [];
+
+      console.log(
+        "Vehicle API Data:",
+        response.data
+      );
+
+
+
+      return response.data.vehicles || [];
+
+
+
+    }
+    catch(error){
+
+
+      console.error(
+        "Get Vehicles Error:",
+        error
+      );
+
+
+      throw error;
+
+
+    }
 
 
   },
+
+
+
 
 
 
@@ -57,18 +96,33 @@ export const vehicleService = {
   // GET SINGLE VEHICLE
   // =====================
 
-  async getVehicle(id: string) {
+
+  async getVehicle(
+    id:string
+  ):Promise<Vehicle | null>{
 
 
-    const response = await api.get(
-      `/vehicles/${id}`
+
+    const response =
+      await api.get<VehicleResponse>(
+        `/vehicles/${id}`
+      );
+
+
+
+    return (
+      response.data.vehicle ??
+      null
     );
 
 
-    return response.data;
-
 
   },
+
+
+
+
+
 
 
 
@@ -76,21 +130,36 @@ export const vehicleService = {
   // CREATE VEHICLE
   // =====================
 
+
   async createVehicle(
-    data: Vehicle
-  ) {
+
+    data:Partial<Vehicle>
+
+  ):Promise<VehicleResponse>{
 
 
-    const response = await api.post(
-      "/vehicles",
-      data
-    );
+
+    const response =
+      await api.post<VehicleResponse>(
+
+        "/vehicles",
+
+        data
+
+      );
+
 
 
     return response.data;
 
 
+
   },
+
+
+
+
+
 
 
 
@@ -98,22 +167,38 @@ export const vehicleService = {
   // UPDATE VEHICLE
   // =====================
 
+
   async updateVehicle(
-    id: string,
-    data: Partial<Vehicle>
-  ) {
+
+    id:string,
+
+    data:Partial<Vehicle>
+
+  ):Promise<VehicleResponse>{
 
 
-    const response = await api.put(
-      `/vehicles/${id}`,
-      data
-    );
+
+    const response =
+      await api.put<VehicleResponse>(
+
+        `/vehicles/${id}`,
+
+        data
+
+      );
+
 
 
     return response.data;
 
 
+
   },
+
+
+
+
+
 
 
 
@@ -121,20 +206,30 @@ export const vehicleService = {
   // DELETE VEHICLE
   // =====================
 
+
   async deleteVehicle(
-    id: string
-  ) {
+
+    id:string
+
+  ):Promise<VehicleResponse>{
 
 
-    const response = await api.delete(
-      `/vehicles/${id}`
-    );
+
+    const response =
+      await api.delete<VehicleResponse>(
+
+        `/vehicles/${id}`
+
+      );
+
 
 
     return response.data;
 
 
+
   }
+
 
 
 };
