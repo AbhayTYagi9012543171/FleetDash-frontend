@@ -34,10 +34,10 @@ const Vehicles = () => {
     vehicleNumber: "",
     status:
       "Idle" as
-      | "Active"
-      | "Idle"
-      | "Maintenance"
-      | "Offline",
+        | "Active"
+        | "Idle"
+        | "Maintenance"
+        | "Offline",
     speed: 0,
     fuel: 100,
     latitude: 28.6139,
@@ -93,7 +93,7 @@ const Vehicles = () => {
     } catch (error: any) {
       alert(
         error.response?.data?.message ||
-        "Vehicle creation failed"
+          "Vehicle creation failed"
       );
     }
   };
@@ -170,56 +170,136 @@ const Vehicles = () => {
   ).length;
 
   return (
-    <div className="min-h-screen w-full bg-slate-100 overflow-x-hidden">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-hidden"></div>
+    <div className="min-h-screen bg-slate-100">
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
-      {/* Header */}
+        {/* Header */}
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
 
-        <div>
-          <h1 className="text-4xl font-bold text-slate-800">
-            Fleet Management
-          </h1>
+          <div>
+            <h1 className="text-4xl font-bold text-slate-800">
+              Fleet Management
+            </h1>
 
-          <p className="text-slate-500 mt-2">
-            Monitor, manage and track your fleet vehicles.
-          </p>
+            <p className="text-slate-500 mt-2">
+              Monitor, manage and track your fleet vehicles.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white font-medium shadow-lg hover:bg-blue-700 transition-all duration-300"
+          >
+            <FiPlus size={20} />
+            Add Vehicle
+          </button>
+
         </div>
 
-        <button
-          onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white font-medium shadow-lg hover:bg-blue-700 transition-all duration-300"
-        >
-          <FiPlus size={20} />
-          Add Vehicle
-        </button>
+        {/* Dashboard Cards */}
 
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-      {/* Dashboard Cards */}
+          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-xl p-6">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="flex items-center justify-between">
 
-        <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-xl p-6">
+              <div>
 
-          <div className="flex items-center justify-between">
+                <p className="text-blue-100">
+                  Total Vehicles
+                </p>
 
-            <div>
+                <h2 className="text-4xl font-bold mt-2">
+                  {totalVehicles}
+                </h2>
 
-              <p className="text-blue-100">
-                Total Vehicles
-              </p>
+              </div>
 
-              <h2 className="text-4xl font-bold mt-2">
-                {totalVehicles}
-              </h2>
+              <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+
+                <FiTruck size={28} />
+
+              </div>
 
             </div>
 
-            <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+          </div>
 
-              <FiTruck size={28} />
+          <div className="rounded-2xl bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-green-100">
+                  Active
+                </p>
+
+                <h2 className="text-4xl font-bold mt-2">
+                  {activeVehicles}
+                </h2>
+
+              </div>
+
+              <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+
+                <FiActivity size={28} />
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-xl p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-yellow-100">
+                  Idle
+                </p>
+
+                <h2 className="text-4xl font-bold mt-2">
+                  {idleVehicles}
+                </h2>
+
+              </div>
+
+              <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+
+                <FiMapPin size={28} />
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white shadow-xl p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-red-100">
+                  Offline
+                </p>
+
+                <h2 className="text-4xl font-bold mt-2">
+                  {offlineVehicles}
+                </h2>
+
+              </div>
+
+              <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+
+                <FiBatteryCharging size={28} />
+
+              </div>
 
             </div>
 
@@ -227,87 +307,7 @@ const Vehicles = () => {
 
         </div>
 
-        <div className="rounded-2xl bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl p-6">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-green-100">
-                Active
-              </p>
-
-              <h2 className="text-4xl font-bold mt-2">
-                {activeVehicles}
-              </h2>
-
-            </div>
-
-            <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
-
-              <FiActivity size={28} />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-xl p-6">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-yellow-100">
-                Idle
-              </p>
-
-              <h2 className="text-4xl font-bold mt-2">
-                {idleVehicles}
-              </h2>
-
-            </div>
-
-            <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
-
-              <FiMapPin size={28} />
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white shadow-xl p-6">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-red-100">
-                Offline
-              </p>
-
-              <h2 className="text-4xl font-bold mt-2">
-                {offlineVehicles}
-              </h2>
-
-            </div>
-
-            <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
-
-              <FiBatteryCharging size={28} />
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Part 2 starts here:
+        {/* Part 2 starts here:
             - Professional Search Bar
             - Responsive Vehicle Table
             - Fuel Progress Bar
@@ -316,41 +316,41 @@ const Vehicles = () => {
         */}
 
 
-      {/* ==========================
+                {/* ==========================
             Search Bar
         ========================== */}
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex items-center gap-4">
 
-          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
 
-            <FiSearch className="text-blue-600 text-xl" />
+              <FiSearch className="text-blue-600 text-xl" />
+
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search vehicle number..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 text-gray-700 text-lg outline-none placeholder:text-gray-400"
+            />
 
           </div>
 
-          <input
-            type="text"
-            placeholder="Search vehicle number..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 text-gray-700 text-lg outline-none placeholder:text-gray-400"
-          />
-
         </div>
 
-      </div>
-
-      {/* ==========================
+        {/* ==========================
             Vehicle Table
         ========================== */}
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
 
-  <div className="overflow-x-auto">
+          <div className="overflow-x-auto">
 
-    <table className="min-w-[1000px] w-full">
+            <table className="min-w-[1100px] w-full">
 
               <thead className="bg-slate-50 border-b">
 
@@ -397,7 +397,7 @@ const Vehicles = () => {
 
                     <td className="px-6 py-5">
 
-                      <div className="flex items-center gap-3 min-w-[180px]">
+                      <div className="flex items-center gap-4">
 
                         <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
 
@@ -450,7 +450,7 @@ const Vehicles = () => {
 
                     <td className="px-6 py-5">
 
-                      <div className="w-32 lg:w-40">
+                      <div className="w-40">
 
                         <div className="flex justify-between text-sm mb-2">
 
@@ -465,12 +465,13 @@ const Vehicles = () => {
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
 
                           <div
-                            className={`h-2.5 rounded-full transition-all duration-500 ${vehicle.fuel > 70
-                              ? "bg-green-500"
-                              : vehicle.fuel > 30
+                            className={`h-2.5 rounded-full transition-all duration-500 ${
+                              vehicle.fuel > 70
+                                ? "bg-green-500"
+                                : vehicle.fuel > 30
                                 ? "bg-yellow-500"
                                 : "bg-red-500"
-                              }`}
+                            }`}
                             style={{
                               width: `${vehicle.fuel}%`,
                             }}
@@ -487,17 +488,18 @@ const Vehicles = () => {
                     <td className="px-6 py-5">
 
                       <span
-                        className={`px-4 py-2 rounded-full text-sm font-semibold ${vehicle.status === "Active"
-                          ? "bg-green-100 text-green-700"
+                        className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                          vehicle.status === "Active"
+                            ? "bg-green-100 text-green-700"
 
-                          : vehicle.status === "Idle"
+                            : vehicle.status === "Idle"
                             ? "bg-yellow-100 text-yellow-700"
 
                             : vehicle.status === "Maintenance"
-                              ? "bg-orange-100 text-orange-700"
+                            ? "bg-orange-100 text-orange-700"
 
-                              : "bg-red-100 text-red-700"
-                          }`}
+                            : "bg-red-100 text-red-700"
+                        }`}
                       >
                         {vehicle.status}
                       </span>
@@ -628,7 +630,7 @@ const Vehicles = () => {
         ========================== */}
 
 
-        {/* ==========================
+                {/* ==========================
             Add Vehicle Modal
         ========================== */}
 
@@ -844,7 +846,7 @@ const Vehicles = () => {
             View Vehicle Modal
         ========================== */}
 
-        {/* ==========================
+                {/* ==========================
             View Vehicle Modal
         ========================== */}
 
@@ -903,14 +905,15 @@ const Vehicles = () => {
                     </p>
 
                     <span
-                      className={`inline-flex px-4 py-2 rounded-full font-semibold ${selectedVehicle.status === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : selectedVehicle.status === "Idle"
+                      className={`inline-flex px-4 py-2 rounded-full font-semibold ${
+                        selectedVehicle.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : selectedVehicle.status === "Idle"
                           ? "bg-yellow-100 text-yellow-700"
                           : selectedVehicle.status === "Maintenance"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
                     >
                       {selectedVehicle.status}
                     </span>
@@ -964,12 +967,13 @@ const Vehicles = () => {
                     <div className="w-full bg-gray-200 rounded-full h-3">
 
                       <div
-                        className={`h-3 rounded-full ${selectedVehicle.fuel > 70
-                          ? "bg-green-500"
-                          : selectedVehicle.fuel > 30
+                        className={`h-3 rounded-full ${
+                          selectedVehicle.fuel > 70
+                            ? "bg-green-500"
+                            : selectedVehicle.fuel > 30
                             ? "bg-yellow-500"
                             : "bg-red-500"
-                          }`}
+                        }`}
                         style={{
                           width: `${selectedVehicle.fuel}%`,
                         }}
@@ -1058,7 +1062,7 @@ const Vehicles = () => {
             Edit Vehicle Modal
         ========================== */}
 
-        {/* ==========================
+                {/* ==========================
             Edit Vehicle Modal
         ========================== */}
 
@@ -1332,7 +1336,7 @@ const Vehicles = () => {
             Delete Vehicle Modal
         ========================== */}
 
-        {/* ==========================
+                {/* ==========================
             Delete Vehicle Modal
         ========================== */}
 
