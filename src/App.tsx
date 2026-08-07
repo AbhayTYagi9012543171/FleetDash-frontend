@@ -5,7 +5,6 @@ import { Toaster } from "react-hot-toast";
 function App() {
   return (
     <ErrorBoundary>
-
       <Toaster
         position="top-right"
         reverseOrder={false}
@@ -20,7 +19,6 @@ function App() {
       />
 
       <AppRoutes />
-
     </ErrorBoundary>
   );
 }
