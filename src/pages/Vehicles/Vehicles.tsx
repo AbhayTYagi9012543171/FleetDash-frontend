@@ -199,7 +199,7 @@ const Vehicles = () => {
 
       {/* Dashboard Cards */}
 
-      <div className="grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
         <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-xl p-6">
 
@@ -346,12 +346,11 @@ const Vehicles = () => {
             Vehicle Table
         ========================== */}
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
 
-        <div className="overflow-x-auto">
+  <div className="overflow-x-auto">
 
-          <div className="w-full overflow-x-auto">
-            <table className="w-full">
+    <table className="min-w-[1000px] w-full">
 
               <thead className="bg-slate-50 border-b">
 
