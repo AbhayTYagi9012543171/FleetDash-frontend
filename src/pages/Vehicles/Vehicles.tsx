@@ -580,7 +580,7 @@ const Vehicles = () => {
           </div>
 
         </div>
-                      {/* ==========================
+        {/* ==========================
             Add Vehicle Modal
         ========================== */}
 
@@ -766,67 +766,6 @@ const Vehicles = () => {
 
                 </div>
 
-                {/* Live Preview */}
-
-                <div className="mt-8 rounded-2xl border bg-slate-50 p-5">
-
-                  <h3 className="mb-5 font-semibold text-slate-700">
-                    Vehicle Preview
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Vehicle
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.vehicleNumber || "--"}
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Speed
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.speed} km/h
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Fuel
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.fuel}%
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Status
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.status}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </div>
 
                 {/* Footer */}
 
@@ -1274,67 +1213,7 @@ const Vehicles = () => {
 
                 </div>
 
-                {/* Live Preview */}
 
-                <div className="mt-8 rounded-2xl border bg-slate-50 p-5">
-
-                  <h3 className="mb-5 font-semibold text-slate-700">
-                    Live Preview
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Vehicle
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.vehicleNumber}
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Speed
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.speed} km/h
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Fuel
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.fuel}%
-                      </p>
-
-                    </div>
-
-                    <div>
-
-                      <p className="text-xs text-gray-500">
-                        Status
-                      </p>
-
-                      <p className="mt-1 font-semibold">
-                        {formData.status}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </div>
 
                 {/* Footer */}
 
