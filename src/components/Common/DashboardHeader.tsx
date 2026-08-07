@@ -10,27 +10,43 @@ import {
   FaSearch,
   FaCalendarAlt,
   FaClock,
+  FaArrowUp,
+  FaWifi,
+  FaMoon,
+  FaSun,
 } from "react-icons/fa";
 
 import {
+  memo,
+  useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
+
+import type {
+  ReactNode,
+} from "react";
+
+import { motion } from "motion/react";
 
 import {
   useNavigate,
 } from "react-router-dom";
 
-
 import {
   useAppSelector,
 } from "../../redux/hooks";
-
 
 import type {
   DashboardData,
 } from "../../hooks/useDashboard";
 
+
+
+// ===============================
+// Interfaces
+// ===============================
 
 
 interface DashboardHeaderProps {
@@ -39,7 +55,7 @@ interface DashboardHeaderProps {
 
   lastUpdated?: string;
 
-  onRefresh?: () => void;
+  onRefresh?: () => void | Promise<void>;
 
   refreshing?: boolean;
 
@@ -47,633 +63,1245 @@ interface DashboardHeaderProps {
 
 
 
+
+interface InfoCardProps {
+
+  icon: ReactNode;
+
+  title: string;
+
+  value: string;
+
+}
+
+
+
+
+interface KPICardProps {
+
+  title: string;
+
+  value: number;
+
+  icon: ReactNode;
+
+  color:
+  | "blue"
+  | "green"
+  | "orange"
+  | "cyan";
+
+  trend?: number;
+
+}
+
+
+
+
+interface TrendBadgeProps {
+
+  value?: number;
+
+}
+
+
+
+
+// ===============================
+// Animation Variants
+// ===============================
+
+
+const containerVariants = {
+
+  hidden: {
+
+    opacity: 0,
+
+  },
+
+
+  show: {
+
+    opacity: 1,
+
+    transition: {
+
+      staggerChildren: 0.08,
+
+    },
+
+  },
+
+};
+
+
+
+
+const itemVariants = {
+
+  hidden: {
+
+    opacity: 0,
+
+    y: 20,
+
+  },
+
+
+  show: {
+
+    opacity: 1,
+
+    y: 0,
+
+    transition: {
+
+      duration: 0.4,
+
+    },
+
+  },
+
+};
+
+
+
+
+
+
+// ===============================
+// Main Component
+// ===============================
+
+
 const DashboardHeader = ({
+
   dashboard,
+
   lastUpdated,
+
   onRefresh,
-  refreshing,
+
+  refreshing = false,
+
 }: DashboardHeaderProps) => {
+
 
 
   const navigate = useNavigate();
 
 
+
   const user = useAppSelector(
-    (state)=>state.auth.user
+    (state) => state.auth.user
   );
 
 
 
-  const [currentTime,setCurrentTime] =
-  useState(
+
+  const [
+    currentTime,
+    setCurrentTime,
+  ] = useState(
     new Date()
   );
 
 
-  const [search,setSearch] =
-  useState("");
+
+  const [
+    search,
+    setSearch,
+  ] = useState("");
+
+
+
+  const [
+    darkMode,
+    setDarkMode,
+  ] = useState(false);
 
 
 
 
-  useEffect(()=>{
+
+
+  // ===============================
+  // Clock Update
+  // ===============================
+
+
+  useEffect(() => {
 
 
     const timer =
-    setInterval(()=>{
+      setInterval(() => {
 
-      setCurrentTime(
-        new Date()
-      );
+        setCurrentTime(
+          new Date()
+        );
 
-    },1000);
-
-
-
-    return()=>clearInterval(timer);
-
-
-  },[]);
+      }, 1000);
 
 
 
+    return () => clearInterval(timer);
+
+
+
+  }, []);
+
+
+
+
+
+
+
+  // ===============================
+  // Date Time
+  // ===============================
 
 
   const hour =
-  currentTime.getHours();
+    currentTime.getHours();
+
 
 
 
   const greeting =
-  hour < 12
-  ?
-  "Good Morning"
-  :
-  hour < 18
-  ?
-  "Good Afternoon"
-  :
-  "Good Evening";
+    useMemo(() => {
+
+
+      if (hour < 12)
+
+        return "Good Morning";
+
+
+      if (hour < 18)
+
+        return "Good Afternoon";
+
+
+      return "Good Evening";
+
+
+    }, [hour]);
+
+
 
 
 
 
 
   const today =
-  currentTime.toLocaleDateString(
-    "en-IN",
-    {
-      weekday:"long",
-      day:"numeric",
-      month:"long",
-      year:"numeric",
-    }
-  );
+    useMemo(() => {
+
+
+      return currentTime.toLocaleDateString(
+        "en-IN",
+        {
+
+          weekday: "long",
+
+          day: "numeric",
+
+          month: "long",
+
+          year: "numeric",
+
+        }
+      );
+
+
+    }, [currentTime]);
+
+
 
 
 
 
   const clock =
-  currentTime.toLocaleTimeString(
-    "en-IN",
-    {
-      hour:"2-digit",
-      minute:"2-digit",
-      second:"2-digit",
-    }
-  );
+    useMemo(() => {
+
+
+      return currentTime.toLocaleTimeString(
+        "en-IN",
+        {
+
+          hour: "2-digit",
+
+          minute: "2-digit",
+
+          second: "2-digit",
+
+        }
+      );
+
+
+    }, [currentTime]);
 
 
 
+
+
+
+
+  // ===============================
+  // Dashboard Values
+  // ===============================
 
 
   const totalVehicles =
-  dashboard?.totalVehicles || 0;
+    dashboard?.totalVehicles ?? 0;
+
 
 
   const activeVehicles =
-  dashboard?.activeVehicles || 0;
+    dashboard?.activeVehicles ?? 0;
+
 
 
   const totalDrivers =
-  dashboard?.totalDrivers || 0;
+    dashboard?.totalDrivers ?? 0;
+
 
 
   const totalAlerts =
-  dashboard?.totalAlerts || 0;
+    dashboard?.totalAlerts ?? 0;
+
+
 
 
 
 
   const fleetHealth =
-  totalVehicles > 0
-  ?
-  Math.round(
-    (activeVehicles /
-    totalVehicles) * 100
-  )
-  :
-  0;
+    useMemo(() => {
 
 
+      if (!totalVehicles)
+
+        return 0;
+
+
+
+      return Math.round(
+        (
+          activeVehicles /
+          totalVehicles
+        ) * 100
+      );
+
+
+    }, [
+      activeVehicles,
+      totalVehicles,
+    ]);
+
+
+
+
+
+
+
+  const fleetStatus =
+    useMemo(() => {
+
+
+      if (fleetHealth >= 90)
+
+        return "Excellent";
+
+
+      if (fleetHealth >= 75)
+
+        return "Good";
+
+
+      if (fleetHealth >= 60)
+
+        return "Average";
+
+
+      return "Needs Attention";
+
+
+    }, [
+      fleetHealth
+    ]);
+
+
+
+
+
+
+  const healthColor =
+    useMemo(() => {
+
+
+      if (fleetHealth >= 90)
+
+        return "text-green-400";
+
+
+      if (fleetHealth >= 70)
+
+        return "text-yellow-300";
+
+
+      return "text-red-400";
+
+
+    }, [
+      fleetHealth
+    ]);
+
+
+
+
+
+
+
+  const connectionStatus = true;
+
+
+
+
+
+
+
+  const welcomeMessage =
+    useMemo(() => {
+
+
+      return `${greeting}, ${user?.username ??
+        "Administrator"
+        }`;
+
+
+    }, [
+      greeting,
+      user,
+    ]);
+
+
+
+
+
+
+
+  const refreshHandler =
+    useCallback(async () => {
+
+
+      await onRefresh?.();
+
+
+    }, [
+      onRefresh
+    ]);
+
+
+
+
+
+
+  const toggleTheme = () => {
+
+
+    setDarkMode(
+      previous => !previous
+    );
+
+
+  };
 
 
   return (
 
-<div
-className="
-bg-gradient-to-r
-from-slate-900
-via-blue-900
-to-indigo-900
-rounded-3xl
-shadow-xl
-p-6
-text-white
-mb-8
-"
->
+    <motion.section
 
+      variants={containerVariants}
 
-<div
-className="
-flex
-flex-col
-xl:flex-row
-justify-between
-gap-8
-"
->
+      initial="hidden"
 
+      animate="show"
 
+      className="
+        relative
+        overflow-hidden
+        rounded-3xl
+        bg-gradient-to-br
+        from-slate-950
+        via-blue-900
+        to-indigo-900
+        p-6
+        md:p-8
+        shadow-2xl
+        border
+        border-white/10
+        text-white
+      "
 
-{/* LEFT SECTION */}
+    >
 
 
-<div className="flex-1">
 
+      {/* ================= BACKGROUND EFFECT ================= */}
 
-<h1
-className="
-text-4xl
-font-bold
-"
->
 
-{greeting},{" "}
+      <div
+        className="
+          absolute
+          inset-0
+          overflow-hidden
+          pointer-events-none
+        "
+      >
 
-<span
-className="
-text-cyan-300
-"
->
 
-{user?.username || "Admin"}
+        <div
+          className="
+            absolute
+            -top-24
+            -right-24
+            h-72
+            w-72
+            rounded-full
+            bg-cyan-400/10
+            blur-3xl
+          "
+        />
 
-</span>
 
-👋
+        <div
+          className="
+            absolute
+            bottom-0
+            left-0
+            h-64
+            w-64
+            rounded-full
+            bg-indigo-500/10
+            blur-3xl
+          "
+        />
 
-</h1>
 
+      </div>
 
 
-<p
-className="
-mt-3
-text-blue-100
-text-lg
-"
->
 
-Fleet Management Control Center
 
-</p>
 
 
+      <div
+        className="
+          relative
+          z-10
+          space-y-8
+        "
+      >
 
-<p
-className="
-text-blue-200
-mt-2
-"
->
 
-Monitor vehicles, drivers and fleet performance
-in real time.
 
-</p>
 
+        {/* ================= TOP HEADER ================= */}
 
 
+        <motion.div
 
-<div
-className="
-flex
-flex-wrap
-gap-6
-mt-6
-"
->
+          variants={itemVariants}
 
+          className="
+            flex
+            flex-col
+            gap-8
+            xl:flex-row
+            xl:justify-between
+          "
 
-<div className="flex items-center gap-2">
+        >
 
-<FaCalendarAlt
-className="text-cyan-300"
-/>
 
-<span>
-{today}
-</span>
 
-</div>
 
+          {/* LEFT CONTENT */}
 
 
-<div className="flex items-center gap-2">
+          <div className="flex-1">
 
-<FaClock
-className="text-cyan-300"
-/>
 
-<span>
-{clock}
-</span>
 
-</div>
+            <div
+              className="
+                inline-flex
+                items-center
+                gap-2
+                rounded-full
+                border
+                border-emerald-400/20
+                bg-emerald-500/10
+                px-4
+                py-2
+                text-sm
+                text-emerald-300
+              "
+            >
 
 
-</div>
+              <FaWifi
+                className="
+                  animate-pulse
+                "
+              />
 
 
-</div>
+              {
+                connectionStatus
+                  ?
+                  "Backend Connected"
+                  :
+                  "Disconnected"
+              }
 
 
+            </div>
 
 
 
 
 
-{/* RIGHT SECTION */}
 
 
+            <h1
+              className="
+                mt-6
+                text-4xl
+                font-black
+                md:text-5xl
+              "
+            >
 
-<div
-className="
-flex
-flex-col
-gap-4
-"
->
+              {welcomeMessage}
 
 
+              <span className="ml-2">
+                👋
+              </span>
 
-<div className="relative">
 
+            </h1>
 
-<FaSearch
-className="
-absolute
-left-4
-top-1/2
--translate-y-1/2
-text-gray-400
-"
-/>
 
 
-<input
 
-value={search}
 
-onChange={
-(e)=>setSearch(e.target.value)
-}
 
-placeholder="Search vehicles, drivers..."
 
-className="
-w-full
-xl:w-96
-bg-white
-text-slate-700
-rounded-xl
-pl-12
-pr-4
-py-3
-outline-none
-"
+            <p
+              className="
+                mt-4
+                max-w-2xl
+                text-lg
+                text-blue-100
+              "
+            >
 
-/>
+              Fleet Management Control Center.
+              Monitor vehicles, drivers and fleet
+              performance in real time.
 
+            </p>
 
-</div>
 
 
 
 
 
-<div
-className="
-flex
-flex-wrap
-gap-3
-"
->
 
+            <div
+              className="
+                mt-8
+                flex
+                flex-wrap
+                gap-4
+              "
+            >
 
 
-<button
 
-onClick={()=>
-navigate("/alerts")
-}
 
-className="
-relative
-bg-white/20
-p-3
-rounded-xl
-hover:bg-white/30
-"
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  rounded-xl
+                  bg-white/10
+                  px-4
+                  py-3
+                "
+              >
 
->
+                <FaCalendarAlt
+                  className="text-cyan-300"
+                />
 
 
-<FaBell
-className="text-xl"
-/>
+                <span>
+                  {today}
+                </span>
 
 
-<span
-className="
-absolute
--top-1
--right-1
-bg-red-500
-rounded-full
-h-5
-w-5
-text-xs
-flex
-items-center
-justify-center
-"
->
+              </div>
 
-{totalAlerts}
 
-</span>
 
 
-</button>
 
 
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  rounded-xl
+                  bg-white/10
+                  px-4
+                  py-3
+                "
+              >
 
+                <FaClock
+                  className="text-cyan-300"
+                />
 
 
+                <span>
+                  {clock}
+                </span>
 
-<button
 
-onClick={onRefresh}
+              </div>
 
-disabled={refreshing}
 
-className="
-flex
-items-center
-gap-2
-bg-cyan-500
-px-5
-py-3
-rounded-xl
-font-semibold
-"
 
->
 
 
-<FaSyncAlt
-className={
-refreshing
-?
-"animate-spin"
-:
-""
-}
-/>
 
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  rounded-xl
+                  bg-white/10
+                  px-4
+                  py-3
+                "
+              >
 
-{
-refreshing
-?
-"Refreshing..."
-:
-"Refresh"
-}
+                <FaHeartbeat
+                  className={healthColor}
+                />
 
 
-</button>
+                <span>
 
+                  Fleet Status:
 
+                  <strong className="ml-2">
 
+                    {fleetStatus}
 
+                  </strong>
 
+                </span>
 
 
-<div
-className="
-flex
-items-center
-gap-3
-bg-white/20
-rounded-xl
-px-4
-py-2
-"
->
+              </div>
 
 
-<FaUserCircle
-className="text-4xl"
-/>
 
 
-<div>
+            </div>
 
-<h3 className="font-semibold">
 
-{user?.username || "Admin"}
+          </div>
 
-</h3>
 
 
-<p className="text-sm text-blue-100">
 
-{user?.role || "Administrator"}
 
-</p>
 
 
-</div>
 
+          {/* RIGHT PANEL */}
 
-</div>
 
 
+          <div
+            className="
+              w-full
+              max-w-md
+              space-y-4
+            "
+          >
 
-</div>
 
 
-</div>
 
 
-</div>
+            {/* SEARCH */}
 
 
+            <div className="relative">
 
 
+              <FaSearch
 
+                className="
+                  absolute
+                  left-4
+                  top-1/2
+                  -translate-y-1/2
+                  text-gray-400
+                "
 
+              />
 
 
-{/* QUICK INFO */}
 
+              <input
 
-<div
-className="
-grid
-grid-cols-1
-md:grid-cols-3
-gap-4
-mt-8
-"
->
+                value={search}
 
+                onChange={(e) =>
+                  setSearch(
+                    e.target.value
+                  )
+                }
 
 
-<InfoCard
+                placeholder="Search vehicles, drivers..."
 
-icon={<FaHeartbeat/>}
 
-title="Fleet Health"
+                className="
+                  w-full
+                  rounded-2xl
+                  bg-white
+                  py-4
+                  pl-12
+                  pr-4
+                  text-slate-700
+                  outline-none
+                  shadow-lg
+                  focus:ring-4
+                  focus:ring-cyan-300/30
+                "
 
-value={`${fleetHealth}%`}
+              />
 
-/>
 
+            </div>
 
 
-<InfoCard
 
-icon={<FaGasPump/>}
 
-title="Fuel Today"
 
-value="640 L"
 
-/>
 
 
 
-<InfoCard
+            {/* BUTTONS */}
 
-icon={<FaClock/>}
 
-title="Last Sync"
 
-value={lastUpdated || "--"}
+            <div
+              className="
+                flex
+                gap-3
+              "
+            >
 
-/>
 
 
-</div>
+              <button
 
+                onClick={() =>
+                  navigate("/alerts")
+                }
 
+                className="
+                  relative
+                  flex
+                  h-14
+                  w-14
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  bg-white/20
+                  hover:bg-white/30
+                "
 
+              >
 
+                <FaBell
+                  className="text-xl"
+                />
 
 
 
+                {
+                  totalAlerts > 0 &&
 
-{/* KPI CARDS */}
+                  <span
+                    className="
+                      absolute
+                      -right-1
+                      -top-1
+                      flex
+                      h-6
+                      w-6
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-red-500
+                      text-xs
+                      font-bold
+                    "
+                  >
 
+                    {totalAlerts}
 
-<div
-className="
-grid
-grid-cols-1
-sm:grid-cols-2
-xl:grid-cols-4
-gap-6
-mt-8
-"
->
+                  </span>
 
+                }
 
-<KPICard
 
-title="Total Vehicles"
+              </button>
 
-value={totalVehicles}
 
-icon={<FaTruck/>}
 
-color="blue"
 
-/>
 
 
 
-<KPICard
+              <button
 
-title="Active Vehicles"
+                onClick={refreshHandler}
 
-value={activeVehicles}
+                disabled={refreshing}
 
-icon={<FaCheckCircle/>}
+                className="
+                  flex-1
+                  rounded-2xl
+                  bg-cyan-500
+                  font-semibold
+                  hover:bg-cyan-400
+                  disabled:opacity-50
+                "
 
-color="green"
+              >
 
-/>
+                <span
+                  className="
+                    flex
+                    items-center
+                    justify-center
+                    gap-3
+                  "
+                >
 
+                  <FaSyncAlt
 
+                    className={
+                      refreshing
+                        ?
+                        "animate-spin"
+                        :
+                        ""
+                    }
 
-<KPICard
+                  />
 
-title="Maintenance Due"
 
-value={totalAlerts}
+                  {
+                    refreshing
+                      ?
+                      "Refreshing..."
+                      :
+                      "Refresh"
+                  }
 
-icon={<FaTools/>}
 
-color="orange"
+                </span>
 
-/>
 
+              </button>
 
 
-<KPICard
 
-title="Drivers"
 
-value={totalDrivers}
 
-icon={<FaUserCircle/>}
 
-color="cyan"
+              <button
 
-/>
+                onClick={toggleTheme}
 
+                className="
+                  flex
+                  h-14
+                  w-14
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  bg-white/20
+                  hover:bg-white/30
+                "
 
+              >
 
-</div>
+                {
+                  darkMode
+                    ?
+                    <FaSun className="text-yellow-300 text-xl" />
+                    :
+                    <FaMoon className="text-xl" />
+                }
 
 
+              </button>
 
 
-</div>
+
+            </div>
+
+
+
+
+
+            {/* USER CARD */}
+
+
+            <div
+              className="
+                flex
+                items-center
+                gap-3
+                rounded-2xl
+                bg-white/10
+                px-4
+                py-3
+              "
+            >
+
+              <FaUserCircle
+                className="
+                  text-4xl
+                  text-cyan-300
+                "
+              />
+
+
+              <div>
+
+
+                <h3 className="font-bold">
+
+                  {user?.username || "Admin"}
+
+                </h3>
+
+
+
+                <p className="text-sm text-blue-100">
+
+                  {user?.role || "Administrator"}
+
+                </p>
+
+
+              </div>
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+        </motion.div>
+
+        {/* ================= QUICK INFO ================= */}
+
+
+        <motion.div
+
+          variants={itemVariants}
+
+          className="
+            grid
+            grid-cols-1
+            gap-5
+            md:grid-cols-3
+          "
+
+        >
+
+
+
+          <InfoCard
+            icon={<FaHeartbeat />}
+            title="Fleet Health"
+            value={`${fleetHealth}%`}
+          />
+          <InfoCard
+
+            icon={<FaGasPump />}
+
+            title="Fuel Consumed Today"
+
+            value="640 L"
+
+          />
+
+
+
+          <InfoCard
+
+            icon={<FaClock />}
+
+            title="Last Synchronization"
+
+            value={lastUpdated || "--"}
+
+          />
+
+
+
+        </motion.div>
+
+
+
+
+
+
+
+        {/* ================= KPI CARDS ================= */}
+
+
+
+        <motion.div
+
+          variants={itemVariants}
+
+          className="
+            grid
+            grid-cols-1
+            gap-6
+            sm:grid-cols-2
+            xl:grid-cols-4
+          "
+
+        >
+
+
+
+          <KPICard
+
+            title="Total Vehicles"
+
+            value={totalVehicles}
+
+            icon={<FaTruck />}
+
+            color="blue"
+
+            trend={12}
+
+          />
+
+
+
+
+          <KPICard
+
+            title="Active Vehicles"
+
+            value={activeVehicles}
+
+            icon={<FaCheckCircle />}
+
+            color="green"
+
+            trend={8}
+
+          />
+
+
+
+
+          <KPICard
+
+            title="Maintenance Due"
+
+            value={totalAlerts}
+
+            icon={<FaTools />}
+
+            color="orange"
+
+            trend={-3}
+
+          />
+
+
+
+
+          <KPICard
+
+            title="Drivers"
+
+            value={totalDrivers}
+
+            icon={<FaUserCircle />}
+
+            color="cyan"
+
+            trend={5}
+
+          />
+
+
+
+        </motion.div>
+
+
+
+
+
+
+      </div>
+
+
+
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          rounded-3xl
+          ring-1
+          ring-white/10
+        "
+      />
+
+
+    </motion.section>
 
   );
 
@@ -683,142 +1311,339 @@ color="cyan"
 
 
 
-const InfoCard = ({
-icon,
-title,
-value
-}:any)=>(
-<div
-className="
-bg-white/10
-rounded-2xl
-p-5
-flex
-items-center
-gap-4
-"
->
-
-<div className="text-3xl text-cyan-300">
-
-{icon}
-
-</div>
-
-
-<div>
-
-<p className="text-sm text-blue-100">
-
-{title}
-
-</p>
-
-<h3 className="text-3xl font-bold">
-
-{value}
-
-</h3>
-
-</div>
-
-
-</div>
-);
 
 
 
+// ===============================
+// Trend Badge
+// ===============================
+
+
+const TrendBadge = ({
+  value = 0,
+}: TrendBadgeProps) => {
+
+
+  const positive =
+    value >= 0;
 
 
 
-const KPICard = ({
-title,
-value,
-icon,
-color
-}:any)=>(
+  return (
 
-<div
-className="
-bg-white
-rounded-2xl
-p-6
-shadow-lg
-"
->
+    <div
+      className={`
+        flex
+        items-center
+        gap-1
+        text-xs
+        font-semibold
 
+        ${positive
+          ?
+          "text-emerald-600"
+          :
+          "text-red-600"
+        }
+      `}
+    >
 
-<div
-className="
-flex
-justify-between
-items-center
-"
->
+      <FaArrowUp
 
+        className={
+          positive
+            ?
+            ""
+            :
+            "rotate-180"
+        }
 
-<div>
-
-<p className="text-gray-500">
-
-{title}
-
-</p>
+      />
 
 
-<h2 className="text-4xl font-bold text-slate-800">
+      {Math.abs(value)}%
 
-{value}
+    </div>
 
-</h2>
+  );
 
-
-</div>
+};
 
 
 
-<div
-className={`
-h-16
-w-16
-rounded-2xl
-flex
-items-center
-justify-center
-text-3xl
-
-${
-color==="blue"
-?
-"bg-blue-100 text-blue-600"
-:
-color==="green"
-?
-"bg-green-100 text-green-600"
-:
-color==="orange"
-?
-"bg-orange-100 text-orange-600"
-:
-"bg-cyan-100 text-cyan-600"
-}
-
-`}
->
-
-{icon}
-
-</div>
 
 
 
-</div>
 
 
-</div>
+
+// ===============================
+// Info Card
+// ===============================
 
 
-);
+const InfoCard = memo(({
+
+  icon,
+
+  title,
+
+  value,
+
+}: InfoCardProps) => {
+
+
+  return (
+
+    <motion.div
+
+      whileHover={{
+        y: -5,
+      }}
+
+      className="
+        rounded-2xl
+        border
+        border-white/10
+        bg-white/10
+        p-5
+        backdrop-blur-xl
+      "
+
+    >
+
+
+      <div
+        className="
+          flex
+          items-center
+          gap-4
+        "
+      >
+
+
+        <div
+          className="
+            flex
+            h-14
+            w-14
+            items-center
+            justify-center
+            rounded-2xl
+            bg-cyan-500/20
+            text-3xl
+            text-cyan-300
+          "
+        >
+
+          {icon}
+
+        </div>
+
+
+
+
+        <div>
+
+
+          <p
+            className="
+              text-sm
+              text-blue-100
+            "
+          >
+
+            {title}
+
+          </p>
+
+
+
+
+          <h3
+            className="
+              text-2xl
+              font-black
+            "
+          >
+
+            {value}
+
+          </h3>
+
+
+
+        </div>
+
+
+      </div>
+
+
+    </motion.div>
+
+  );
+
+
+});
+
+
+
+
+
+
+
+
+
+// ===============================
+// KPI Card
+// ===============================
+
+
+const KPICard = memo(({
+
+  title,
+
+  value,
+
+  icon,
+
+  color,
+
+  trend = 0,
+
+}: KPICardProps) => {
+
+
+  return (
+
+    <motion.div
+
+      whileHover={{
+        scale: 1.03,
+      }}
+
+      className="
+        rounded-3xl
+        bg-white
+        p-6
+        shadow-xl
+      "
+
+    >
+
+
+      <div
+        className="
+          flex
+          justify-between
+          items-start
+        "
+      >
+
+
+
+        <div>
+
+
+          <p
+            className="
+              text-sm
+              text-slate-500
+            "
+          >
+
+            {title}
+
+          </p>
+
+
+
+
+          <h2
+            className="
+              mt-3
+              text-4xl
+              font-black
+              text-slate-900
+            "
+          >
+
+            {value}
+
+          </h2>
+
+
+
+
+          <div className="mt-3">
+
+
+            <TrendBadge
+              value={trend}
+            />
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div
+          className={`
+            flex
+            h-16
+            w-16
+            items-center
+            justify-center
+            rounded-2xl
+            text-3xl
+
+            ${color === "blue"
+              ?
+              "bg-blue-100 text-blue-600"
+              :
+              color === "green"
+                ?
+                "bg-emerald-100 text-emerald-600"
+                :
+                color === "orange"
+                  ?
+                  "bg-orange-100 text-orange-600"
+                  :
+                  "bg-cyan-100 text-cyan-600"
+            }
+
+          `}
+        >
+
+          {icon}
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </motion.div>
+
+  );
+
+
+});
+
+
+
+
 
 
 
