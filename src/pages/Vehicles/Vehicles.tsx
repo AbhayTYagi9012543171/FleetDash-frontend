@@ -28,9 +28,9 @@ const initialForm = {
 };
 
 const Vehicles = () => {
-  // ==============================
-  // States
-  // ==============================
+  // ==========================
+  // State
+  // ==========================
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,9 +47,9 @@ const Vehicles = () => {
 
   const [formData, setFormData] = useState(initialForm);
 
-  // ==============================
+  // ==========================
   // Load Vehicles
-  // ==============================
+  // ==========================
 
   useEffect(() => {
     loadVehicles();
@@ -69,9 +69,9 @@ const Vehicles = () => {
     }
   };
 
-  // ==============================
+  // ==========================
   // Add Vehicle
-  // ==============================
+  // ==========================
 
   const handleAddVehicle = async () => {
     try {
@@ -93,9 +93,9 @@ const Vehicles = () => {
     }
   };
 
-  // ==============================
+  // ==========================
   // Update Vehicle
-  // ==============================
+  // ==========================
 
   const handleUpdateVehicle = async () => {
     if (!selectedVehicle?._id) return;
@@ -116,9 +116,9 @@ const Vehicles = () => {
     }
   };
 
-  // ==============================
+  // ==========================
   // Delete Vehicle
-  // ==============================
+  // ==========================
 
   const handleDeleteVehicle = async () => {
     if (!selectedVehicle?._id) return;
@@ -138,9 +138,9 @@ const Vehicles = () => {
     }
   };
 
-  // ==============================
+  // ==========================
   // Search Filter
-  // ==============================
+  // ==========================
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((vehicle) =>
@@ -150,17 +150,15 @@ const Vehicles = () => {
     );
   }, [vehicles, search]);
 
-  // ==============================
+  // ==========================
   // Dashboard Stats
-  // ==============================
+  // ==========================
 
   const totalVehicles = vehicles.length;
 
   const activeVehicles = vehicles.filter(
     (v) => v.status === "Active"
   ).length;
-
-  // idleVehicles not used elsewhere; remove to avoid unused variable warning
 
   const maintenanceVehicles = vehicles.filter(
     (v) => v.status === "Maintenance"
@@ -172,17 +170,15 @@ const Vehicles = () => {
 
   return (
     <div className="min-h-screen bg-slate-100">
-
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
-        {/* ==============================
+        {/* ==========================
             Header
-        ============================== */}
+        ========================== */}
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
 
           <div>
-
             <h1 className="text-4xl font-bold text-slate-800">
               Fleet Management
             </h1>
@@ -190,7 +186,6 @@ const Vehicles = () => {
             <p className="mt-2 text-slate-500">
               Monitor, manage and track your fleet vehicles.
             </p>
-
           </div>
 
           <button
@@ -200,21 +195,18 @@ const Vehicles = () => {
             <FiPlus size={20} />
             Add Vehicle
           </button>
-
         </div>
 
-        {/* ==============================
+        {/* ==========================
             Dashboard Cards
-        ============================== */}
+        ========================== */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
           <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white p-6 shadow-xl">
-
             <div className="flex justify-between items-center">
 
               <div>
-
                 <p className="text-blue-100">
                   Total Vehicles
                 </p>
@@ -222,25 +214,19 @@ const Vehicles = () => {
                 <h2 className="text-4xl font-bold mt-2">
                   {totalVehicles}
                 </h2>
-
               </div>
 
               <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-
                 <FiTruck size={28} />
-
               </div>
 
             </div>
-
           </div>
 
           <div className="rounded-2xl bg-gradient-to-r from-green-600 to-green-500 text-white p-6 shadow-xl">
-
             <div className="flex justify-between items-center">
 
               <div>
-
                 <p className="text-green-100">
                   Active
                 </p>
@@ -248,25 +234,19 @@ const Vehicles = () => {
                 <h2 className="text-4xl font-bold mt-2">
                   {activeVehicles}
                 </h2>
-
               </div>
 
               <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-
                 <FiActivity size={28} />
-
               </div>
 
             </div>
-
           </div>
 
           <div className="rounded-2xl bg-gradient-to-r from-orange-500 to-yellow-500 text-white p-6 shadow-xl">
-
             <div className="flex justify-between items-center">
 
               <div>
-
                 <p className="text-orange-100">
                   Maintenance
                 </p>
@@ -274,25 +254,19 @@ const Vehicles = () => {
                 <h2 className="text-4xl font-bold mt-2">
                   {maintenanceVehicles}
                 </h2>
-
               </div>
 
               <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-
                 <FiMapPin size={28} />
-
               </div>
 
             </div>
-
           </div>
 
           <div className="rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white p-6 shadow-xl">
-
             <div className="flex justify-between items-center">
 
               <div>
-
                 <p className="text-red-100">
                   Offline
                 </p>
@@ -300,33 +274,27 @@ const Vehicles = () => {
                 <h2 className="text-4xl font-bold mt-2">
                   {offlineVehicles}
                 </h2>
-
               </div>
 
               <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-
                 <FiBatteryCharging size={28} />
-
               </div>
 
             </div>
-
           </div>
 
         </div>
 
-        {/* ==============================
-            Search Bar
-        ============================== */}
+        {/* ==========================
+            Search
+        ========================== */}
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
 
           <div className="flex items-center gap-4">
 
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-
               <FiSearch className="text-blue-600 text-xl" />
-
             </div>
 
             <input
@@ -343,11 +311,9 @@ const Vehicles = () => {
 
         </div>
 
-        {/* Part 2 starts here */}
-
-                {/* ==============================
+        {/* ==========================
             Vehicle Table
-        ============================== */}
+        ========================== */}
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
 
@@ -359,15 +325,25 @@ const Vehicles = () => {
 
                 <tr className="text-left text-xs uppercase tracking-wider text-gray-500">
 
-                  <th className="px-6 py-5">Vehicle</th>
+                  <th className="px-6 py-5">
+                    Vehicle
+                  </th>
 
-                  <th className="px-6 py-5">Speed</th>
+                  <th className="px-6 py-5">
+                    Speed
+                  </th>
 
-                  <th className="px-6 py-5">Fuel</th>
+                  <th className="px-6 py-5">
+                    Fuel
+                  </th>
 
-                  <th className="px-6 py-5">Status</th>
+                  <th className="px-6 py-5">
+                    Status
+                  </th>
 
-                  <th className="px-6 py-5">Location</th>
+                  <th className="px-6 py-5">
+                    Location
+                  </th>
 
                   <th className="px-6 py-5 text-center">
                     Actions
@@ -378,97 +354,68 @@ const Vehicles = () => {
               </thead>
 
               <tbody>
-
-                {/* Loading */}
+                                {/* Loading */}
 
                 {loading && (
-
                   <tr>
-
                     <td
                       colSpan={6}
                       className="py-20 text-center"
                     >
-
                       <div className="flex flex-col items-center">
-
                         <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin"></div>
 
                         <p className="mt-4 text-gray-500">
-
                           Loading vehicles...
-
                         </p>
-
                       </div>
-
                     </td>
-
                   </tr>
-
                 )}
 
                 {/* Vehicle Rows */}
 
                 {!loading &&
                   filteredVehicles.map((vehicle) => (
-
                     <tr
                       key={vehicle._id}
                       className="border-b last:border-none hover:bg-slate-50 transition"
                     >
-
                       {/* Vehicle */}
 
                       <td className="px-6 py-5">
-
                         <div className="flex items-center gap-4">
 
                           <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-
                             <FiTruck
                               size={22}
                               className="text-blue-600"
                             />
-
                           </div>
 
                           <div>
-
                             <h3 className="font-semibold text-slate-800">
-
                               {vehicle.vehicleNumber}
-
                             </h3>
 
                             <p className="text-sm text-gray-400">
-
                               Fleet Vehicle
-
                             </p>
-
                           </div>
 
                         </div>
-
                       </td>
 
                       {/* Speed */}
 
                       <td className="px-6 py-5">
-
                         <span className="font-semibold">
-
                           {vehicle.speed}
-
                         </span>
 
-                        <span className="text-gray-400 ml-1">
-
+                        <span className="ml-1 text-gray-400">
                           km/h
-
                         </span>
-
                       </td>
 
                       {/* Fuel */}
@@ -478,13 +425,7 @@ const Vehicles = () => {
                         <div className="w-40">
 
                           <div className="flex justify-between text-sm mb-2">
-
-                            <span>
-
-                              {vehicle.fuel}%
-
-                            </span>
-
+                            <span>{vehicle.fuel}%</span>
                           </div>
 
                           <div className="w-full h-2.5 rounded-full bg-gray-200">
@@ -513,7 +454,7 @@ const Vehicles = () => {
                       <td className="px-6 py-5">
 
                         <span
-                          className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${
+                          className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ${
                             vehicle.status === "Active"
                               ? "bg-green-100 text-green-700"
                               : vehicle.status === "Idle"
@@ -535,15 +476,11 @@ const Vehicles = () => {
                         <div className="text-sm">
 
                           <p className="font-medium">
-
                             {vehicle.latitude}
-
                           </p>
 
                           <p className="text-gray-400">
-
                             {vehicle.longitude}
-
                           </p>
 
                         </div>
@@ -565,9 +502,7 @@ const Vehicles = () => {
                             }}
                             className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition"
                           >
-
                             <FiEye className="mx-auto" />
-
                           </button>
 
                           {/* Edit */}
@@ -590,9 +525,7 @@ const Vehicles = () => {
                             }}
                             className="w-10 h-10 rounded-xl bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition"
                           >
-
                             <FiEdit className="mx-auto" />
-
                           </button>
 
                           {/* Delete */}
@@ -604,9 +537,7 @@ const Vehicles = () => {
                             }}
                             className="w-10 h-10 rounded-xl bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition"
                           >
-
                             <FiTrash2 className="mx-auto" />
-
                           </button>
 
                         </div>
@@ -614,43 +545,32 @@ const Vehicles = () => {
                       </td>
 
                     </tr>
-
                   ))}
 
                 {/* Empty State */}
 
                 {!loading &&
                   filteredVehicles.length === 0 && (
-
                     <tr>
-
                       <td
                         colSpan={6}
                         className="py-20 text-center"
                       >
-
                         <FiTruck
                           size={60}
-                          className="mx-auto text-gray-300 mb-5"
+                          className="mx-auto mb-5 text-gray-300"
                         />
 
                         <h3 className="text-xl font-semibold text-gray-700">
-
                           No Vehicles Found
-
                         </h3>
 
-                        <p className="text-gray-500 mt-2">
-
+                        <p className="mt-2 text-gray-500">
                           Try another search or add a new
                           vehicle.
-
                         </p>
-
                       </td>
-
                     </tr>
-
                   )}
 
               </tbody>
@@ -660,20 +580,15 @@ const Vehicles = () => {
           </div>
 
         </div>
-
-        {/* ==============================
-            Part 3 Starts Here
+              </tbody>
+                      {/* ==========================
             Add Vehicle Modal
-        ============================== */}
-
-                {/* ==============================
-            Add Vehicle Modal
-        ============================== */}
+        ========================== */}
 
         {showAdd && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
 
               {/* Header */}
 
@@ -683,7 +598,7 @@ const Vehicles = () => {
                   Add New Vehicle
                 </h2>
 
-                <p className="text-blue-100 mt-2">
+                <p className="mt-2 text-blue-100">
                   Enter vehicle information below.
                 </p>
 
@@ -693,13 +608,13 @@ const Vehicles = () => {
 
               <div className="p-8">
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
                   {/* Vehicle Number */}
 
                   <div className="md:col-span-2">
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Vehicle Number
                     </label>
 
@@ -713,7 +628,7 @@ const Vehicles = () => {
                           vehicleNumber: e.target.value,
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     />
 
                   </div>
@@ -722,7 +637,7 @@ const Vehicles = () => {
 
                   <div>
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Status
                     </label>
 
@@ -738,7 +653,7 @@ const Vehicles = () => {
                             | "Offline",
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     >
                       <option value="Active">
                         Active
@@ -764,7 +679,7 @@ const Vehicles = () => {
 
                   <div>
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Speed (km/h)
                     </label>
 
@@ -777,7 +692,7 @@ const Vehicles = () => {
                           speed: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     />
 
                   </div>
@@ -786,7 +701,7 @@ const Vehicles = () => {
 
                   <div>
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Fuel (%)
                     </label>
 
@@ -801,7 +716,7 @@ const Vehicles = () => {
                           fuel: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     />
 
                   </div>
@@ -810,7 +725,7 @@ const Vehicles = () => {
 
                   <div>
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Latitude
                     </label>
 
@@ -823,7 +738,7 @@ const Vehicles = () => {
                           latitude: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     />
 
                   </div>
@@ -832,7 +747,7 @@ const Vehicles = () => {
 
                   <div>
 
-                    <label className="block text-sm font-semibold mb-2">
+                    <label className="mb-2 block text-sm font-semibold">
                       Longitude
                     </label>
 
@@ -845,7 +760,7 @@ const Vehicles = () => {
                           longitude: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     />
 
                   </div>
@@ -856,11 +771,11 @@ const Vehicles = () => {
 
                 <div className="mt-8 rounded-2xl border bg-slate-50 p-5">
 
-                  <h3 className="font-semibold text-slate-700 mb-5">
+                  <h3 className="mb-5 font-semibold text-slate-700">
                     Vehicle Preview
                   </h3>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
 
                     <div>
 
@@ -868,7 +783,7 @@ const Vehicles = () => {
                         Vehicle
                       </p>
 
-                      <p className="font-semibold mt-1">
+                      <p className="mt-1 font-semibold">
                         {formData.vehicleNumber || "--"}
                       </p>
 
@@ -880,7 +795,7 @@ const Vehicles = () => {
                         Speed
                       </p>
 
-                      <p className="font-semibold mt-1">
+                      <p className="mt-1 font-semibold">
                         {formData.speed} km/h
                       </p>
 
@@ -892,7 +807,7 @@ const Vehicles = () => {
                         Fuel
                       </p>
 
-                      <p className="font-semibold mt-1">
+                      <p className="mt-1 font-semibold">
                         {formData.fuel}%
                       </p>
 
@@ -904,7 +819,7 @@ const Vehicles = () => {
                         Status
                       </p>
 
-                      <p className="font-semibold mt-1">
+                      <p className="mt-1 font-semibold">
                         {formData.status}
                       </p>
 
@@ -916,21 +831,21 @@ const Vehicles = () => {
 
                 {/* Footer */}
 
-                <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 mt-8">
+                <div className="mt-8 flex flex-col-reverse justify-end gap-4 sm:flex-row">
 
                   <button
                     onClick={() => {
                       setShowAdd(false);
                       setFormData(initialForm);
                     }}
-                    className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
+                    className="rounded-xl border border-gray-300 px-6 py-3 transition hover:bg-gray-100"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={handleAddVehicle}
-                    className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg transition"
+                    className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
                   >
                     Save Vehicle
                   </button>
@@ -944,627 +859,670 @@ const Vehicles = () => {
           </div>
         )}
 
-        {/* ==============================
-            Part 4 Starts Here
+                {/* ==========================
             View Vehicle Modal
-        ============================== */}
+        ========================== */}
 
-        {/* ==========================
-    Vehicle Table
-========================== */}
+        {showView && selectedVehicle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 
-<div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-</div>
-{/* ==========================
-    Add Vehicle Modal
-========================== */}
+            <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
 
+              {/* Header */}
 
-{/* ==========================
-    View Vehicle Modal
-========================== */}
+              <div className="bg-gradient-to-r from-sky-600 to-blue-700 px-8 py-6 text-white">
 
-{showView && selectedVehicle && (
-  <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="flex items-center gap-4">
 
-    <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <FiTruck size={32} />
+                  </div>
 
-      {/* Header */}
+                  <div>
 
-      <div className="bg-gradient-to-r from-sky-600 to-blue-700 px-8 py-6 text-white">
+                    <h2 className="text-3xl font-bold">
+                      {selectedVehicle.vehicleNumber}
+                    </h2>
 
-        <div className="flex items-center gap-4">
+                    <p className="text-blue-100">
+                      Vehicle Details
+                    </p>
 
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
-            <FiTruck size={32} />
-          </div>
+                  </div>
 
-          <div>
-
-            <h2 className="text-3xl font-bold">
-              {selectedVehicle.vehicleNumber}
-            </h2>
-
-            <p className="text-blue-100">
-              Vehicle Details
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Body */}
-
-      <div className="p-8">
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Status */}
-
-          <div className="rounded-2xl border p-5">
-
-            <p className="text-sm text-gray-500 mb-2">
-              Status
-            </p>
-
-            <span
-              className={`inline-flex px-4 py-2 rounded-full font-semibold ${
-                selectedVehicle.status === "Active"
-                  ? "bg-green-100 text-green-700"
-                  : selectedVehicle.status === "Idle"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : selectedVehicle.status === "Maintenance"
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {selectedVehicle.status}
-            </span>
-
-          </div>
-
-          {/* Speed */}
-
-          <div className="rounded-2xl border p-5">
-
-            <p className="text-sm text-gray-500 mb-2">
-              Current Speed
-            </p>
-
-            <h3 className="text-3xl font-bold text-slate-800">
-              {selectedVehicle.speed}
-
-              <span className="text-lg ml-2 text-gray-500">
-                km/h
-              </span>
-
-            </h3>
-
-          </div>
-
-          {/* Fuel */}
-
-          <div className="rounded-2xl border p-5">
-
-            <div className="flex justify-between mb-3">
-
-              <p className="text-sm text-gray-500">
-                Fuel Level
-              </p>
-
-              <span className="font-semibold">
-                {selectedVehicle.fuel}%
-              </span>
-
-            </div>
-
-            <div className="w-full bg-gray-200 rounded-full h-3">
-
-              <div
-                className={`h-3 rounded-full ${
-                  selectedVehicle.fuel > 70
-                    ? "bg-green-500"
-                    : selectedVehicle.fuel > 30
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-                }`}
-                style={{
-                  width: `${selectedVehicle.fuel}%`,
-                }}
-              />
-
-            </div>
-
-          </div>
-
-          {/* GPS Coordinates */}
-
-          <div className="rounded-2xl border p-5">
-
-            <p className="text-sm text-gray-500 mb-3">
-              GPS Coordinates
-            </p>
-
-            <div className="space-y-2">
-
-              <div className="flex justify-between">
-
-                <span className="font-medium">
-                  Latitude
-                </span>
-
-                <span>
-                  {selectedVehicle.latitude}
-                </span>
+                </div>
 
               </div>
 
-              <div className="flex justify-between">
+              {/* Body */}
 
-                <span className="font-medium">
-                  Longitude
-                </span>
+              <div className="p-8">
 
-                <span>
-                  {selectedVehicle.longitude}
-                </span>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                  {/* Status */}
+
+                  <div className="rounded-2xl border p-5">
+
+                    <p className="mb-2 text-sm text-gray-500">
+                      Status
+                    </p>
+
+                    <span
+                      className={`inline-flex rounded-full px-4 py-2 font-semibold ${
+                        selectedVehicle.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : selectedVehicle.status === "Idle"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : selectedVehicle.status === "Maintenance"
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {selectedVehicle.status}
+                    </span>
+
+                  </div>
+
+                  {/* Speed */}
+
+                  <div className="rounded-2xl border p-5">
+
+                    <p className="mb-2 text-sm text-gray-500">
+                      Current Speed
+                    </p>
+
+                    <h3 className="text-3xl font-bold text-slate-800">
+
+                      {selectedVehicle.speed}
+
+                      <span className="ml-2 text-lg text-gray-500">
+                        km/h
+                      </span>
+
+                    </h3>
+
+                  </div>
+
+                  {/* Fuel */}
+
+                  <div className="rounded-2xl border p-5">
+
+                    <div className="mb-3 flex justify-between">
+
+                      <p className="text-sm text-gray-500">
+                        Fuel Level
+                      </p>
+
+                      <span className="font-semibold">
+                        {selectedVehicle.fuel}%
+                      </span>
+
+                    </div>
+
+                    <div className="h-3 w-full rounded-full bg-gray-200">
+
+                      <div
+                        className={`h-3 rounded-full ${
+                          selectedVehicle.fuel > 70
+                            ? "bg-green-500"
+                            : selectedVehicle.fuel > 30
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${selectedVehicle.fuel}%`,
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* GPS Coordinates */}
+
+                  <div className="rounded-2xl border p-5">
+
+                    <p className="mb-3 text-sm text-gray-500">
+                      GPS Coordinates
+                    </p>
+
+                    <div className="space-y-2">
+
+                      <div className="flex justify-between">
+
+                        <span className="font-medium">
+                          Latitude
+                        </span>
+
+                        <span>
+                          {selectedVehicle.latitude}
+                        </span>
+
+                      </div>
+
+                      <div className="flex justify-between">
+
+                        <span className="font-medium">
+                          Longitude
+                        </span>
+
+                        <span>
+                          {selectedVehicle.longitude}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* Created At */}
+
+                  {selectedVehicle.createdAt && (
+                    <div className="rounded-2xl border p-5">
+
+                      <p className="mb-2 text-sm text-gray-500">
+                        Created
+                      </p>
+
+                      <p className="font-semibold text-slate-700">
+                        {new Date(
+                          selectedVehicle.createdAt
+                        ).toLocaleString()}
+                      </p>
+
+                    </div>
+                  )}
+
+                  {/* Updated At */}
+
+                  {selectedVehicle.updatedAt && (
+                    <div className="rounded-2xl border p-5">
+
+                      <p className="mb-2 text-sm text-gray-500">
+                        Last Updated
+                      </p>
+
+                      <p className="font-semibold text-slate-700">
+                        {new Date(
+                          selectedVehicle.updatedAt
+                        ).toLocaleString()}
+                      </p>
+
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Footer */}
+
+                <div className="mt-8 flex justify-end">
+
+                  <button
+                    onClick={() => {
+                      setShowView(false);
+                      setSelectedVehicle(null);
+                    }}
+                    className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+                  >
+                    Close
+                  </button>
+
+                </div>
 
               </div>
 
             </div>
 
           </div>
+        )}
 
-        </div>
+                {/* ==========================
+            Edit Vehicle Modal
+        ========================== */}
 
-        {/* Footer */}
+        {showEdit && selectedVehicle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 
-        <div className="flex justify-end mt-8">
+            <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
 
-          <button
-            onClick={() => {
-              setShowView(false);
-              setSelectedVehicle(null);
-            }}
-            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-semibold transition"
-          >
-            Close
-          </button>
+              {/* Header */}
 
-        </div>
+              <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-8 py-6 text-white">
 
-      </div>
+                <div className="flex items-center gap-4">
 
-    </div>
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <FiEdit size={30} />
+                  </div>
 
-  </div>
-)}
+                  <div>
 
-{/* ==========================
-    Edit Vehicle Modal
-========================== */}
+                    <h2 className="text-3xl font-bold">
+                      Edit Vehicle
+                    </h2>
 
-{showEdit && selectedVehicle && (
-  <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <p className="text-green-100">
+                      Update vehicle information
+                    </p>
 
-    <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  </div>
 
-      {/* Header */}
+                </div>
 
-      <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-8 py-6 text-white">
+              </div>
 
-        <div className="flex items-center gap-4">
+              {/* Body */}
 
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
-            <FiEdit size={30} />
-          </div>
+              <div className="p-8">
 
-          <div>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-            <h2 className="text-3xl font-bold">
-              Edit Vehicle
-            </h2>
+                  {/* Vehicle Number */}
 
-            <p className="text-green-100">
-              Update vehicle information
-            </p>
+                  <div className="md:col-span-2">
 
-          </div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Vehicle Number
+                    </label>
 
-        </div>
+                    <input
+                      type="text"
+                      value={formData.vehicleNumber}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          vehicleNumber: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    />
 
-      </div>
+                  </div>
 
-      {/* Body */}
+                  {/* Status */}
 
-      <div className="p-8">
+                  <div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Status
+                    </label>
 
-          {/* Vehicle Number */}
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: e.target.value as
+                            | "Active"
+                            | "Idle"
+                            | "Maintenance"
+                            | "Offline",
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    >
+                      <option value="Active">
+                        Active
+                      </option>
 
-          <div className="md:col-span-2">
+                      <option value="Idle">
+                        Idle
+                      </option>
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Vehicle Number
-            </label>
+                      <option value="Maintenance">
+                        Maintenance
+                      </option>
 
-            <input
-              type="text"
-              value={formData.vehicleNumber}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  vehicleNumber: e.target.value,
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            />
+                      <option value="Offline">
+                        Offline
+                      </option>
 
-          </div>
+                    </select>
 
-          {/* Status */}
+                  </div>
 
-          <div>
+                  {/* Speed */}
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Status
-            </label>
+                  <div>
 
-            <select
-              value={formData.status}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  status: e.target.value as
-                    | "Active"
-                    | "Idle"
-                    | "Maintenance"
-                    | "Offline",
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            >
-              <option value="Active">Active</option>
-              <option value="Idle">Idle</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Offline">Offline</option>
-            </select>
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Speed (km/h)
+                    </label>
 
-          </div>
+                    <input
+                      type="number"
+                      value={formData.speed}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          speed: Number(e.target.value),
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    />
 
-          {/* Speed */}
+                  </div>
 
-          <div>
+                  {/* Fuel */}
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Speed (km/h)
-            </label>
+                  <div>
 
-            <input
-              type="number"
-              value={formData.speed}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  speed: Number(e.target.value),
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            />
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Fuel (%)
+                    </label>
 
-          </div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={formData.fuel}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          fuel: Number(e.target.value),
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    />
 
-          {/* Fuel */}
+                  </div>
 
-          <div>
+                  {/* Latitude */}
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Fuel (%)
-            </label>
+                  <div>
 
-            <input
-              type="number"
-              value={formData.fuel}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  fuel: Number(e.target.value),
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            />
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Latitude
+                    </label>
 
-          </div>
+                    <input
+                      type="number"
+                      value={formData.latitude}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          latitude: Number(e.target.value),
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    />
 
-          {/* Latitude */}
+                  </div>
 
-          <div>
+                  {/* Longitude */}
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Latitude
-            </label>
+                  <div>
 
-            <input
-              type="number"
-              value={formData.latitude}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  latitude: Number(e.target.value),
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            />
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Longitude
+                    </label>
 
-          </div>
+                    <input
+                      type="number"
+                      value={formData.longitude}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          longitude: Number(e.target.value),
+                        })
+                      }
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+                    />
 
-          {/* Longitude */}
+                  </div>
 
-          <div>
+                </div>
 
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Longitude
-            </label>
+                {/* Live Preview */}
 
-            <input
-              type="number"
-              value={formData.longitude}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  longitude: Number(e.target.value),
-                })
-              }
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition"
-            />
+                <div className="mt-8 rounded-2xl border bg-slate-50 p-5">
 
-          </div>
+                  <h3 className="mb-5 font-semibold text-slate-700">
+                    Live Preview
+                  </h3>
 
-        </div>
+                  <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
 
-        {/* Preview Card */}
+                    <div>
 
-        <div className="mt-8 rounded-2xl bg-slate-50 border p-5">
+                      <p className="text-xs text-gray-500">
+                        Vehicle
+                      </p>
 
-          <h3 className="font-semibold text-slate-700 mb-4">
-            Live Preview
-          </h3>
+                      <p className="mt-1 font-semibold">
+                        {formData.vehicleNumber}
+                      </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    </div>
 
-            <div>
-              <p className="text-xs text-gray-500">
-                Vehicle
-              </p>
+                    <div>
 
-              <p className="font-semibold">
-                {formData.vehicleNumber}
-              </p>
+                      <p className="text-xs text-gray-500">
+                        Speed
+                      </p>
+
+                      <p className="mt-1 font-semibold">
+                        {formData.speed} km/h
+                      </p>
+
+                    </div>
+
+                    <div>
+
+                      <p className="text-xs text-gray-500">
+                        Fuel
+                      </p>
+
+                      <p className="mt-1 font-semibold">
+                        {formData.fuel}%
+                      </p>
+
+                    </div>
+
+                    <div>
+
+                      <p className="text-xs text-gray-500">
+                        Status
+                      </p>
+
+                      <p className="mt-1 font-semibold">
+                        {formData.status}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* Footer */}
+
+                <div className="mt-8 flex flex-col-reverse justify-end gap-4 sm:flex-row">
+
+                  <button
+                    onClick={() => {
+                      setShowEdit(false);
+                      setSelectedVehicle(null);
+                    }}
+                    className="rounded-xl border border-gray-300 px-6 py-3 transition hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleUpdateVehicle}
+                    className="rounded-xl bg-green-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-green-700"
+                  >
+                    Update Vehicle
+                  </button>
+
+                </div>
+
+              </div>
+
             </div>
 
-            <div>
-              <p className="text-xs text-gray-500">
-                Speed
-              </p>
+          </div>
+        )}
 
-              <p className="font-semibold">
-                {formData.speed} km/h
-              </p>
+                {/* ==========================
+            Delete Vehicle Modal
+        ========================== */}
+
+        {showDelete && selectedVehicle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+
+            <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+
+              {/* Header */}
+
+              <div className="bg-gradient-to-r from-red-600 to-rose-600 px-8 py-6 text-white">
+
+                <div className="flex items-center gap-4">
+
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <FiTrash2 size={30} />
+                  </div>
+
+                  <div>
+
+                    <h2 className="text-3xl font-bold">
+                      Delete Vehicle
+                    </h2>
+
+                    <p className="text-red-100">
+                      This action cannot be undone.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Body */}
+
+              <div className="p-8">
+
+                <div className="flex justify-center">
+
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-red-100">
+
+                    <FiTrash2
+                      size={42}
+                      className="text-red-600"
+                    />
+
+                  </div>
+
+                </div>
+
+                <h3 className="mt-6 text-center text-2xl font-bold text-gray-800">
+                  Delete this vehicle?
+                </h3>
+
+                <p className="mt-3 text-center leading-7 text-gray-500">
+
+                  You're about to permanently remove
+
+                  <span className="font-semibold text-red-600">
+                    {" "}
+                    {selectedVehicle.vehicleNumber}
+                  </span>
+
+                  {" "}from your fleet.
+
+                </p>
+
+                {/* Vehicle Summary */}
+
+                <div className="mt-8 rounded-2xl border bg-gray-50 p-5">
+
+                  <div className="flex justify-between py-2">
+
+                    <span className="text-gray-500">
+                      Vehicle
+                    </span>
+
+                    <span className="font-semibold">
+                      {selectedVehicle.vehicleNumber}
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between py-2">
+
+                    <span className="text-gray-500">
+                      Status
+                    </span>
+
+                    <span className="font-semibold">
+                      {selectedVehicle.status}
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between py-2">
+
+                    <span className="text-gray-500">
+                      Fuel
+                    </span>
+
+                    <span className="font-semibold">
+                      {selectedVehicle.fuel}%
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between py-2">
+
+                    <span className="text-gray-500">
+                      Speed
+                    </span>
+
+                    <span className="font-semibold">
+                      {selectedVehicle.speed} km/h
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {/* Footer */}
+
+                <div className="mt-8 flex flex-col-reverse justify-end gap-4 sm:flex-row">
+
+                  <button
+                    onClick={() => {
+                      setShowDelete(false);
+                      setSelectedVehicle(null);
+                    }}
+                    className="rounded-xl border border-gray-300 px-6 py-3 font-medium transition hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleDeleteVehicle}
+                    className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-red-700"
+                  >
+                    Delete Vehicle
+                  </button>
+
+                </div>
+
+              </div>
+
             </div>
 
-            <div>
-              <p className="text-xs text-gray-500">
-                Fuel
-              </p>
-
-              <p className="font-semibold">
-                {formData.fuel}%
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500">
-                Status
-              </p>
-
-              <p className="font-semibold">
-                {formData.status}
-              </p>
-            </div>
-
           </div>
-
-        </div>
-
-        {/* Footer */}
-
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 mt-8">
-
-          <button
-            onClick={() => {
-              setShowEdit(false);
-              setSelectedVehicle(null);
-            }}
-            className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleUpdateVehicle}
-            className="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg transition"
-          >
-            Update Vehicle
-          </button>
-
-        </div>
+        )}
 
       </div>
-
     </div>
-
-  </div>
-)}
-{/* ==========================
-    Delete Vehicle Modal
-========================== */}
-
-{showDelete && selectedVehicle && (
-  <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-
-    <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-
-      {/* Header */}
-
-      <div className="bg-gradient-to-r from-red-600 to-rose-600 px-8 py-6 text-white">
-
-        <div className="flex items-center gap-4">
-
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
-            <FiTrash2 size={30} />
-          </div>
-
-          <div>
-
-            <h2 className="text-3xl font-bold">
-              Delete Vehicle
-            </h2>
-
-            <p className="text-red-100">
-              This action cannot be undone.
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Body */}
-
-      <div className="p-8">
-
-        <div className="flex justify-center">
-
-          <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center">
-
-            <FiTrash2
-              size={42}
-              className="text-red-600"
-            />
-
-          </div>
-
-        </div>
-
-        <h3 className="text-center text-2xl font-bold text-gray-800 mt-6">
-          Delete this vehicle?
-        </h3>
-
-        <p className="text-center text-gray-500 mt-3 leading-7">
-
-          You're about to permanently remove
-
-          <span className="font-semibold text-red-600">
-            {" "}
-            {selectedVehicle.vehicleNumber}
-          </span>
-
-          {" "}from your fleet.
-
-        </p>
-
-        {/* Vehicle Summary */}
-
-        <div className="mt-8 rounded-2xl border bg-gray-50 p-5">
-
-          <div className="flex justify-between py-2">
-
-            <span className="text-gray-500">
-              Vehicle
-            </span>
-
-            <span className="font-semibold">
-              {selectedVehicle.vehicleNumber}
-            </span>
-
-          </div>
-
-          <div className="flex justify-between py-2">
-
-            <span className="text-gray-500">
-              Status
-            </span>
-
-            <span className="font-semibold">
-              {selectedVehicle.status}
-            </span>
-
-          </div>
-
-          <div className="flex justify-between py-2">
-
-            <span className="text-gray-500">
-              Fuel
-            </span>
-
-            <span className="font-semibold">
-              {selectedVehicle.fuel}%
-            </span>
-
-          </div>
-
-          <div className="flex justify-between py-2">
-
-            <span className="text-gray-500">
-              Speed
-            </span>
-
-            <span className="font-semibold">
-              {selectedVehicle.speed} km/h
-            </span>
-
-          </div>
-
-        </div>
-
-        {/* Footer */}
-
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 mt-8">
-
-          <button
-            onClick={() => {
-              setShowDelete(false);
-              setSelectedVehicle(null);
-            }}
-            className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition font-medium"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleDeleteVehicle}
-            className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow-lg transition"
-          >
-            Delete Vehicle
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
-
-    </div>
-  </div>
-);
-
+  );
 };
 
 export default Vehicles;
