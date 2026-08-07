@@ -954,7 +954,6 @@ const Vehicles = () => {
 ========================== */}
 
 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-
 </div>
 {/* ==========================
     Add Vehicle Modal
