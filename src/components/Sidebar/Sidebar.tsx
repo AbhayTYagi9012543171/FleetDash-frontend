@@ -11,13 +11,13 @@ import {
   FaCog,
   FaSignOutAlt,
 } from "react-icons/fa";
-
 import { NavLink, useNavigate } from "react-router-dom";
-
 import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+
 import { logout } from "../../store/slice/authSlice";
 import type { AppDispatch } from "../../store/store";
-import toast from "react-hot-toast";
+import { useSidebar } from "../../context/SidebarContext";
 
 interface MenuItem {
   name: string;
@@ -26,10 +26,10 @@ interface MenuItem {
 }
 
 const Sidebar = () => {
-
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
+  const { collapsed } = useSidebar();
 
   const menu: MenuItem[] = [
     {
@@ -85,58 +85,58 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-
     dispatch(logout());
 
-    toast.success(
-      "Logged out successfully 👋"
-    );
+    toast.success("Logged out successfully 👋");
 
     navigate("/login", {
       replace: true,
     });
-
   };
 
   return (
     <aside
-      className="
-        hidden
-        lg:flex
-        fixed
-        top-0
-        left-0
-        h-screen
-        w-64
+      className={`
+        hidden lg:flex
+        flex-col
         bg-slate-900
         text-white
-        flex-col
-        shadow-2xl
-        z-50
-      "
+        border-r
+        border-slate-800
+        transition-all
+        duration-300
+        shrink-0
+        ${
+          collapsed
+            ? "w-20"
+            : "w-64"
+        }
+      `}
     >
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-slate-700 shrink-0">
 
-        <h1 className="text-2xl font-bold tracking-wide">
+      <div className="border-b border-slate-800 p-6">
+        <h1
+          className={`font-bold transition-all ${
+            collapsed ? "text-lg text-center" : "text-2xl"
+          }`}
+        >
           FleetDash
         </h1>
 
-        <p className="text-sm text-slate-400 mt-1">
-          Fleet Management System
-        </p>
-
+        {!collapsed && (
+          <p className="mt-1 text-sm text-slate-400">
+            Fleet Management System
+          </p>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
 
+      <nav className="flex-1 overflow-y-auto p-3">
         <ul className="space-y-2">
-
           {menu.map((item) => (
-
             <li key={item.path}>
-
               <NavLink
                 to={item.path}
                 end={item.path === "/dashboard"}
@@ -144,66 +144,69 @@ const Sidebar = () => {
                   `
                   flex
                   items-center
-                  gap-3
+                  ${
+                    collapsed
+                      ? "justify-center"
+                      : "gap-3"
+                  }
+                  rounded-xl
                   px-4
                   py-3
-                  rounded-xl
                   transition-all
                   duration-200
                   ${
                     isActive
-                      ? "bg-blue-600 text-white shadow"
+                      ? "bg-blue-600 text-white shadow-lg"
                       : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   }
-                  `
+                `
                 }
               >
-                <span className="text-lg">
+                <span className="text-xl">
                   {item.icon}
                 </span>
 
-                <span className="font-medium">
-                  {item.name}
-                </span>
-
+                {!collapsed && (
+                  <span className="font-medium">
+                    {item.name}
+                  </span>
+                )}
               </NavLink>
-
             </li>
-
           ))}
-
         </ul>
-
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-slate-700 p-4 shrink-0">
+      {/* Logout */}
 
+      <div className="border-t border-slate-800 p-4">
         <button
           onClick={handleLogout}
-          className="
-            w-full
+          className={`
             flex
+            w-full
             items-center
-            justify-center
-            gap-3
             rounded-xl
             bg-red-600
             py-3
-            font-semibold
-            transition-all
+            transition
             hover:bg-red-700
-            active:scale-95
-          "
+            ${
+              collapsed
+                ? "justify-center"
+                : "justify-center gap-3"
+            }
+          `}
         >
           <FaSignOutAlt />
 
-          <span>Logout</span>
-
+          {!collapsed && (
+            <span className="font-semibold">
+              Logout
+            </span>
+          )}
         </button>
-
       </div>
-
     </aside>
   );
 };
