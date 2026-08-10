@@ -1,3 +1,4 @@
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,7 +22,9 @@ import type {
   ChartOptions,
 } from "chart.js";
 
-
+// ======================================================
+// CHART.JS REGISTRATION
+// ======================================================
 
 ChartJS.register(
   CategoryScale,
@@ -33,522 +36,533 @@ ChartJS.register(
   Filler
 );
 
+// ======================================================
+// TYPES
+// ======================================================
 
-
-
-
-interface Props {
-
+interface FuelTrendChartProps {
   labels?: string[];
-
   values?: number[];
-
 }
 
-
-
-
-
+// ======================================================
+// COMPONENT
+// ======================================================
 
 const FuelTrendChart = ({
-
   labels,
-
   values,
+}: FuelTrendChartProps) => {
+  // ====================================================
+  // SAFE DATA
+  // ====================================================
 
-}: Props) => {
-
-
-
-
-const chartLabels =
-  labels ??
-  [
-    "Week 1",
-    "Week 2",
-    "Week 3",
-    "Week 4",
-  ];
-
-
-
-const fuelData =
-  values ??
-  [
-    450,
-    520,
-    480,
-    600,
-  ];
-
-
-
-
-
-const totalFuel =
-  fuelData.reduce(
-    (sum,value)=>sum+value,
-    0
+  const chartLabels = useMemo(
+    () =>
+      labels?.length
+        ? labels
+        : [
+            "Week 1",
+            "Week 2",
+            "Week 3",
+            "Week 4",
+          ],
+    [labels]
   );
 
-
-
-const averageFuel =
-  Math.round(
-    totalFuel / fuelData.length
+  const fuelData = useMemo(
+    () =>
+      values?.length
+        ? values.map((value) =>
+            Math.max(0, Number(value) || 0)
+          )
+        : [450, 520, 480, 600],
+    [values]
   );
 
+  // ====================================================
+  // STATISTICS
+  // ====================================================
 
+  const statistics = useMemo(() => {
+    const total = fuelData.reduce(
+      (sum, value) => sum + value,
+      0
+    );
 
+    const average =
+      fuelData.length > 0
+        ? Math.round(total / fuelData.length)
+        : 0;
 
+    const highest =
+      fuelData.length > 0
+        ? Math.max(...fuelData)
+        : 0;
 
+    const lowest =
+      fuelData.length > 0
+        ? Math.min(...fuelData)
+        : 0;
 
+    return {
+      total,
+      average,
+      highest,
+      lowest,
+    };
+  }, [fuelData]);
 
-const data = useMemo(
+  // ====================================================
+  // CHART DATA
+  // ====================================================
 
-()=>({
+  const data = useMemo(
+    () => ({
+      labels: chartLabels,
 
+      datasets: [
+        {
+          label: "Fuel Consumption",
 
-labels:chartLabels,
+          data: fuelData,
 
+          fill: true,
 
-datasets:[
+          tension: 0.4,
 
-{
+          borderWidth: 3,
 
-label:
-"Fuel Consumption (Liters)",
+          pointRadius: 5,
 
+          pointHoverRadius: 8,
 
-data:fuelData,
+          pointBorderWidth: 2,
 
+          pointBackgroundColor: "#ffffff",
 
-fill:true,
+          pointBorderColor: "#16a34a",
 
+          borderColor: "#16a34a",
 
-tension:0.4,
+          backgroundColor:
+            "rgba(22, 163, 74, 0.14)",
 
+          cubicInterpolationMode: "monotone" as const,
+        },
+      ],
+    }),
+    [
+      chartLabels,
+      fuelData,
+    ]
+  );
 
-borderWidth:3,
+  // ====================================================
+  // CHART OPTIONS
+  // ====================================================
 
+  const options: ChartOptions<"line"> =
+    useMemo(
+      () => ({
+        responsive: true,
 
-pointRadius:5,
+        maintainAspectRatio: false,
 
+        interaction: {
+          mode: "index",
+          intersect: false,
+        },
 
-pointHoverRadius:7,
+        animation: {
+          duration: 900,
+        },
 
+        plugins: {
+          legend: {
+            display: true,
+
+            position: "bottom",
+
+            labels: {
+              usePointStyle: true,
+
+              pointStyle: "circle",
+
+              padding: 18,
+
+              font: {
+                size: 12,
+                weight: 600,
+              },
+            },
+          },
+
+          tooltip: {
+            enabled: true,
+
+            padding: 12,
+
+            displayColors: false,
+
+            callbacks: {
+              title: (tooltipItems) => {
+                return (
+                  tooltipItems[0]?.label ??
+                  "Fuel Usage"
+                );
+              },
+
+              label: (context) => {
+                const value =
+                  Number(context.raw) || 0;
+
+                return ` Fuel Consumed: ${value.toLocaleString()} L`;
+              },
+            },
+          },
+        },
+
+        scales: {
+          y: {
+            beginAtZero: true,
 
-borderColor:"#16a34a",
+            border: {
+              display: false,
+            },
 
+            ticks: {
+              precision: 0,
 
-backgroundColor:
-"rgba(22,163,74,0.15)",
+              padding: 8,
 
+              font: {
+                size: 11,
+              },
 
-}
+              callback: (value) => {
+                return `${Number(value).toLocaleString()} L`;
+              },
+            },
 
-]
+            grid: {
+              color: "#e5e7eb",
+            },
+          },
 
+          x: {
+            border: {
+              display: false,
+            },
 
-}),
+            ticks: {
+              padding: 8,
 
-[
- chartLabels,
- fuelData
-]
+              font: {
+                size: 11,
+              },
+            },
 
-);
+            grid: {
+              display: false,
+            },
+          },
+        },
+      }),
+      []
+    );
 
+  // ====================================================
+  // EMPTY STATE
+  // ====================================================
 
+  if (
+    !fuelData.length ||
+    !chartLabels.length
+  ) {
+    return (
+      <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
 
+        <h2 className="text-2xl font-bold text-slate-800">
+          Fuel Consumption Trend
+        </h2>
 
+        <p className="mt-1 text-sm text-gray-500">
+          Weekly fuel usage monitoring
+        </p>
 
+        <div className="flex h-96 flex-col items-center justify-center text-center">
 
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-green-50 text-3xl text-green-600">
+            ⛽
+          </div>
 
+          <h3 className="mt-5 text-lg font-bold text-slate-800">
+            No fuel data available
+          </h3>
 
+          <p className="mt-2 max-w-sm text-sm text-gray-500">
+            Fuel consumption information will
+            appear here once data is available.
+          </p>
 
-const options:ChartOptions<"line"> = {
+        </div>
+      </div>
+    );
+  }
 
+  // ====================================================
+  // MAIN
+  // ====================================================
 
-responsive:true,
+  return (
+    <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
+      {/* ==================================================
+          HEADER
+      ================================================== */}
 
-maintainAspectRatio:false,
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
+        <div>
 
+          <div className="flex items-center gap-3">
 
-plugins:{
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-xl text-green-600">
+              ⛽
+            </div>
 
+            <div>
 
-legend:{
+              <h2 className="text-2xl font-bold text-slate-800">
+                Fuel Consumption Trend
+              </h2>
 
+              <p className="mt-1 text-sm text-gray-500">
+                Weekly fuel usage monitoring
+              </p>
 
-display:true,
+            </div>
 
+          </div>
 
-position:"bottom",
+        </div>
 
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
 
-},
+          <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
 
+          Live Monitoring
 
+        </div>
 
+      </div>
 
-tooltip:{
+      {/* ==================================================
+          SUMMARY CARDS
+      ================================================== */}
 
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
 
-callbacks:{
+        {/* Total */}
 
+        <div className="rounded-xl border border-green-100 bg-green-50 p-5">
 
-label:(context)=>{
+          <div className="flex items-start justify-between">
 
+            <div>
 
-return `${context.raw} L consumed`;
+              <p className="text-sm font-medium text-green-700">
+                Total Fuel Used
+              </p>
 
+              <p className="mt-2 text-3xl font-bold text-green-700">
+                {statistics.total.toLocaleString()} L
+              </p>
 
-}
+            </div>
 
+            <span className="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-green-600 shadow-sm">
+              +6.8%
+            </span>
 
-}
+          </div>
 
+          <p className="mt-3 text-xs text-green-600">
+            Total consumption for selected period
+          </p>
 
-}
+        </div>
 
+        {/* Average */}
 
-},
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-5">
 
+          <div className="flex items-start justify-between">
 
+            <div>
 
+              <p className="text-sm font-medium text-blue-700">
+                Average / Week
+              </p>
 
+              <p className="mt-2 text-3xl font-bold text-blue-700">
+                {statistics.average.toLocaleString()} L
+              </p>
 
-scales:{
+            </div>
 
+            <span className="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-blue-600 shadow-sm">
+              Stable
+            </span>
 
+          </div>
 
-y:{
+          <p className="mt-3 text-xs text-blue-600">
+            Average weekly fuel consumption
+          </p>
 
+        </div>
 
-beginAtZero:true,
+        {/* Efficiency */}
 
+        <div className="rounded-xl border border-orange-100 bg-orange-50 p-5">
 
-ticks:{
+          <div className="flex items-start justify-between">
 
+            <div>
 
-callback:(value)=>{
+              <p className="text-sm font-medium text-orange-700">
+                Fuel Efficiency
+              </p>
 
+              <p className="mt-2 text-3xl font-bold text-orange-600">
+                14.8 km/L
+              </p>
 
-return `${value} L`;
+            </div>
 
+            <span className="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-orange-600 shadow-sm">
+              Excellent
+            </span>
 
-}
+          </div>
 
+          <p className="mt-3 text-xs text-orange-600">
+            Current fleet efficiency
+          </p>
 
-}
+        </div>
 
+      </div>
 
-},
+      {/* ==================================================
+          MINI INSIGHTS
+      ================================================== */}
 
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
 
+        <div className="rounded-xl bg-slate-50 p-4">
 
-x:{
+          <p className="text-xs font-medium text-gray-500">
+            Highest Usage
+          </p>
 
+          <p className="mt-1 text-lg font-bold text-slate-800">
+            {statistics.highest.toLocaleString()} L
+          </p>
 
-grid:{
+        </div>
 
+        <div className="rounded-xl bg-slate-50 p-4">
 
-display:false,
+          <p className="text-xs font-medium text-gray-500">
+            Lowest Usage
+          </p>
 
+          <p className="mt-1 text-lg font-bold text-slate-800">
+            {statistics.lowest.toLocaleString()} L
+          </p>
 
-}
+        </div>
 
+        <div className="col-span-2 rounded-xl bg-slate-50 p-4 sm:col-span-1">
 
-}
+          <p className="text-xs font-medium text-gray-500">
+            Data Points
+          </p>
 
+          <p className="mt-1 text-lg font-bold text-slate-800">
+            {fuelData.length}
+          </p>
 
+        </div>
 
-}
+      </div>
 
+      {/* ==================================================
+          CHART
+      ================================================== */}
 
+      <div className="mt-6 border-t border-gray-100 pt-6">
+
+        <div className="mb-4 flex items-center justify-between">
+
+          <div>
+
+            <h3 className="text-sm font-bold text-slate-800">
+              Consumption Overview
+            </h3>
+
+            <p className="mt-1 text-xs text-gray-400">
+              Fuel consumed across the selected
+              period
+            </p>
+
+          </div>
+
+          <span className="rounded-lg bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
+            Liters
+          </span>
+
+        </div>
+
+        <div className="h-96 w-full">
+
+          <Line
+            data={data}
+            options={options}
+          />
+
+        </div>
+
+      </div>
+
+      {/* ==================================================
+          FOOTER
+      ================================================== */}
+
+      <div className="mt-5 flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div className="flex items-center gap-2">
+
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+
+          <span className="text-xs font-medium text-gray-500">
+            Fuel monitoring active
+          </span>
+
+        </div>
+
+        <span className="text-xs font-semibold text-blue-600">
+          Updated just now
+        </span>
+
+      </div>
+
+    </div>
+  );
 };
-
-
-
-
-
-
-
-
-
-return (
-
-<div
-
-className="
-bg-white
-rounded-2xl
-shadow-lg
-border
-border-gray-200
-p-6
-"
-
->
-
-
-
-{/* Header */}
-
-<div className="mb-6">
-
-
-<h2
-
-className="
-text-2xl
-font-bold
-text-slate-800
-"
-
->
-
-Fuel Consumption Trend
-
-</h2>
-
-
-
-<p
-
-className="
-text-sm
-text-gray-500
-mt-1
-"
-
->
-
-Weekly fuel usage monitoring
-
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* Summary Cards */}
-
-
-<div
-
-className="
-grid
-grid-cols-1
-md:grid-cols-3
-gap-5
-mb-6
-"
-
->
-
-
-
-
-<div
-
-className="
-bg-green-50
-rounded-xl
-p-5
-"
-
->
-
-<p className="text-sm text-gray-500">
-
-Total Fuel Used
-
-</p>
-
-
-<h3
-
-className="
-text-3xl
-font-bold
-text-green-700
-mt-2
-"
-
->
-
-{totalFuel} L
-
-</h3>
-
-
-<span className="text-green-600 font-semibold">
-
-+6.8%
-
-</span>
-
-
-</div>
-
-
-
-
-
-
-
-<div
-
-className="
-bg-blue-50
-rounded-xl
-p-5
-"
-
->
-
-
-<p className="text-sm text-gray-500">
-
-Average / Week
-
-</p>
-
-
-<h3
-
-className="
-text-3xl
-font-bold
-text-blue-700
-mt-2
-"
-
->
-
-{averageFuel} L
-
-</h3>
-
-
-<span className="text-blue-600 font-semibold">
-
-Stable
-
-</span>
-
-
-</div>
-
-
-
-
-
-
-
-<div
-
-className="
-bg-orange-50
-rounded-xl
-p-5
-"
-
->
-
-
-<p className="text-sm text-gray-500">
-
-Fuel Efficiency
-
-</p>
-
-
-<h3
-
-className="
-text-3xl
-font-bold
-text-orange-600
-mt-2
-"
-
->
-
-14.8 km/L
-
-</h3>
-
-
-<span className="text-green-600 font-semibold">
-
-Excellent
-
-</span>
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* Chart */}
-
-
-<div
-
-className="
-h-96
-"
-
->
-
-
-<Line
-
-data={data}
-
-options={options}
-
-/>
-
-
-</div>
-
-
-
-
-
-
-</div>
-
-);
-
-
-};
-
-
 
 export default FuelTrendChart;
+
