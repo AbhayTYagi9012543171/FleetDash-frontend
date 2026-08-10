@@ -1,8 +1,6 @@
-import StatCard from "../Cards/StatCard";
-import {
-  useEffect,
-  useState,
-} from "react";
+
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 import {
   FaSun,
@@ -12,460 +10,380 @@ import {
   FaTint,
   FaRoad,
   FaMapMarkerAlt,
+  FaEye,
+  FaSyncAlt,
 } from "react-icons/fa";
 
 import { api } from "../../services/api";
 
-
-
 interface WeatherData {
-
-  location:string;
-
-  temperature:number;
-
-  condition:string;
-
-  humidity:number;
-
-  wind:number;
-
-  visibility:number;
-
-  road:string;
-
+  location: string;
+  temperature: number;
+  condition: string;
+  humidity: number;
+  wind: number;
+  visibility: number;
+  road: string;
 }
 
-
-
+interface InfoCardProps {
+  icon: ReactNode;
+  title: string;
+  value: string;
+}
 
 const WeatherWidget = () => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  const fetchWeather = async () => {
+    try {
+      setLoading(true);
 
-const [weather,setWeather] =
-useState<WeatherData | null>(null);
+      const response = await api.get("/weather");
 
+      setWeather(response.data.weather);
+    } catch (error) {
+      console.error("Weather Error:", error);
 
-const [loading,setLoading] =
-useState(true);
+      // Fallback data
+      setWeather({
+        location: "Ghaziabad, India",
+        temperature: 31,
+        condition: "Partly Cloudy",
+        humidity: 72,
+        wind: 12,
+        visibility: 8,
+        road: "Good",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const refreshWeather = async () => {
+    try {
+      setRefreshing(true);
 
+      await fetchWeather();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
-const fetchWeather = async()=>{
+  useEffect(() => {
+    fetchWeather();
+  }, []);
 
+  // ==========================
+  // Weather Icon
+  // ==========================
 
-try{
+  const getWeatherIcon = () => {
+    const condition =
+      weather?.condition?.toLowerCase() ?? "";
 
+    if (condition.includes("rain")) {
+      return <FaCloudRain />;
+    }
 
-setLoading(true);
+    if (
+      condition.includes("cloud") ||
+      condition.includes("overcast")
+    ) {
+      return <FaCloudSun />;
+    }
 
+    return <FaSun />;
+  };
 
+  // ==========================
+  // Loading Skeleton
+  // ==========================
 
-const response =
-await api.get("/weather");
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 w-full animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="h-7 w-32 bg-gray-200 rounded" />
 
+            <div className="h-4 w-48 bg-gray-200 rounded mt-2" />
+          </div>
 
+          <div className="h-12 w-12 bg-gray-200 rounded-xl" />
+        </div>
 
-setWeather(
-response.data.weather
-);
+        {/* Main Weather Skeleton */}
+        <div className="h-40 bg-gray-200 rounded-2xl mb-6" />
 
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-24 bg-gray-200 rounded-xl"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
+  // ==========================
+  // No Weather Data
+  // ==========================
 
-}
+  if (!weather) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 w-full">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <FaCloudSun className="text-5xl text-gray-300 mb-4" />
 
-catch(error){
+          <h3 className="text-lg font-semibold text-slate-700">
+            Weather Data Unavailable
+          </h3>
 
-console.error(
-"Weather Error:",
-error
-);
+          <p className="text-sm text-gray-500 mt-2">
+            Unable to load current weather information.
+          </p>
 
+          <button
+            onClick={fetchWeather}
+            className="
+              mt-5
+              flex
+              items-center
+              gap-2
+              bg-blue-600
+              hover:bg-blue-700
+              text-white
+              px-5
+              py-2.5
+              rounded-xl
+              font-semibold
+              transition
+            "
+          >
+            <FaSyncAlt />
 
-setWeather({
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-location:"Ghaziabad, India",
+  // ==========================
+  // Main Component
+  // ==========================
 
-temperature:31,
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 w-full">
+      {/* ==========================
+          Header
+      =========================== */}
 
-condition:"Partly Cloudy",
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">
+            Weather
+          </h2>
 
-humidity:72,
+          <p className="text-sm text-gray-500 mt-1">
+            Live driving conditions
+          </p>
+        </div>
 
-wind:12,
+        <button
+          onClick={refreshWeather}
+          disabled={refreshing}
+          title="Refresh weather"
+          className="
+            h-12
+            w-12
+            rounded-xl
+            bg-blue-100
+            text-blue-600
+            flex
+            items-center
+            justify-center
+            text-xl
+            hover:bg-blue-200
+            disabled:opacity-50
+            transition
+          "
+        >
+          <FaSyncAlt
+            className={
+              refreshing
+                ? "animate-spin"
+                : ""
+            }
+          />
+        </button>
+      </div>
 
-visibility:8,
+      {/* ==========================
+          Main Weather Banner
+      =========================== */}
 
-road:"Good"
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 p-6 text-white mb-6">
+        {/* Decorative Circles */}
+        <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
 
-});
+        <div className="absolute -right-16 -bottom-20 h-48 w-48 rounded-full bg-white/5" />
 
+        <div className="relative flex items-center justify-between gap-4">
+          {/* Weather Information */}
+          <div>
+            <div className="flex items-center gap-2 text-blue-100 mb-3">
+              <FaMapMarkerAlt />
 
-}
+              <span className="text-sm font-medium">
+                {weather.location}
+              </span>
+            </div>
 
-finally{
+            <h3 className="text-5xl font-bold">
+              {weather.temperature}°C
+            </h3>
 
-setLoading(false);
+            <p className="text-lg font-medium mt-2">
+              {weather.condition}
+            </p>
+          </div>
 
-}
+          {/* Weather Icon */}
+          <div className="text-7xl opacity-90">
+            {getWeatherIcon()}
+          </div>
+        </div>
+      </div>
 
+      {/* ==========================
+          Weather Details
+      =========================== */}
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InfoCard
+          icon={<FaTint />}
+          title="Humidity"
+          value={`${weather.humidity}%`}
+        />
+
+        <InfoCard
+          icon={<FaWind />}
+          title="Wind Speed"
+          value={`${weather.wind} km/h`}
+        />
+
+        <InfoCard
+          icon={<FaRoad />}
+          title="Road Condition"
+          value={weather.road || "N/A"}
+        />
+
+        <InfoCard
+          icon={<FaEye />}
+          title="Visibility"
+          value={`${weather.visibility} km`}
+        />
+      </div>
+
+      {/* ==========================
+          Footer
+      =========================== */}
+
+      <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-gray-400">
+            Current driving conditions
+          </p>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Data synchronized with fleet system
+          </p>
+        </div>
+
+        <button
+          onClick={refreshWeather}
+          disabled={refreshing}
+          className="
+            text-xs
+            font-semibold
+            text-blue-600
+            hover:text-blue-700
+            disabled:opacity-50
+            transition
+          "
+        >
+          {refreshing
+            ? "Refreshing..."
+            : "Refresh Data"}
+        </button>
+      </div>
+    </div>
+  );
 };
 
+// ==========================
+// Reusable Info Card
+// ==========================
 
+const InfoCard = ({
+  icon,
+  title,
+  value,
+}: InfoCardProps) => {
+  return (
+    <div
+      className="
+        rounded-xl
+        bg-gray-50
+        border
+        border-gray-100
+        p-4
+        transition
+        duration-300
+        hover:bg-white
+        hover:shadow-md
+      "
+    >
+      <div className="flex items-center gap-3">
+        {/* Icon */}
+        <div
+          className="
+            h-11
+            w-11
+            rounded-xl
+            bg-white
+            shadow-sm
+            flex
+            items-center
+            justify-center
+            text-blue-600
+            text-lg
+          "
+        >
+          {icon}
+        </div>
 
+        {/* Content */}
+        <div>
+          <p className="text-xs text-gray-500">
+            {title}
+          </p>
 
-
-useEffect(()=>{
-
-fetchWeather();
-
-},[]);
-
-
-
-
-
-const getWeatherIcon=()=>{
-
-
-if(
-weather?.condition.includes("Rain")
-){
-
-return <FaCloudRain/>;
-
-}
-
-
-if(
-weather?.condition.includes("Cloud")
-){
-
-return <FaCloudSun/>;
-
-}
-
-
-return <FaSun/>;
-
-
+          <p className="text-lg font-bold text-slate-800 mt-1">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
-
-
-
-
-
-if(loading){
-
-
-return(
-
-<div className="
-bg-white
-rounded-2xl
-shadow
-p-6
-">
-
-<p className="text-gray-500">
-Loading weather...
-</p>
-
-
-</div>
-
-);
-
-}
-
-
-
-
-
-return(
-
-
-<div className="
-bg-white
-rounded-2xl
-shadow-lg
-border
-p-6
-">
-
-
-{/* Header */}
-
-
-<div className="
-flex
-justify-between
-items-center
-mb-6
-">
-
-
-<div>
-
-
-<h2 className="
-text-2xl
-font-bold
-text-slate-800
-">
-
-Weather
-
-</h2>
-
-
-<p className="
-text-gray-500
-">
-
-Live driving conditions
-
-</p>
-
-
-</div>
-
-
-
-<div className="
-text-yellow-500
-text-4xl
-">
-
-{getWeatherIcon()}
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-{/* Main */}
-
-
-
-<div className="
-rounded-2xl
-bg-gradient-to-r
-from-blue-500
-to-cyan-500
-text-white
-p-6
-">
-
-
-<div className="
-flex
-justify-between
-items-center
-">
-
-
-<div>
-
-
-<h1 className="
-text-5xl
-font-bold
-">
-
-{weather?.temperature}°C
-
-</h1>
-
-
-
-<p className="
-text-lg
-mt-2
-">
-
-{weather?.condition}
-
-</p>
-
-
-
-<div className="
-flex
-gap-2
-items-center
-mt-3
-">
-
-
-<FaMapMarkerAlt/>
-
-
-{weather?.location}
-
-
-</div>
-
-
-</div>
-
-
-
-<div className="
-text-7xl
-opacity-80
-">
-
-{getWeatherIcon()}
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-{/* Details */}
-
-
-
-<div className="
-grid
-grid-cols-2
-gap-4
-mt-6
-">
-
-
-<Card
-icon={<FaTint/>}
-title="Humidity"
-value={`${weather?.humidity}%`}
-/>
-
-
-
-<Card
-icon={<FaWind/>}
-title="Wind"
-value={`${weather?.wind} km/h`}
-/>
-
-
-
-<StatCard
-  icon={<FaRoad />}
-  title="Road"
-  value={weather?.road || "N/A"}
-  color="bg-orange-500"
-/>
-
-
-
-<Card
-icon={<FaCloudSun/>}
-title="Visibility"
-value={`${weather?.visibility} km`}
-/>
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-);
-
-};
-
-
-
-
-
-
-const Card=({
-
-icon,
-title,
-value
-
-}:{
-
-icon:React.ReactNode;
-
-title:string;
-
-value:string;
-
-})=>{
-
-
-return(
-
-<div className="
-bg-gray-50
-rounded-xl
-p-4
-">
-
-
-<div className="
-text-blue-500
-text-xl
-mb-2
-">
-
-{icon}
-
-</div>
-
-
-<p className="
-text-sm
-text-gray-500
-">
-
-{title}
-
-</p>
-
-
-<h3 className="
-text-xl
-font-bold
-">
-
-{value}
-
-</h3>
-
-
-</div>
-
-
-);
-
-
-};
-
-
 
 export default WeatherWidget;
