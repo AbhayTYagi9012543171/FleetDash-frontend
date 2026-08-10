@@ -19,7 +19,6 @@ import {
   FiPhone,
   FiUser,
   FiChevronDown,
-  //FiMoreVertical,
 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
@@ -47,6 +46,12 @@ interface UserForm {
   status: string;
 }
 
+interface ApiResponse {
+  success?: boolean;
+  users?: User[];
+  message?: string;
+}
+
 type StatCardProps = {
   title: string;
   value: number;
@@ -54,6 +59,10 @@ type StatCardProps = {
   icon: React.ReactNode;
   iconClass: string;
 };
+
+// ======================================================
+// INITIAL FORM
+// ======================================================
 
 const initialForm: UserForm = {
   username: "",
@@ -74,17 +83,13 @@ const Users = () => {
 
   const [users, setUsers] = useState<User[]>([]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [saving, setSaving] =
-    useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
-  const [role, setRole] =
-    useState("All");
+  const [role, setRole] = useState("All");
 
   const [statusFilter, setStatusFilter] =
     useState("All");
@@ -100,6 +105,7 @@ const Users = () => {
 
   // ====================================================
   // FETCH USERS
+  // GET /users
   // ====================================================
 
   const fetchUsers = async () => {
@@ -107,26 +113,36 @@ const Users = () => {
       setLoading(true);
 
       const response =
-        await api.get("/users");
+        await api.get<ApiResponse | User[]>(
+          "/users"
+        );
 
-      if (response.data?.success) {
+      const data = response.data;
+
+      if (
+        data &&
+        typeof data === "object" &&
+        !Array.isArray(data) &&
+        data.success
+      ) {
         setUsers(
-          Array.isArray(
-            response.data.users
-          )
-            ? response.data.users
+          Array.isArray(data.users)
+            ? data.users
             : []
         );
-      } else if (
-        Array.isArray(response.data)
-      ) {
-        setUsers(response.data);
-      } else {
-        setUsers([]);
+
+        return;
       }
+
+      if (Array.isArray(data)) {
+        setUsers(data);
+        return;
+      }
+
+      setUsers([]);
     } catch (error) {
       console.error(
-        "Users Error:",
+        "Fetch Users Error:",
         error
       );
 
@@ -140,12 +156,16 @@ const Users = () => {
     }
   };
 
+  // ====================================================
+  // INITIAL LOAD
+  // ====================================================
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
   // ====================================================
-  // FILTER
+  // FILTER USERS
   // ====================================================
 
   const filteredUsers = useMemo(() => {
@@ -168,6 +188,16 @@ const Users = () => {
           user.phoneNumber ?? ""
         ).toLowerCase();
 
+      const userRole =
+        String(
+          user.role ?? ""
+        );
+
+      const userStatus =
+        String(
+          user.status ?? ""
+        );
+
       const searchMatch =
         !searchValue ||
         username.includes(searchValue) ||
@@ -176,11 +206,13 @@ const Users = () => {
 
       const roleMatch =
         role === "All" ||
-        user.role === role;
+        userRole.toLowerCase() ===
+          role.toLowerCase();
 
       const statusMatch =
         statusFilter === "All" ||
-        user.status === statusFilter;
+        userStatus.toLowerCase() ===
+          statusFilter.toLowerCase();
 
       return (
         searchMatch &&
@@ -237,12 +269,14 @@ const Users = () => {
 
   const openAddModal = () => {
     setEditId(null);
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+    });
     setShowModal(true);
   };
 
   // ====================================================
-  // EDIT USER
+  // OPEN EDIT MODAL
   // ====================================================
 
   const editUser = (user: User) => {
@@ -265,37 +299,110 @@ const Users = () => {
   // ====================================================
 
   const closeModal = () => {
-    if (saving) return;
+    if (saving) {
+      return;
+    }
 
     setShowModal(false);
     setEditId(null);
-    setForm(initialForm);
+
+    setForm({
+      ...initialForm,
+    });
+  };
+
+  // ====================================================
+  // HANDLE INPUT
+  // ====================================================
+
+  const handleInputChange = (
+    field: keyof UserForm,
+    value: string
+  ) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  // ====================================================
+  // VALIDATE FORM
+  // ====================================================
+
+  const validateForm = () => {
+    if (!form.username.trim()) {
+      toast.error(
+        "Username is required"
+      );
+      return false;
+    }
+
+    if (!form.email.trim()) {
+      toast.error(
+        "Email address is required"
+      );
+      return false;
+    }
+
+    if (!form.phoneNumber.trim()) {
+      toast.error(
+        "Phone number is required"
+      );
+      return false;
+    }
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      !emailRegex.test(
+        form.email.trim()
+      )
+    ) {
+      toast.error(
+        "Please enter a valid email address"
+      );
+      return false;
+    }
+
+    return true;
   };
 
   // ====================================================
   // SAVE USER
+  // POST /users
+  // PUT /users/:id
   // ====================================================
 
   const saveUser = async () => {
-    if (
-      !form.username.trim() ||
-      !form.email.trim() ||
-      !form.phoneNumber.trim()
-    ) {
-      toast.error(
-        "Please fill all required fields"
-      );
-
+    if (!validateForm()) {
       return;
     }
 
     try {
       setSaving(true);
 
+      const payload: UserForm = {
+        username:
+          form.username.trim(),
+
+        phoneNumber:
+          form.phoneNumber.trim(),
+
+        email:
+          form.email.trim(),
+
+        role:
+          form.role,
+
+        status:
+          form.status,
+      };
+
       if (editId) {
         await api.put(
           `/users/${editId}`,
-          form
+          payload
         );
 
         toast.success(
@@ -304,7 +411,7 @@ const Users = () => {
       } else {
         await api.post(
           "/users",
-          form
+          payload
         );
 
         toast.success(
@@ -312,17 +419,26 @@ const Users = () => {
         );
       }
 
-      closeModal();
+      setShowModal(false);
+      setEditId(null);
+
+      setForm({
+        ...initialForm,
+      });
 
       await fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error(
         "Save User Error:",
         error
       );
 
+      const message =
+        error?.response?.data?.message;
+
       toast.error(
-        "Unable to save user"
+        message ||
+          "Unable to save user"
       );
     } finally {
       setSaving(false);
@@ -331,6 +447,7 @@ const Users = () => {
 
   // ====================================================
   // DELETE USER
+  // DELETE /users/:id
   // ====================================================
 
   const deleteUser = async (
@@ -341,9 +458,13 @@ const Users = () => {
         "Are you sure you want to delete this user?"
       );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     try {
+      setLoading(true);
+
       await api.delete(
         `/users/${id}`
       );
@@ -353,15 +474,21 @@ const Users = () => {
       );
 
       await fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error(
         "Delete User Error:",
         error
       );
 
+      const message =
+        error?.response?.data?.message;
+
       toast.error(
-        "Unable to delete user"
+        message ||
+          "Unable to delete user"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -379,21 +506,27 @@ const Users = () => {
         return {
           badge:
             "border-emerald-200 bg-emerald-50 text-emerald-700",
-          dot: "bg-emerald-500",
+
+          dot:
+            "bg-emerald-500",
         };
 
       case "inactive":
         return {
           badge:
             "border-red-200 bg-red-50 text-red-700",
-          dot: "bg-red-500",
+
+          dot:
+            "bg-red-500",
         };
 
       default:
         return {
           badge:
             "border-slate-200 bg-slate-50 text-slate-600",
-          dot: "bg-slate-400",
+
+          dot:
+            "bg-slate-400",
         };
     }
   };
@@ -434,16 +567,20 @@ const Users = () => {
     iconClass,
   }: StatCardProps) => (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg">
+
       <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-slate-50 transition-transform duration-500 group-hover:scale-150" />
 
       <div className="relative flex items-start justify-between">
+
         <div>
           <p className="text-sm font-medium text-slate-500">
             {title}
           </p>
 
           <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-            {loading ? "—" : value}
+            {loading
+              ? "—"
+              : value}
           </p>
 
           <p className="mt-1 text-xs text-slate-400">
@@ -456,25 +593,34 @@ const Users = () => {
         >
           {icon}
         </div>
+
       </div>
     </div>
   );
 
   // ====================================================
-  // LOADING
+  // LOADING SCREEN
   // ====================================================
 
-  if (loading && users.length === 0) {
+  if (
+    loading &&
+    users.length === 0
+  ) {
     return (
       <div className="min-h-screen bg-slate-50">
+
         <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
 
           <div className="animate-pulse rounded-3xl border border-slate-200 bg-white p-6">
+
             <div className="h-8 w-64 rounded-lg bg-slate-100" />
+
             <div className="mt-3 h-4 w-96 max-w-full rounded-lg bg-slate-100" />
+
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
             {Array.from({
               length: 4,
             }).map((_, index) => (
@@ -483,9 +629,11 @@ const Users = () => {
                 className="h-32 animate-pulse rounded-2xl bg-white"
               />
             ))}
+
           </div>
 
           <div className="overflow-hidden rounded-2xl bg-white">
+
             {Array.from({
               length: 6,
             }).map((_, index) => (
@@ -494,14 +642,17 @@ const Users = () => {
                 className="m-4 h-16 animate-pulse rounded-xl bg-slate-100"
               />
             ))}
+
           </div>
+
         </div>
+
       </div>
     );
   }
 
   // ====================================================
-  // MAIN
+  // MAIN UI
   // ====================================================
 
   return (
@@ -526,6 +677,7 @@ const Users = () => {
               </div>
 
               <div>
+
                 <div className="flex flex-wrap items-center gap-3">
 
                   <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -533,17 +685,22 @@ const Users = () => {
                   </h1>
 
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+
                     System Active
+
                   </span>
 
                 </div>
 
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                  Manage FleetDash users, roles,
-                  permissions and account status
-                  from one centralized workspace.
+                  Manage FleetDash users,
+                  roles, permissions and
+                  account status from one
+                  centralized workspace.
                 </p>
+
               </div>
 
             </div>
@@ -556,6 +713,7 @@ const Users = () => {
                 disabled={loading}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
+
                 <FiRefreshCw
                   className={
                     loading
@@ -565,6 +723,7 @@ const Users = () => {
                 />
 
                 Refresh
+
               </button>
 
               <button
@@ -572,14 +731,17 @@ const Users = () => {
                 onClick={openAddModal}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-lg"
               >
+
                 <FiPlus size={17} />
 
                 Add User
+
               </button>
 
             </div>
 
           </div>
+
         </section>
 
         {/* ==================================================
@@ -639,6 +801,7 @@ const Users = () => {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 
             <div>
+
               <h2 className="text-lg font-bold text-slate-900">
                 User Directory
               </h2>
@@ -647,11 +810,12 @@ const Users = () => {
                 Search and filter registered
                 FleetDash users.
               </p>
+
             </div>
 
             <div className="flex flex-col gap-3 md:flex-row">
 
-              {/* Search */}
+              {/* SEARCH */}
 
               <div className="relative min-w-0 md:w-80">
 
@@ -674,7 +838,7 @@ const Users = () => {
 
               </div>
 
-              {/* Role */}
+              {/* ROLE */}
 
               <div className="relative">
 
@@ -687,6 +851,7 @@ const Users = () => {
                   }
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-4 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 md:w-36"
                 >
+
                   <option value="All">
                     All Roles
                   </option>
@@ -702,6 +867,7 @@ const Users = () => {
                   <option value="Driver">
                     Driver
                   </option>
+
                 </select>
 
                 <FiChevronDown
@@ -710,7 +876,7 @@ const Users = () => {
 
               </div>
 
-              {/* Status */}
+              {/* STATUS */}
 
               <div className="relative">
 
@@ -723,6 +889,7 @@ const Users = () => {
                   }
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-4 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 md:w-36"
                 >
+
                   <option value="All">
                     All Status
                   </option>
@@ -734,6 +901,7 @@ const Users = () => {
                   <option value="Inactive">
                     Inactive
                   </option>
+
                 </select>
 
                 <FiChevronDown
@@ -746,7 +914,7 @@ const Users = () => {
 
           </div>
 
-          {/* Result summary */}
+          {/* RESULT SUMMARY */}
 
           <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
 
@@ -770,7 +938,9 @@ const Users = () => {
                 onClick={() => {
                   setSearch("");
                   setRole("All");
-                  setStatusFilter("All");
+                  setStatusFilter(
+                    "All"
+                  );
                 }}
                 className="ml-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold text-blue-600 transition hover:bg-blue-50"
               >
@@ -784,16 +954,17 @@ const Users = () => {
         </section>
 
         {/* ==================================================
-            USER TABLE
+            USERS TABLE
         ================================================== */}
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-          {/* Table Header */}
+          {/* TABLE HEADER */}
 
           <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
 
             <div>
+
               <h2 className="text-lg font-bold text-slate-900">
                 All Users
               </h2>
@@ -802,17 +973,20 @@ const Users = () => {
                 Manage accounts and access
                 permissions.
               </p>
+
             </div>
 
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+
               <FiUsers />
 
               {filteredUsers.length} Results
+
             </div>
 
           </div>
 
-          {/* Empty */}
+          {/* EMPTY STATE */}
 
           {!loading &&
             filteredUsers.length ===
@@ -828,9 +1002,9 @@ const Users = () => {
                 </h3>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
-                  Try changing your search or
-                  filters to find the user you're
-                  looking for.
+                  Try changing your search
+                  or filters to find the
+                  user you're looking for.
                 </p>
 
                 <button
@@ -850,7 +1024,7 @@ const Users = () => {
               </div>
             )}
 
-          {/* Desktop Table */}
+          {/* TABLE */}
 
           {filteredUsers.length >
             0 && (
@@ -859,6 +1033,7 @@ const Users = () => {
               <table className="min-w-[900px] w-full">
 
                 <thead>
+
                   <tr className="border-b border-slate-100 bg-slate-50/80">
 
                     <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -882,6 +1057,7 @@ const Users = () => {
                     </th>
 
                   </tr>
+
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
@@ -895,7 +1071,9 @@ const Users = () => {
 
                       return (
                         <tr
-                          key={user._id}
+                          key={
+                            user._id
+                          }
                           className="group transition hover:bg-slate-50/80"
                         >
 
@@ -906,14 +1084,18 @@ const Users = () => {
                             <div className="flex items-center gap-3">
 
                               <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white shadow-sm">
+
                                 {user.username
-                                  ?.charAt(0)
+                                  ?.charAt(
+                                    0
+                                  )
                                   ?.toUpperCase() ||
                                   "U"}
 
                                 <span
                                   className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${statusStyle.dot}`}
                                 />
+
                               </div>
 
                               <div className="min-w-0">
@@ -945,22 +1127,29 @@ const Users = () => {
                             <div className="space-y-1.5">
 
                               <div className="flex items-center gap-2 text-sm text-slate-600">
+
                                 <FiMail
                                   size={14}
-                                  className="text-slate-400"
+                                  className="shrink-0 text-slate-400"
                                 />
 
-                                {user.email ||
-                                  "No email"}
+                                <span className="truncate">
+                                  {user.email ||
+                                    "No email"}
+                                </span>
+
                               </div>
 
                               <div className="flex items-center gap-2 text-xs text-slate-400">
+
                                 <FiPhone
                                   size={13}
+                                  className="shrink-0"
                                 />
 
                                 {user.phoneNumber ||
                                   "No phone"}
+
                               </div>
 
                             </div>
@@ -976,12 +1165,14 @@ const Users = () => {
                                 user.role
                               )}`}
                             >
+
                               <FiShield
                                 size={13}
                               />
 
                               {user.role ||
                                 "User"}
+
                             </span>
 
                           </td>
@@ -993,12 +1184,14 @@ const Users = () => {
                             <span
                               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${statusStyle.badge}`}
                             >
+
                               <span
                                 className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`}
                               />
 
                               {user.status ||
                                 "Unknown"}
+
                             </span>
 
                           </td>
@@ -1019,9 +1212,11 @@ const Users = () => {
                                 title="Edit user"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                               >
+
                                 <FiEdit3
                                   size={16}
                                 />
+
                               </button>
 
                               <button
@@ -1034,9 +1229,11 @@ const Users = () => {
                                 title="Delete user"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                               >
+
                                 <FiTrash2
                                   size={16}
                                 />
+
                               </button>
 
                             </div>
@@ -1069,9 +1266,11 @@ const Users = () => {
           </span>
 
           <span className="flex items-center gap-2">
+
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
 
             {statistics.active} active users
+
           </span>
 
         </div>
@@ -1079,26 +1278,31 @@ const Users = () => {
       </div>
 
       {/* ==================================================
-          MODAL
+          ADD / EDIT MODAL
       ================================================== */}
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+
+          {/* BACKDROP */}
 
           <div
             className="absolute inset-0"
             onClick={closeModal}
           />
 
+          {/* MODAL */}
+
           <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/50 bg-white shadow-2xl">
 
-            {/* Modal Header */}
+            {/* MODAL HEADER */}
 
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur">
 
               <div className="flex items-center gap-3">
 
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+
                   {editId ? (
                     <FiEdit3
                       size={20}
@@ -1108,20 +1312,27 @@ const Users = () => {
                       size={20}
                     />
                   )}
+
                 </div>
 
                 <div>
+
                   <h2 className="text-lg font-bold text-slate-900">
+
                     {editId
                       ? "Edit User"
                       : "Add New User"}
+
                   </h2>
 
                   <p className="text-xs text-slate-500">
+
                     {editId
                       ? "Update account information"
                       : "Create a new FleetDash account"}
+
                   </p>
+
                 </div>
 
               </div>
@@ -1129,20 +1340,22 @@ const Users = () => {
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                disabled={saving}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiX />
               </button>
 
             </div>
 
-            {/* Modal Body */}
+            {/* MODAL BODY */}
 
             <div className="space-y-5 p-6">
 
-              {/* Username */}
+              {/* USERNAME */}
 
               <div>
+
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Username
                 </label>
@@ -1156,25 +1369,29 @@ const Users = () => {
 
                   <input
                     type="text"
-                    value={form.username}
+                    value={
+                      form.username
+                    }
                     onChange={(event) =>
-                      setForm({
-                        ...form,
-                        username:
-                          event.target
-                            .value,
-                      })
+                      handleInputChange(
+                        "username",
+                        event.target
+                          .value
+                      )
                     }
                     placeholder="Enter username"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    disabled={saving}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
                   />
 
                 </div>
+
               </div>
 
-              {/* Email */}
+              {/* EMAIL */}
 
               <div>
+
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Email Address
                 </label>
@@ -1188,25 +1405,29 @@ const Users = () => {
 
                   <input
                     type="email"
-                    value={form.email}
+                    value={
+                      form.email
+                    }
                     onChange={(event) =>
-                      setForm({
-                        ...form,
-                        email:
-                          event.target
-                            .value,
-                      })
+                      handleInputChange(
+                        "email",
+                        event.target
+                          .value
+                      )
                     }
                     placeholder="user@example.com"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    disabled={saving}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
                   />
 
                 </div>
+
               </div>
 
-              {/* Phone */}
+              {/* PHONE */}
 
               <div>
+
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Phone Number
                 </label>
@@ -1224,87 +1445,120 @@ const Users = () => {
                       form.phoneNumber
                     }
                     onChange={(event) =>
-                      setForm({
-                        ...form,
-                        phoneNumber:
-                          event.target
-                            .value,
-                      })
+                      handleInputChange(
+                        "phoneNumber",
+                        event.target
+                          .value
+                      )
                     }
                     placeholder="Enter phone number"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    disabled={saving}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
                   />
 
                 </div>
+
               </div>
 
-              {/* Role + Status */}
+              {/* ROLE + STATUS */}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
+                {/* ROLE */}
+
                 <div>
+
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Role
                   </label>
 
-                  <select
-                    value={form.role}
-                    onChange={(event) =>
-                      setForm({
-                        ...form,
-                        role:
+                  <div className="relative">
+
+                    <select
+                      value={
+                        form.role
+                      }
+                      onChange={(event) =>
+                        handleInputChange(
+                          "role",
                           event.target
-                            .value,
-                      })
-                    }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                  >
-                    <option value="Admin">
-                      Admin
-                    </option>
+                            .value
+                        )
+                      }
+                      disabled={saving}
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
 
-                    <option value="Manager">
-                      Manager
-                    </option>
+                      <option value="Admin">
+                        Admin
+                      </option>
 
-                    <option value="Driver">
-                      Driver
-                    </option>
-                  </select>
+                      <option value="Manager">
+                        Manager
+                      </option>
+
+                      <option value="Driver">
+                        Driver
+                      </option>
+
+                    </select>
+
+                    <FiChevronDown
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                  </div>
+
                 </div>
 
+                {/* STATUS */}
+
                 <div>
+
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Status
                   </label>
 
-                  <select
-                    value={form.status}
-                    onChange={(event) =>
-                      setForm({
-                        ...form,
-                        status:
-                          event.target
-                            .value,
-                      })
-                    }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                  >
-                    <option value="Active">
-                      Active
-                    </option>
+                  <div className="relative">
 
-                    <option value="Inactive">
-                      Inactive
-                    </option>
-                  </select>
+                    <select
+                      value={
+                        form.status
+                      }
+                      onChange={(event) =>
+                        handleInputChange(
+                          "status",
+                          event.target
+                            .value
+                        )
+                      }
+                      disabled={saving}
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+
+                      <option value="Active">
+                        Active
+                      </option>
+
+                      <option value="Inactive">
+                        Inactive
+                      </option>
+
+                    </select>
+
+                    <FiChevronDown
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                  </div>
+
                 </div>
 
               </div>
 
             </div>
 
-            {/* Modal Footer */}
+            {/* MODAL FOOTER */}
 
             <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 p-6 sm:flex-row sm:justify-end">
 
@@ -1312,7 +1566,7 @@ const Users = () => {
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1323,19 +1577,23 @@ const Users = () => {
                 disabled={saving}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
+
                 {saving ? (
                   <>
                     <FiRefreshCw className="animate-spin" />
+
                     Saving...
                   </>
                 ) : (
                   <>
                     <FiCheckCircle />
+
                     {editId
                       ? "Update User"
                       : "Create User"}
                   </>
                 )}
+
               </button>
 
             </div>
