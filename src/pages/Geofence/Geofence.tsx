@@ -20,27 +20,33 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import { api } from "../../services/api";
+import toast from "react-hot-toast";
 
+import { api } from "../../services/api";
 import AddGeofenceModal from "../../components/geofence/AddGeofenceModal";
 
 // ======================================================
 // TYPES
 // ======================================================
 
+interface GeofenceCenter {
+  latitude: number;
+  longitude: number;
+}
+
 interface Geofence {
   _id: string;
-
   name: string;
-
-  center: {
-    latitude: number;
-    longitude: number;
-  };
-
+  center: GeofenceCenter;
   radius: number;
-
   createdAt?: string;
+}
+
+interface GeofenceApiResponse {
+  success?: boolean;
+  message?: string;
+  geofences?: Geofence[];
+  data?: Geofence[] | { geofences?: Geofence[] };
 }
 
 // ======================================================
@@ -52,73 +58,104 @@ const Geofence = () => {
   // STATE
   // ====================================================
 
-  const [geofences, setGeofences] =
-    useState<Geofence[]>([]);
+  const [geofences, setGeofences] = useState<Geofence[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [refreshing, setRefreshing] =
-    useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
-  const [openModal, setOpenModal] =
-    useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   // ====================================================
   // FETCH GEOFENCES
   // ====================================================
 
   const fetchGeofences = useCallback(
-    async () => {
+    async (showToast = false) => {
       try {
         setError("");
-        setRefreshing(true);
+
+        if (geofences.length > 0 || showToast) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
 
         const response =
-          await api.get("/geofences");
+          await api.get<GeofenceApiResponse | Geofence[]>(
+            "/geofences"
+          );
 
-        console.log(
-          "Geofence Response:",
-          response.data
-        );
+        const responseData = response.data;
 
-        const data =
-          response?.data?.geofences ??
-          response?.data?.data ??
-          response?.data ??
-          [];
+        let data: Geofence[] = [];
 
-        if (Array.isArray(data)) {
-          setGeofences(data);
-        } else {
+        if (Array.isArray(responseData)) {
+          data = responseData;
+        } else if (
+          Array.isArray(responseData?.geofences)
+        ) {
+          data = responseData.geofences;
+        } else if (
+          Array.isArray(responseData?.data)
+        ) {
+          data = responseData.data;
+        } else if (
+          responseData?.data &&
+          !Array.isArray(responseData.data) &&
+          Array.isArray(
+            responseData.data.geofences
+          )
+        ) {
+          data = responseData.data.geofences;
+        }
+
+        setGeofences(data);
+
+        if (showToast) {
+          toast.success("Geofences refreshed");
+        }
+      } catch (err: unknown) {
+        console.error("Geofence Error:", err);
+
+        let message =
+          "Unable to load geofences.";
+
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err
+        ) {
+          const axiosError = err as {
+            response?: {
+              data?: {
+                message?: string;
+              };
+            };
+          };
+
+          message =
+            axiosError.response?.data?.message ||
+            message;
+        }
+
+        setError(message);
+
+        if (geofences.length === 0) {
           setGeofences([]);
         }
-      } catch (err: any) {
-        console.error(
-          "Geofence Error:",
-          err?.response?.data ||
-            err?.message ||
-            err
-        );
 
-        setGeofences([]);
-
-        setError(
-          err?.response?.data?.message ||
-            "Unable to load geofences."
-        );
+        toast.error(message);
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    []
+    [geofences.length]
   );
 
   // ====================================================
@@ -133,76 +170,75 @@ const Geofence = () => {
   // SEARCH
   // ====================================================
 
-  const filteredGeofences =
-    useMemo(() => {
-      const searchValue =
-        search
-          .toLowerCase()
-          .trim();
+  const filteredGeofences = useMemo(() => {
+    const searchValue =
+      search.toLowerCase().trim();
 
-      if (!searchValue) {
-        return geofences;
-      }
+    if (!searchValue) {
+      return geofences;
+    }
 
-      return geofences.filter(
-        (item) =>
-          item.name
-            ?.toLowerCase()
-            .includes(searchValue) ||
-          String(
-            item.center?.latitude
-          ).includes(searchValue) ||
-          String(
-            item.center?.longitude
-          ).includes(searchValue) ||
-          String(
-            item.radius
-          ).includes(searchValue)
+    return geofences.filter((item) => {
+      const name =
+        item.name?.toLowerCase() || "";
+
+      const latitude = String(
+        item.center?.latitude ?? ""
       );
-    }, [
-      geofences,
-      search,
-    ]);
+
+      const longitude = String(
+        item.center?.longitude ?? ""
+      );
+
+      const radius = String(
+        item.radius ?? ""
+      );
+
+      return (
+        name.includes(searchValue) ||
+        latitude.includes(searchValue) ||
+        longitude.includes(searchValue) ||
+        radius.includes(searchValue)
+      );
+    });
+  }, [geofences, search]);
 
   // ====================================================
   // STATISTICS
   // ====================================================
 
   const statistics = useMemo(() => {
-    const total =
-      geofences.length;
+    const total = geofences.length;
 
-    const radii =
-      geofences.map((item) =>
-        Number(item.radius || 0)
-      );
+    if (total === 0) {
+      return {
+        total: 0,
+        averageRadius: 0,
+        largestRadius: 0,
+        smallestRadius: 0,
+      };
+    }
 
-    const averageRadius =
-      total > 0
-        ? Math.round(
-            radii.reduce(
-              (sum, radius) =>
-                sum + radius,
-              0
-            ) / total
-          )
+    const radii = geofences.map((item) => {
+      const radius = Number(item.radius);
+
+      return Number.isFinite(radius)
+        ? radius
         : 0;
+    });
 
-    const largestRadius =
-      total > 0
-        ? Math.max(...radii)
-        : 0;
-
-    const smallestRadius =
-      total > 0
-        ? Math.min(...radii)
-        : 0;
+    const totalRadius = radii.reduce(
+      (sum, radius) => sum + radius,
+      0
+    );
 
     return {
       total,
-      averageRadius,
-      largestRadius,
-      smallestRadius,
+      averageRadius: Math.round(
+        totalRadius / total
+      ),
+      largestRadius: Math.max(...radii),
+      smallestRadius: Math.min(...radii),
     };
   }, [geofences]);
 
@@ -215,12 +251,32 @@ const Geofence = () => {
   ) => {
     if (
       value === undefined ||
-      value === null
+      value === null ||
+      !Number.isFinite(Number(value))
     ) {
       return "N/A";
     }
 
     return Number(value).toFixed(6);
+  };
+
+  const formatRadius = (
+    radius?: number
+  ) => {
+    const value = Number(radius);
+
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      return "0 m";
+    }
+
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)} km`;
+    }
+
+    return `${Math.round(value)} m`;
   };
 
   const formatDate = (
@@ -230,13 +286,10 @@ const Geofence = () => {
       return "Not available";
     }
 
-    const parsedDate =
-      new Date(date);
+    const parsedDate = new Date(date);
 
     if (
-      Number.isNaN(
-        parsedDate.getTime()
-      )
+      Number.isNaN(parsedDate.getTime())
     ) {
       return "Not available";
     }
@@ -251,85 +304,84 @@ const Geofence = () => {
     );
   };
 
-  const formatRadius = (
-    radius?: number
-  ) => {
-    const value =
-      Number(radius || 0);
-
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(
-        1
-      )} km`;
-    }
-
-    return `${value} m`;
+  const clearSearch = () => {
+    setSearch("");
   };
 
   // ====================================================
-  // LOADING
+  // LOADING STATE
   // ====================================================
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-slate-50">
         <div className="mx-auto max-w-[1500px] space-y-7 p-4 sm:p-6 lg:p-8">
 
-          {/* Header */}
+          {/* Header Skeleton */}
 
-          <div className="animate-pulse">
-            <div className="h-8 w-72 rounded-lg bg-slate-100" />
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="animate-pulse">
 
-            <div className="mt-3 h-4 w-[420px] max-w-full rounded-lg bg-slate-100" />
-          </div>
+              <div className="flex items-center gap-4">
 
-          {/* KPI */}
+                <div className="h-14 w-14 rounded-2xl bg-slate-100" />
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="flex-1">
 
-            {Array.from({
-              length: 4,
-            }).map((_, index) => (
-              <div
-                key={index}
-                className="h-36 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
-              >
-                <div className="animate-pulse">
+                  <div className="h-8 w-72 max-w-full rounded-lg bg-slate-100" />
 
-                  <div className="h-10 w-10 rounded-xl bg-slate-100" />
+                  <div className="mt-3 h-4 w-[480px] max-w-full rounded-lg bg-slate-100" />
+
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+
+          {/* KPI Skeleton */}
+
+          <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+
+            {Array.from({ length: 4 }).map(
+              (_, index) => (
+                <div
+                  key={index}
+                  className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                >
+                  <div className="h-11 w-11 rounded-xl bg-slate-100" />
 
                   <div className="mt-5 h-3 w-24 rounded bg-slate-100" />
 
                   <div className="mt-3 h-7 w-20 rounded bg-slate-100" />
-
                 </div>
-              </div>
-            ))}
+              )
+            )}
 
-          </div>
+          </section>
 
-          {/* Search */}
+          {/* Toolbar Skeleton */}
 
-          <div className="h-24 animate-pulse rounded-2xl border border-slate-100 bg-white shadow-sm" />
+          <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white shadow-sm" />
 
-          {/* Table */}
+          {/* Table Skeleton */}
 
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
-            <div className="space-y-4 p-6">
+            <div className="space-y-4">
 
-              {Array.from({
-                length: 6,
-              }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-16 animate-pulse rounded-xl bg-slate-50"
-                />
-              ))}
+              {Array.from({ length: 6 }).map(
+                (_, index) => (
+                  <div
+                    key={index}
+                    className="h-16 animate-pulse rounded-xl bg-slate-100"
+                  />
+                )
+              )}
 
             </div>
 
-          </div>
+          </section>
 
         </div>
       </div>
@@ -341,7 +393,7 @@ const Geofence = () => {
   // ====================================================
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
 
       <div className="mx-auto max-w-[1500px] space-y-7 p-4 sm:p-6 lg:p-8">
 
@@ -351,13 +403,11 @@ const Geofence = () => {
 
         <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-          {/* Decorative background */}
-
           <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-blue-50 blur-3xl" />
 
           <div className="pointer-events-none absolute bottom-0 left-1/3 h-24 w-40 rounded-full bg-indigo-50 blur-3xl" />
 
-          <div className="relative p-6 sm:p-7">
+          <div className="relative p-6 sm:p-8">
 
             <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
 
@@ -365,7 +415,7 @@ const Geofence = () => {
 
               <div className="flex items-start gap-4">
 
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-100">
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200">
 
                   <FiMapPin size={25} />
 
@@ -373,7 +423,7 @@ const Geofence = () => {
 
                 </div>
 
-                <div>
+                <div className="min-w-0">
 
                   <div className="flex flex-wrap items-center gap-3">
 
@@ -407,31 +457,11 @@ const Geofence = () => {
 
                 <button
                   type="button"
-                  onClick={fetchGeofences}
+                  onClick={() =>
+                    fetchGeofences(true)
+                  }
                   disabled={refreshing}
-                  className="
-                    inline-flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-white
-                    px-5
-                    py-3
-                    text-sm
-                    font-semibold
-                    text-slate-700
-                    shadow-sm
-                    transition
-                    duration-200
-                    hover:border-slate-300
-                    hover:bg-slate-50
-                    hover:shadow
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
 
                   <FiRefreshCw
@@ -454,25 +484,7 @@ const Geofence = () => {
                   onClick={() =>
                     setOpenModal(true)
                   }
-                  className="
-                    inline-flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    bg-slate-950
-                    px-5
-                    py-3
-                    text-sm
-                    font-semibold
-                    text-white
-                    shadow-lg
-                    shadow-slate-200
-                    transition
-                    duration-200
-                    hover:bg-blue-600
-                    hover:shadow-blue-100
-                  "
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl"
                 >
 
                   <FiPlus size={17} />
@@ -494,7 +506,7 @@ const Geofence = () => {
         ================================================== */}
 
         {error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+          <section className="rounded-2xl border border-red-200 bg-red-50 p-5">
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -522,15 +534,18 @@ const Geofence = () => {
 
               <button
                 type="button"
-                onClick={fetchGeofences}
-                className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                onClick={() =>
+                  fetchGeofences(true)
+                }
+                disabled={refreshing}
+                className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
               >
                 Retry
               </button>
 
             </div>
 
-          </div>
+          </section>
         )}
 
         {/* ==================================================
@@ -555,7 +570,7 @@ const Geofence = () => {
 
                 </div>
 
-                <span className="text-xs font-semibold text-emerald-600">
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-600">
                   Active
                 </span>
 
@@ -750,7 +765,7 @@ const Geofence = () => {
 
             <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
 
-              <div className="relative sm:w-[360px]">
+              <div className="relative sm:w-[380px]">
 
                 <FiSearch
                   size={18}
@@ -758,43 +773,24 @@ const Geofence = () => {
                 />
 
                 <input
-                  type="text"
+                  type="search"
                   value={search}
                   onChange={(event) =>
                     setSearch(
                       event.target.value
                     )
                   }
-                  placeholder="Search geofence..."
-                  className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-slate-50
-                    py-3
-                    pl-11
-                    pr-10
-                    text-sm
-                    font-medium
-                    text-slate-800
-                    outline-none
-                    transition
-                    placeholder:text-slate-400
-                    focus:border-blue-400
-                    focus:bg-white
-                    focus:ring-4
-                    focus:ring-blue-50
-                  "
+                  placeholder="Search name, coordinates or radius..."
+                  aria-label="Search geofences"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-10 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                 />
 
                 {search && (
                   <button
                     type="button"
-                    onClick={() =>
-                      setSearch("")
-                    }
-                    className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    onClick={clearSearch}
+                    aria-label="Clear search"
+                    className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                   >
                     <FiX size={15} />
                   </button>
@@ -809,9 +805,7 @@ const Geofence = () => {
                   size={16}
                 />
 
-                <span>
-                  Showing
-                </span>
+                <span>Showing</span>
 
                 <strong className="text-slate-900">
                   {filteredGeofences.length}
@@ -830,7 +824,7 @@ const Geofence = () => {
         </section>
 
         {/* ==================================================
-            DATA TABLE
+            TABLE
         ================================================== */}
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -880,7 +874,7 @@ const Geofence = () => {
 
           </div>
 
-          {/* Empty */}
+          {/* Empty State */}
 
           {filteredGeofences.length === 0 && (
             <div className="flex min-h-[420px] flex-col items-center justify-center px-6 text-center">
@@ -911,9 +905,7 @@ const Geofence = () => {
               {search ? (
                 <button
                   type="button"
-                  onClick={() =>
-                    setSearch("")
-                  }
+                  onClick={clearSearch}
                   className="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
                 >
                   <FiX />
@@ -937,7 +929,7 @@ const Geofence = () => {
             </div>
           )}
 
-          {/* Desktop */}
+          {/* Desktop Table */}
 
           {filteredGeofences.length > 0 && (
             <>
@@ -983,7 +975,7 @@ const Geofence = () => {
                           className="group transition duration-200 hover:bg-blue-50/30"
                         >
 
-                          {/* Name */}
+                          {/* Geofence */}
 
                           <td className="px-6 py-5">
 
@@ -1007,9 +999,7 @@ const Geofence = () => {
                                 <p className="mt-1 text-xs font-medium text-slate-400">
                                   ID:{" "}
                                   {item._id
-                                    ? item._id.slice(
-                                        -8
-                                      )
+                                    ? item._id.slice(-8)
                                     : "N/A"}
                                 </p>
 
@@ -1033,8 +1023,7 @@ const Geofence = () => {
 
                                 <span className="rounded-md bg-slate-50 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700">
                                   {formatCoordinate(
-                                    item.center
-                                      ?.latitude
+                                    item.center?.latitude
                                   )}
                                 </span>
 
@@ -1048,8 +1037,7 @@ const Geofence = () => {
 
                                 <span className="rounded-md bg-slate-50 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700">
                                   {formatCoordinate(
-                                    item.center
-                                      ?.longitude
+                                    item.center?.longitude
                                   )}
                                 </span>
 
@@ -1153,13 +1141,15 @@ const Geofence = () => {
 
               </div>
 
-              {/* Mobile Cards */}
+              {/* ==================================================
+                  MOBILE CARDS
+              ================================================== */}
 
               <div className="divide-y divide-slate-100 lg:hidden">
 
                 {filteredGeofences.map(
                   (item) => (
-                    <div
+                    <article
                       key={item._id}
                       className="p-5 transition hover:bg-slate-50"
                     >
@@ -1183,9 +1173,8 @@ const Geofence = () => {
 
                             <p className="mt-1 text-xs text-slate-400">
                               ID:{" "}
-                              {item._id?.slice(
-                                -8
-                              ) || "N/A"}
+                              {item._id?.slice(-8) ||
+                                "N/A"}
                             </p>
 
                           </div>
@@ -1219,10 +1208,9 @@ const Geofence = () => {
 
                           </div>
 
-                          <p className="mt-2 font-mono text-xs font-semibold text-slate-700">
+                          <p className="mt-2 break-all font-mono text-xs font-semibold text-slate-700">
                             {formatCoordinate(
-                              item.center
-                                ?.latitude
+                              item.center?.latitude
                             )}
                           </p>
 
@@ -1243,10 +1231,9 @@ const Geofence = () => {
 
                           </div>
 
-                          <p className="mt-2 font-mono text-xs font-semibold text-slate-700">
+                          <p className="mt-2 break-all font-mono text-xs font-semibold text-slate-700">
                             {formatCoordinate(
-                              item.center
-                                ?.longitude
+                              item.center?.longitude
                             )}
                           </p>
 
@@ -1286,7 +1273,7 @@ const Geofence = () => {
 
                       </div>
 
-                    </div>
+                    </article>
                   )
                 )}
 
@@ -1301,7 +1288,7 @@ const Geofence = () => {
             FOOTER
         ================================================== */}
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <footer className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
 
           <div className="flex items-center gap-3">
 
@@ -1328,23 +1315,21 @@ const Geofence = () => {
 
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
 
-            <FiMapPin
-              className="text-blue-500"
-            />
+            <FiMapPin className="text-blue-500" />
 
-            {statistics.total} configured
+            {statistics.total} configured{" "}
             {statistics.total === 1
-              ? " boundary"
-              : " boundaries"}
+              ? "boundary"
+              : "boundaries"}
 
           </div>
 
-        </div>
+        </footer>
 
       </div>
 
       {/* ==================================================
-          MODAL
+          ADD GEOFENCE MODAL
       ================================================== */}
 
       <AddGeofenceModal
@@ -1354,7 +1339,7 @@ const Geofence = () => {
         }
         onSuccess={() => {
           setOpenModal(false);
-          fetchGeofences();
+          fetchGeofences(true);
         }}
       />
 
