@@ -1,3 +1,4 @@
+
 import {
   useCallback,
   useEffect,
@@ -10,8 +11,10 @@ import {
   FiBarChart2,
   FiCalendar,
   FiCheckCircle,
+  FiChevronDown,
   FiClock,
   FiDownload,
+  FiEye,
   FiFileText,
   FiFilter,
   FiPrinter,
@@ -19,6 +22,7 @@ import {
   FiSearch,
   FiTrendingUp,
   FiTruck,
+  FiUser,
   FiX,
 } from "react-icons/fi";
 
@@ -41,6 +45,18 @@ interface Report {
   createdAt: string;
 }
 
+type SortOption =
+  | "newest"
+  | "oldest"
+  | "title"
+  | "type";
+
+type DateFilter =
+  | "all"
+  | "today"
+  | "7days"
+  | "30days";
+
 // ======================================================
 // COMPONENT
 // ======================================================
@@ -50,7 +66,8 @@ const Reports = () => {
   // STATE
   // ====================================================
 
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, setReports] =
+    useState<Report[]>([]);
 
   const [loading, setLoading] =
     useState<boolean>(true);
@@ -64,18 +81,33 @@ const Reports = () => {
   const [type, setType] =
     useState<string>("All");
 
+  const [dateFilter, setDateFilter] =
+    useState<DateFilter>("all");
+
+  const [sortBy, setSortBy] =
+    useState<SortOption>("newest");
+
   const [error, setError] =
     useState<string>("");
+
+  const [selectedReport, setSelectedReport] =
+    useState<Report | null>(null);
+
+  const [showFilters, setShowFilters] =
+    useState<boolean>(false);
 
   // ====================================================
   // FETCH REPORTS
   // ====================================================
 
   const fetchReports = useCallback(
-    async () => {
+    async (showRefreshState = true) => {
       try {
         setError("");
-        setRefreshing(true);
+
+        if (showRefreshState) {
+          setRefreshing(true);
+        }
 
         const response =
           await api.get("/reports");
@@ -96,18 +128,27 @@ const Reports = () => {
         } else {
           setReports([]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(
           "Report Error:",
-          err?.response?.data ||
-            err?.message ||
-            err
+          err
         );
+
+        const errorObject =
+          err as {
+            response?: {
+              data?: {
+                message?: string;
+              };
+            };
+            message?: string;
+          };
 
         setReports([]);
 
         setError(
-          err?.response?.data?.message ||
+          errorObject?.response?.data?.message ||
+            errorObject?.message ||
             "Unable to load reports."
         );
       } finally {
@@ -123,7 +164,22 @@ const Reports = () => {
   // ====================================================
 
   useEffect(() => {
-    fetchReports();
+    fetchReports(false);
+  }, [fetchReports]);
+
+  // ====================================================
+  // AUTO REFRESH
+  // ====================================================
+
+  useEffect(() => {
+    const interval =
+      window.setInterval(() => {
+        fetchReports(false);
+      }, 60000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
   }, [fetchReports]);
 
   // ====================================================
@@ -132,63 +188,171 @@ const Reports = () => {
 
   const reportTypes = useMemo(() => {
     const types = reports
-      .map((report) => report.reportType)
+      .map(
+        (report) =>
+          report.reportType?.trim()
+      )
       .filter(Boolean);
 
     return Array.from(
       new Set(types)
-    );
+    ).sort();
   }, [reports]);
 
   // ====================================================
-  // FILTER REPORTS
+  // DATE CHECK
+  // ====================================================
+
+  const matchesDateFilter = useCallback(
+    (createdAt?: string) => {
+      if (
+        dateFilter === "all" ||
+        !createdAt
+      ) {
+        return true;
+      }
+
+      const createdDate =
+        new Date(createdAt);
+
+      if (
+        Number.isNaN(
+          createdDate.getTime()
+        )
+      ) {
+        return false;
+      }
+
+      const now = new Date();
+
+      if (dateFilter === "today") {
+        return (
+          createdDate.getFullYear() ===
+            now.getFullYear() &&
+          createdDate.getMonth() ===
+            now.getMonth() &&
+          createdDate.getDate() ===
+            now.getDate()
+        );
+      }
+
+      const days =
+        dateFilter === "7days"
+          ? 7
+          : 30;
+
+      const cutoff =
+        new Date();
+
+      cutoff.setDate(
+        cutoff.getDate() - days
+      );
+
+      return createdDate >= cutoff;
+    },
+    [dateFilter]
+  );
+
+  // ====================================================
+  // FILTER + SORT
   // ====================================================
 
   const filteredReports = useMemo(() => {
     const searchValue =
       search.toLowerCase().trim();
 
-    return reports.filter((report) => {
-      const title =
-        report.title
-          ?.toLowerCase()
-          .trim() || "";
+    const result =
+      reports.filter((report) => {
+        const title =
+          report.title
+            ?.toLowerCase()
+            .trim() || "";
 
-      const description =
-        report.description
-          ?.toLowerCase()
-          .trim() || "";
+        const description =
+          report.description
+            ?.toLowerCase()
+            .trim() || "";
 
-      const generatedBy =
-        report.generatedBy
-          ?.toLowerCase()
-          .trim() || "";
+        const generatedBy =
+          report.generatedBy
+            ?.toLowerCase()
+            .trim() || "";
 
-      const reportType =
-        report.reportType
-          ?.toLowerCase()
-          .trim() || "";
+        const reportType =
+          report.reportType
+            ?.toLowerCase()
+            .trim() || "";
 
-      const searchMatch =
-        !searchValue ||
-        title.includes(searchValue) ||
-        description.includes(searchValue) ||
-        generatedBy.includes(searchValue) ||
-        reportType.includes(searchValue);
+        const searchMatch =
+          !searchValue ||
+          title.includes(searchValue) ||
+          description.includes(searchValue) ||
+          generatedBy.includes(searchValue) ||
+          reportType.includes(searchValue);
 
-      const typeMatch =
-        type === "All" ||
-        report.reportType === type;
+        const typeMatch =
+          type === "All" ||
+          report.reportType === type;
 
-      return (
-        searchMatch &&
-        typeMatch
-      );
-    });
+        const dateMatch =
+          matchesDateFilter(
+            report.createdAt
+          );
+
+        return (
+          searchMatch &&
+          typeMatch &&
+          dateMatch
+        );
+      });
+
+    return [...result].sort(
+      (a, b) => {
+        switch (sortBy) {
+          case "oldest":
+            return (
+              new Date(
+                a.createdAt
+              ).getTime() -
+              new Date(
+                b.createdAt
+              ).getTime()
+            );
+
+          case "title":
+            return (
+              a.title || ""
+            ).localeCompare(
+              b.title || ""
+            );
+
+          case "type":
+            return (
+              a.reportType || ""
+            ).localeCompare(
+              b.reportType || ""
+            );
+
+          case "newest":
+          default:
+            return (
+              new Date(
+                b.createdAt
+              ).getTime() -
+              new Date(
+                a.createdAt
+              ).getTime()
+            );
+        }
+      }
+    );
   }, [
     reports,
     search,
     type,
+    dateFilter,
+    sortBy,
+    matchesDateFilter,
   ]);
 
   // ====================================================
@@ -220,12 +384,21 @@ const Reports = () => {
             ?.toLowerCase() === "fuel"
       ).length;
 
+    const maintenance =
+      reports.filter(
+        (report) =>
+          report.reportType
+            ?.toLowerCase() ===
+          "maintenance"
+      ).length;
+
     const other =
       Math.max(
         total -
           daily -
           vehicle -
-          fuel,
+          fuel -
+          maintenance,
         0
       );
 
@@ -234,12 +407,13 @@ const Reports = () => {
       daily,
       vehicle,
       fuel,
+      maintenance,
       other,
     };
   }, [reports]);
 
   // ====================================================
-  // FORMAT DATE
+  // DATE FORMAT
   // ====================================================
 
   const formatDate = (
@@ -271,7 +445,7 @@ const Reports = () => {
   };
 
   // ====================================================
-  // FORMAT TIME
+  // TIME FORMAT
   // ====================================================
 
   const formatTime = (
@@ -302,7 +476,7 @@ const Reports = () => {
   };
 
   // ====================================================
-  // REPORT TYPE STYLE
+  // TYPE STYLE
   // ====================================================
 
   const getTypeStyle = (
@@ -368,13 +542,16 @@ const Reports = () => {
       filteredReports.map(
         (report) => ({
           Title:
-            report.title || "Untitled",
+            report.title ||
+            "Untitled",
 
           Type:
-            report.reportType || "Other",
+            report.reportType ||
+            "Other",
 
           Description:
-            report.description || "",
+            report.description ||
+            "",
 
           GeneratedBy:
             report.generatedBy ||
@@ -384,6 +561,14 @@ const Reports = () => {
             formatDate(
               report.createdAt
             ),
+
+          Time:
+            formatTime(
+              report.createdAt
+            ),
+
+          Status:
+            "Ready",
         })
       );
 
@@ -393,11 +578,13 @@ const Reports = () => {
       );
 
     worksheet["!cols"] = [
-      { wch: 30 },
+      { wch: 32 },
       { wch: 18 },
       { wch: 55 },
       { wch: 25 },
       { wch: 18 },
+      { wch: 14 },
+      { wch: 14 },
     ];
 
     const workbook =
@@ -411,7 +598,9 @@ const Reports = () => {
 
     XLSX.writeFile(
       workbook,
-      "FleetDash_Reports.xlsx"
+      `FleetDash_Reports_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`
     );
   };
 
@@ -427,7 +616,12 @@ const Reports = () => {
     }
 
     const doc =
-      new jsPDF();
+      new jsPDF({
+        orientation:
+          "landscape",
+        unit: "mm",
+        format: "a4",
+      });
 
     doc.setFontSize(20);
 
@@ -439,21 +633,35 @@ const Reports = () => {
 
     doc.setFontSize(9);
 
+    doc.setTextColor(
+      100,
+      116,
+      139
+    );
+
     doc.text(
-      `Generated on ${new Date().toLocaleDateString()}`,
+      `Generated on ${new Date().toLocaleString()}`,
       14,
       25
     );
 
+    doc.text(
+      `Showing ${filteredReports.length} of ${reports.length} reports`,
+      14,
+      30
+    );
+
     autoTable(doc, {
-      startY: 32,
+      startY: 36,
 
       head: [
         [
-          "Title",
+          "Report",
           "Type",
+          "Description",
           "Generated By",
           "Date",
+          "Status",
         ],
       ],
 
@@ -466,18 +674,26 @@ const Reports = () => {
             report.reportType ||
               "Other",
 
+            report.description ||
+              "No description",
+
             report.generatedBy ||
               "System",
 
-            formatDate(
+            `${formatDate(
               report.createdAt
-            ),
+            )} ${formatTime(
+              report.createdAt
+            )}`,
+
+            "Ready",
           ]
         ),
 
       styles: {
-        fontSize: 9,
-        cellPadding: 4,
+        fontSize: 8,
+        cellPadding: 3,
+        valign: "middle",
       },
 
       headStyles: {
@@ -487,7 +703,8 @@ const Reports = () => {
           235,
         ],
         textColor: 255,
-        fontStyle: "bold",
+        fontStyle:
+          "bold",
       },
 
       alternateRowStyles: {
@@ -497,10 +714,33 @@ const Reports = () => {
           252,
         ],
       },
+
+      columnStyles: {
+        0: {
+          cellWidth: 42,
+        },
+        1: {
+          cellWidth: 25,
+        },
+        2: {
+          cellWidth: 85,
+        },
+        3: {
+          cellWidth: 35,
+        },
+        4: {
+          cellWidth: 32,
+        },
+        5: {
+          cellWidth: 22,
+        },
+      },
     });
 
     doc.save(
-      "FleetDash_Reports.pdf"
+      `FleetDash_Reports_${new Date()
+        .toISOString()
+        .slice(0, 10)}.pdf`
     );
   };
 
@@ -509,6 +749,12 @@ const Reports = () => {
   // ====================================================
 
   const handlePrint = () => {
+    if (
+      filteredReports.length === 0
+    ) {
+      return;
+    }
+
     window.print();
   };
 
@@ -519,11 +765,14 @@ const Reports = () => {
   const clearFilters = () => {
     setSearch("");
     setType("All");
+    setDateFilter("all");
+    setSortBy("newest");
   };
 
   const hasFilters =
     search.trim() !== "" ||
-    type !== "All";
+    type !== "All" ||
+    dateFilter !== "all";
 
   // ====================================================
   // LOADING
@@ -534,20 +783,15 @@ const Reports = () => {
       <div className="min-h-screen bg-slate-50">
         <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 
-          {/* Header Skeleton */}
-
-          <div className="animate-pulse rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="h-8 w-64 rounded-lg bg-slate-100" />
-
-            <div className="mt-3 h-4 w-96 max-w-full rounded-lg bg-slate-100" />
+          <div className="animate-pulse rounded-3xl bg-slate-900 p-6 sm:p-8">
+            <div className="h-8 w-72 rounded-lg bg-white/10" />
+            <div className="mt-3 h-4 w-96 max-w-full rounded bg-white/10" />
 
             <div className="mt-6 flex gap-3">
-              <div className="h-10 w-28 rounded-xl bg-slate-100" />
-              <div className="h-10 w-28 rounded-xl bg-slate-100" />
+              <div className="h-11 w-32 rounded-xl bg-white/10" />
+              <div className="h-11 w-28 rounded-xl bg-white/10" />
             </div>
           </div>
-
-          {/* KPI Skeleton */}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({
@@ -560,11 +804,7 @@ const Reports = () => {
             ))}
           </div>
 
-          {/* Filter Skeleton */}
-
-          <div className="h-24 animate-pulse rounded-2xl bg-white shadow-sm" />
-
-          {/* Table Skeleton */}
+          <div className="h-28 animate-pulse rounded-2xl bg-white shadow-sm" />
 
           <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
             <div className="space-y-4 p-6">
@@ -593,12 +833,10 @@ const Reports = () => {
       <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
 
         {/* ==================================================
-            PREMIUM HEADER
+            HEADER
         ================================================== */}
 
         <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-6 shadow-xl sm:p-8">
-
-          {/* Decorative elements */}
 
           <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
 
@@ -606,21 +844,17 @@ const Reports = () => {
 
           <div className="relative flex flex-col gap-7 xl:flex-row xl:items-center xl:justify-between">
 
-            {/* Title */}
-
             <div className="flex items-start gap-4">
 
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-blue-300 ring-1 ring-white/10 backdrop-blur-sm">
-                <FiBarChart2
-                  size={27}
-                />
+                <FiBarChart2 size={27} />
               </div>
 
               <div>
 
                 <div className="flex flex-wrap items-center gap-3">
 
-                  <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                  <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl">
                     Reports & Analytics
                   </h1>
 
@@ -641,13 +875,13 @@ const Reports = () => {
 
             </div>
 
-            {/* Header Actions */}
-
             <div className="flex flex-col gap-3 sm:flex-row">
 
               <button
                 type="button"
-                onClick={fetchReports}
+                onClick={() =>
+                  fetchReports(true)
+                }
                 disabled={refreshing}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -674,8 +908,7 @@ const Reports = () => {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <FiDownload />
-
-                Export
+                Export Excel
               </button>
 
             </div>
@@ -712,7 +945,9 @@ const Reports = () => {
 
               <button
                 type="button"
-                onClick={fetchReports}
+                onClick={() =>
+                  fetchReports(true)
+                }
                 className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
               >
                 Retry
@@ -739,11 +974,11 @@ const Reports = () => {
 
               <div>
 
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-semibold text-slate-500">
                   Total Reports
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
                   {statistics.total}
                 </p>
 
@@ -755,13 +990,10 @@ const Reports = () => {
               </div>
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <FiFileText
-                  size={22}
-                />
+                <FiFileText size={22} />
               </div>
 
             </div>
-
           </div>
 
           {/* Daily */}
@@ -774,11 +1006,11 @@ const Reports = () => {
 
               <div>
 
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-semibold text-slate-500">
                   Daily Reports
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-indigo-600">
+                <p className="mt-2 text-3xl font-extrabold tracking-tight text-indigo-600">
                   {statistics.daily}
                 </p>
 
@@ -790,13 +1022,10 @@ const Reports = () => {
               </div>
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                <FiCalendar
-                  size={22}
-                />
+                <FiCalendar size={22} />
               </div>
 
             </div>
-
           </div>
 
           {/* Vehicle */}
@@ -809,11 +1038,11 @@ const Reports = () => {
 
               <div>
 
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-semibold text-slate-500">
                   Vehicle Reports
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-violet-600">
+                <p className="mt-2 text-3xl font-extrabold tracking-tight text-violet-600">
                   {statistics.vehicle}
                 </p>
 
@@ -825,13 +1054,10 @@ const Reports = () => {
               </div>
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                <FiTruck
-                  size={22}
-                />
+                <FiTruck size={22} />
               </div>
 
             </div>
-
           </div>
 
           {/* Fuel */}
@@ -844,11 +1070,11 @@ const Reports = () => {
 
               <div>
 
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-semibold text-slate-500">
                   Fuel Reports
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-amber-600">
+                <p className="mt-2 text-3xl font-extrabold tracking-tight text-amber-600">
                   {statistics.fuel}
                 </p>
 
@@ -860,13 +1086,10 @@ const Reports = () => {
               </div>
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                <FiActivity
-                  size={22}
-                />
+                <FiActivity size={22} />
               </div>
 
             </div>
-
           </div>
 
         </section>
@@ -877,104 +1100,226 @@ const Reports = () => {
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
 
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-4">
 
-            {/* Left */}
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 
-            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                <FiFilter />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                  <FiFilter />
+                </div>
+
+                <div>
+                  <h2 className="font-bold text-slate-900">
+                    Report Explorer
+                  </h2>
+
+                  <p className="text-xs text-slate-500">
+                    Search, filter and sort your reports
+                  </p>
+                </div>
+
               </div>
 
-              <div>
-                <h2 className="font-bold text-slate-900">
-                  Report Explorer
-                </h2>
+              <div className="flex w-full flex-col gap-3 md:flex-row xl:w-auto">
 
-                <p className="text-xs text-slate-500">
-                  Search and filter your reports
-                </p>
+                {/* Search */}
+
+                <div className="relative w-full md:w-80">
+
+                  <FiSearch
+                    size={18}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(event) =>
+                      setSearch(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Search reports..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                  />
+
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSearch("")
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                      aria-label="Clear search"
+                    >
+                      <FiX />
+                    </button>
+                  )}
+
+                </div>
+
+                {/* Mobile filter toggle */}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowFilters(
+                      (previous) =>
+                        !previous
+                    )
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 xl:hidden"
+                >
+                  <FiFilter />
+
+                  Filters
+
+                  <FiChevronDown
+                    className={
+                      showFilters
+                        ? "rotate-180 transition"
+                        : "transition"
+                    }
+                  />
+                </button>
+
               </div>
 
             </div>
 
-            {/* Controls */}
-
-            <div className="flex w-full flex-col gap-3 md:flex-row xl:w-auto">
-
-              {/* Search */}
-
-              <div className="relative w-full md:w-80">
-
-                <FiSearch
-                  size={18}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(event) =>
-                    setSearch(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Search reports..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                />
-
-              </div>
+            <div
+              className={`grid grid-cols-1 gap-3 md:grid-cols-3 ${
+                showFilters
+                  ? "block"
+                  : "hidden xl:grid"
+              }`}
+            >
 
               {/* Type */}
 
-              <select
-                value={type}
-                onChange={(event) =>
-                  setType(
-                    event.target.value
-                  )
-                }
-                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
-              >
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Report Type
+                </label>
 
-                <option value="All">
-                  All Report Types
-                </option>
+                <select
+                  value={type}
+                  onChange={(event) =>
+                    setType(
+                      event.target.value
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                >
+                  <option value="All">
+                    All Report Types
+                  </option>
 
-                {reportTypes.map(
-                  (reportType) => (
-                    <option
-                      key={reportType}
-                      value={reportType}
-                    >
-                      {reportType}
-                    </option>
-                  )
-                )}
+                  {reportTypes.map(
+                    (reportType) => (
+                      <option
+                        key={reportType}
+                        value={reportType}
+                      >
+                        {reportType}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
 
-              </select>
+              {/* Date */}
 
-              {/* Clear */}
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Date Range
+                </label>
 
-              {hasFilters && (
+                <select
+                  value={dateFilter}
+                  onChange={(event) =>
+                    setDateFilter(
+                      event.target
+                        .value as DateFilter
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                >
+                  <option value="all">
+                    All Time
+                  </option>
+
+                  <option value="today">
+                    Today
+                  </option>
+
+                  <option value="7days">
+                    Last 7 Days
+                  </option>
+
+                  <option value="30days">
+                    Last 30 Days
+                  </option>
+                </select>
+              </div>
+
+              {/* Sort */}
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Sort By
+                </label>
+
+                <select
+                  value={sortBy}
+                  onChange={(event) =>
+                    setSortBy(
+                      event.target
+                        .value as SortOption
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                >
+                  <option value="newest">
+                    Newest First
+                  </option>
+
+                  <option value="oldest">
+                    Oldest First
+                  </option>
+
+                  <option value="title">
+                    Title A-Z
+                  </option>
+
+                  <option value="type">
+                    Type A-Z
+                  </option>
+                </select>
+              </div>
+
+            </div>
+
+            {hasFilters && (
+              <div className="flex justify-end border-t border-slate-100 pt-3">
+
                 <button
                   type="button"
                   onClick={
                     clearFilters
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-red-50 hover:text-red-600"
                 >
                   <FiX />
-
-                  Clear
+                  Clear all filters
                 </button>
-              )}
 
-            </div>
+              </div>
+            )}
 
           </div>
-
         </section>
 
         {/* ==================================================
@@ -993,7 +1338,7 @@ const Reports = () => {
 
                 <div className="flex flex-wrap items-center gap-3">
 
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                  <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
                     Reports Library
                   </h2>
 
@@ -1005,11 +1350,11 @@ const Reports = () => {
 
                 <p className="mt-1 text-sm text-slate-500">
                   Showing{" "}
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-bold text-slate-700">
                     {filteredReports.length}
                   </span>{" "}
                   of{" "}
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-bold text-slate-700">
                     {reports.length}
                   </span>{" "}
                   reports
@@ -1023,7 +1368,9 @@ const Reports = () => {
 
                 <button
                   type="button"
-                  onClick={exportExcel}
+                  onClick={
+                    exportExcel
+                  }
                   disabled={
                     filteredReports.length ===
                     0
@@ -1039,7 +1386,9 @@ const Reports = () => {
 
                 <button
                   type="button"
-                  onClick={exportPDF}
+                  onClick={
+                    exportPDF
+                  }
                   disabled={
                     filteredReports.length ===
                     0
@@ -1055,7 +1404,9 @@ const Reports = () => {
 
                 <button
                   type="button"
-                  onClick={handlePrint}
+                  onClick={
+                    handlePrint
+                  }
                   disabled={
                     filteredReports.length ===
                     0
@@ -1072,7 +1423,6 @@ const Reports = () => {
               </div>
 
             </div>
-
           </div>
 
           {/* ==================================================
@@ -1086,26 +1436,22 @@ const Reports = () => {
               <div className="relative">
 
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-600">
-                  <FiFileText
-                    size={34}
-                  />
+                  <FiFileText size={34} />
                 </div>
 
                 <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-4 border-white bg-slate-200 text-slate-500">
-                  <FiSearch
-                    size={12}
-                  />
+                  <FiSearch size={12} />
                 </div>
 
               </div>
 
-              <h3 className="mt-6 text-xl font-bold text-slate-900">
+              <h3 className="mt-6 text-xl font-extrabold text-slate-900">
                 No reports found
               </h3>
 
               <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
                 {hasFilters
-                  ? "No reports match your current search or filter. Try adjusting your filters."
+                  ? "No reports match your current search or filters. Try adjusting your filters."
                   : "There are currently no reports available in your FleetDash system."}
               </p>
 
@@ -1115,7 +1461,7 @@ const Reports = () => {
                   onClick={
                     clearFilters
                   }
-                  className="mt-6 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                  className="mt-6 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
                 >
                   Clear Filters
                 </button>
@@ -1135,7 +1481,6 @@ const Reports = () => {
               <table className="min-w-full">
 
                 <thead>
-
                   <tr className="border-b border-slate-100 bg-slate-50/80">
 
                     <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -1155,15 +1500,18 @@ const Reports = () => {
                     </th>
 
                     <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Date
+                      Created
                     </th>
 
                     <th className="px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
                       Status
                     </th>
 
-                  </tr>
+                    <th className="px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      Action
+                    </th>
 
+                  </tr>
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
@@ -1195,17 +1543,16 @@ const Reports = () => {
 
                               <div className="min-w-0">
 
-                                <p className="max-w-xs truncate font-semibold text-slate-800">
+                                <p className="max-w-xs truncate font-bold text-slate-800">
                                   {report.title ||
                                     "Untitled Report"}
                                 </p>
 
                                 <p className="mt-1 text-xs text-slate-400">
                                   ID:{" "}
-                                  {report._id
-                                    ?.slice(
-                                      -8
-                                    ) ||
+                                  {report._id?.slice(
+                                    -8
+                                  ) ||
                                     "N/A"}
                                 </p>
 
@@ -1222,16 +1569,16 @@ const Reports = () => {
                             <span
                               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${typeStyle.badge}`}
                             >
+
                               <span
                                 className={`flex h-5 w-5 items-center justify-center rounded-md ${typeStyle.icon}`}
                               >
-                                <FiBarChart2
-                                  size={11}
-                                />
+                                <FiBarChart2 size={11} />
                               </span>
 
                               {report.reportType ||
                                 "Other"}
+
                             </span>
 
                           </td>
@@ -1253,16 +1600,18 @@ const Reports = () => {
 
                             <div className="flex items-center gap-2">
 
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                                 {(
                                   report.generatedBy ||
                                   "S"
                                 )
-                                  .charAt(0)
+                                  .charAt(
+                                    0
+                                  )
                                   .toUpperCase()}
                               </div>
 
-                              <span className="text-sm font-medium text-slate-700">
+                              <span className="max-w-[140px] truncate text-sm font-semibold text-slate-700">
                                 {report.generatedBy ||
                                   "System"}
                               </span>
@@ -1284,7 +1633,7 @@ const Reports = () => {
 
                               <div>
 
-                                <p className="text-sm font-medium text-slate-700">
+                                <p className="text-sm font-semibold text-slate-700">
                                   {formatDate(
                                     report.createdAt
                                   )}
@@ -1311,7 +1660,27 @@ const Reports = () => {
                               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
 
                               Ready
+
                             </span>
+
+                          </td>
+
+                          {/* Action */}
+
+                          <td className="px-6 py-5 text-center">
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSelectedReport(
+                                  report
+                                )
+                              }
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                              title="View report"
+                            >
+                              <FiEye size={16} />
+                            </button>
 
                           </td>
 
@@ -1328,7 +1697,7 @@ const Reports = () => {
           )}
 
           {/* ==================================================
-              MOBILE / TABLET CARDS
+              MOBILE / TABLET
           ================================================== */}
 
           {filteredReports.length >
@@ -1349,8 +1718,6 @@ const Reports = () => {
                       }
                       className="p-5 transition hover:bg-slate-50 sm:p-6"
                     >
-
-                      {/* Top */}
 
                       <div className="flex items-start justify-between gap-4">
 
@@ -1385,37 +1752,47 @@ const Reports = () => {
 
                       </div>
 
-                      {/* Type */}
-
-                      <div className="mt-5">
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
 
                         <span
                           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${typeStyle.badge}`}
                         >
                           <FiBarChart2 />
-
                           {report.reportType ||
                             "Other"}
                         </span>
 
-                      </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedReport(
+                              report
+                            )
+                          }
+                          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <FiEye />
+                          View
+                        </button>
 
-                      {/* Description */}
+                      </div>
 
                       <p className="mt-4 text-sm leading-6 text-slate-500">
                         {report.description ||
                           "No description available."}
                       </p>
 
-                      {/* Metadata */}
-
-                      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
 
                         <div className="rounded-xl bg-slate-50 p-3">
 
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Generated By
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <FiUser className="text-slate-400" />
+
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Generated By
+                            </p>
+                          </div>
 
                           <p className="mt-1 truncate text-sm font-semibold text-slate-700">
                             {report.generatedBy ||
@@ -1426,14 +1803,37 @@ const Reports = () => {
 
                         <div className="rounded-xl bg-slate-50 p-3">
 
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Created
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <FiCalendar className="text-slate-400" />
+
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Created
+                            </p>
+                          </div>
 
                           <p className="mt-1 text-sm font-semibold text-slate-700">
                             {formatDate(
                               report.createdAt
                             )}
+                          </p>
+
+                        </div>
+
+                        <div className="rounded-xl bg-slate-50 p-3">
+
+                          <div className="flex items-center gap-2">
+                            <FiClock className="text-slate-400" />
+
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Time
+                            </p>
+                          </div>
+
+                          <p className="mt-1 text-sm font-semibold text-slate-700">
+                            {formatTime(
+                              report.createdAt
+                            ) ||
+                              "N/A"}
                           </p>
 
                         </div>
@@ -1451,7 +1851,7 @@ const Reports = () => {
         </section>
 
         {/* ==================================================
-            FOOTER SUMMARY
+            SUMMARY
         ================================================== */}
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -1466,7 +1866,7 @@ const Reports = () => {
 
               <div>
 
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-bold text-slate-800">
                   Reporting system operational
                 </p>
 
@@ -1478,7 +1878,7 @@ const Reports = () => {
 
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-500">
 
               <span className="inline-flex items-center gap-1.5">
                 <FiFileText />
@@ -1488,8 +1888,22 @@ const Reports = () => {
               <span className="hidden h-4 w-px bg-slate-200 sm:block" />
 
               <span className="inline-flex items-center gap-1.5">
+                <FiTruck />
+                {statistics.vehicle} Vehicle
+              </span>
+
+              <span className="hidden h-4 w-px bg-slate-200 sm:block" />
+
+              <span className="inline-flex items-center gap-1.5">
+                <FiActivity />
+                {statistics.fuel} Fuel
+              </span>
+
+              <span className="hidden h-4 w-px bg-slate-200 sm:block" />
+
+              <span className="inline-flex items-center gap-1.5">
                 <FiClock />
-                Updated automatically
+                Auto refresh: 60s
               </span>
 
             </div>
@@ -1499,6 +1913,272 @@ const Reports = () => {
         </section>
 
       </div>
+
+      {/* ==================================================
+          REPORT DETAILS MODAL
+      ================================================== */}
+
+      {selectedReport && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          onClick={() =>
+            setSelectedReport(null)
+          }
+        >
+
+          <div
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-2xl"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            {/* Modal Header */}
+
+            <div className="flex items-start justify-between border-b border-slate-100 p-5 sm:p-6">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                  <FiFileText size={21} />
+                </div>
+
+                <div>
+
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                    Report Details
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-extrabold text-slate-900">
+                    {selectedReport.title ||
+                      "Untitled Report"}
+                  </h2>
+
+                </div>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedReport(null)
+                }
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close"
+              >
+                <FiX />
+              </button>
+
+            </div>
+
+            {/* Modal Body */}
+
+            <div className="space-y-5 p-5 sm:p-6">
+
+              {/* Status */}
+
+              <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                    <FiCheckCircle />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-emerald-800">
+                      Report Ready
+                    </p>
+
+                    <p className="text-xs text-emerald-600">
+                      Available for analysis
+                    </p>
+                  </div>
+
+                </div>
+
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700 shadow-sm">
+                  Ready
+                </span>
+
+              </div>
+
+              {/* Details */}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Report Type
+                  </p>
+
+                  <p className="mt-2 text-sm font-bold text-slate-800">
+                    {selectedReport.reportType ||
+                      "Other"}
+                  </p>
+
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Generated By
+                  </p>
+
+                  <p className="mt-2 text-sm font-bold text-slate-800">
+                    {selectedReport.generatedBy ||
+                      "System"}
+                  </p>
+
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Created Date
+                  </p>
+
+                  <p className="mt-2 text-sm font-bold text-slate-800">
+                    {formatDate(
+                      selectedReport.createdAt
+                    )}
+                  </p>
+
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Created Time
+                  </p>
+
+                  <p className="mt-2 text-sm font-bold text-slate-800">
+                    {formatTime(
+                      selectedReport.createdAt
+                    ) ||
+                      "N/A"}
+                  </p>
+
+                </div>
+
+              </div>
+
+              {/* Description */}
+
+              <div className="rounded-2xl border border-slate-200 p-4">
+
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Description
+                </p>
+
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {selectedReport.description ||
+                    "No description is available for this report."}
+                </p>
+
+              </div>
+
+              {/* ID */}
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Report ID
+                </p>
+
+                <p className="mt-2 break-all font-mono text-xs text-slate-600">
+                  {selectedReport._id}
+                </p>
+
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-100 p-5 sm:flex-row sm:justify-end sm:p-6">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedReport(null)
+                }
+                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const report =
+                    selectedReport;
+
+                  const worksheet =
+                    XLSX.utils.json_to_sheet(
+                      [
+                        {
+                          Title:
+                            report.title ||
+                            "Untitled",
+                          Type:
+                            report.reportType ||
+                            "Other",
+                          Description:
+                            report.description ||
+                            "",
+                          GeneratedBy:
+                            report.generatedBy ||
+                            "System",
+                          Date:
+                            formatDate(
+                              report.createdAt
+                            ),
+                          Time:
+                            formatTime(
+                              report.createdAt
+                            ),
+                          Status:
+                            "Ready",
+                        },
+                      ]
+                    );
+
+                  const workbook =
+                    XLSX.utils.book_new();
+
+                  XLSX.utils.book_append_sheet(
+                    workbook,
+                    worksheet,
+                    "Report"
+                  );
+
+                  XLSX.writeFile(
+                    workbook,
+                    `FleetDash_${report.title
+                      ?.replace(
+                        /[^a-z0-9]/gi,
+                        "_"
+                      )
+                      .slice(
+                        0,
+                        40
+                      ) || "Report"}.xlsx`
+                  );
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
+              >
+                <FiDownload />
+                Export Report
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
