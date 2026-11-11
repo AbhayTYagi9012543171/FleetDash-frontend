@@ -26,4 +26,10 @@ export interface Vehicle {
 
   updatedAt?: string;
 
+  /** Timestamp of the latest accepted GPS fix; null/undefined means not yet received. */
+  lastGpsAt?: string | null;
+
+  /** Distinguishes actual device data from demo/simulated locations. */
+  locationSource?: "gps-device" | "driver-app" | "demo" | "unknown";
+
 }

@@ -14,10 +14,10 @@ const SOCKET_URL =
 export const socket: Socket = io(SOCKET_URL, {
   autoConnect: false,
 
-  transports: ["websocket"],
+  transports: ["websocket", "polling"],
 
   reconnection: true,
-  reconnectionAttempts: 5,
+  reconnectionAttempts: Infinity,
   reconnectionDelay: 2000,
 
   withCredentials: true,
